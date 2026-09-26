@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OzonFlow · rFBS 跨境直发中台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo">OF</div>
+        <div class="brand-text">
+          <div class="brand-name">OzonFlow</div>
+          <div class="brand-sub">rFBS 直发中台</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">经营</div>
+          <button class="nav-item active" data-view="dashboard">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <span>经营总览</span>
+          </button>
+          <button class="nav-item" data-view="selection">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+            <span>智能选品</span>
+          </button>
+          <button class="nav-item" data-view="listing">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
+            <span>刊登上架</span>
+            <span class="badge" id="badgeListing">0</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">履约</div>
+          <button class="nav-item" data-view="orders">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+            <span>订单履约</span>
+            <span class="badge" id="badgeOrders">0</span>
+          </button>
+          <button class="nav-item" data-view="rules">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5"/></svg>
+            <span>自动化规则</span>
+          </button>
+          <button class="nav-item" data-view="logistics">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6v-6l-4-4h-2"/><rect x="2" y="7" width="14" height="12" rx="1"/><circle cx="6.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
+            <span>物流与库存</span>
+          </button>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="plan">
+          <div class="plan-dot"></div>
+          <div>
+            <div style="color:#e2e8f0;font-weight:500">专业版 · 演示</div>
+            <div id="planQuota">本地数据层 · 可离线</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-title" id="pageTitle">经营总览</div>
+        <div class="topbar-spacer"></div>
+
+        <!-- Demo dataset switcher -->
+        <div class="demo-switcher" id="demoSwitcher">
+          <span class="demo-label">演示集</span>
+          <span id="currentDemo">广州数码旺季</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="demo-dropdown" id="demoDropdown"></div>
+        </div>
+
+        <div class="shop-switcher" id="shopSwitcher">
+          <div class="shop-flag"></div>
+          <span id="currentShop">—</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="shop-dropdown" id="shopDropdown"></div>
+        </div>
+
+        <div class="sync-status" id="syncStatus" title="最近同步时间">
+          <span class="dot"></span>
+          <span id="syncText">订单同步 · —</span>
+        </div>
+
+        <button class="topbar-btn" id="btnNotify" title="通知">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </button>
+        <button class="btn btn-sm btn-ghost" id="btnReset" title="重置当前演示数据">重置</button>
+        <div class="avatar">张</div>
+      </header>
+
+      <div class="content">
+        <!-- 1. Dashboard -->
+        <section class="view active" id="view-dashboard">
+          <div class="competitor-panel" id="compPanel">
+            <button class="collapse-btn" onclick="document.getElementById('compPanel').classList.toggle('collapsed')">收起/展开</button>
+            <h3>🚀 可演示闭环（真实改状态）</h3>
+            <ul>
+              <li><b>选品「认领」</b> → 出现在刊登上架草稿</li>
+              <li><b>刊登「发布」</b> → 在售商品 + 库存行</li>
+              <li><b>同步订单</b> → 订单履约列表；规则自动审单/匹配物流/标记采购</li>
+              <li><b>申请面单 / 发货</b> → 运单号 + 已发货；库存同步 / 补货 → 看板预警</li>
+            </ul>
+          </div>
+          <div class="kpi-grid" id="kpiGrid"></div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">近 7 日订单趋势</div>
+                <div class="card-extra"><span class="tag tag-blue" id="chartShopTag">—</span></div>
+              </div>
+              <div class="card-body"><div class="chart-bars" id="orderChart"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">待办事项</div></div>
+              <div class="card-body" style="padding-top:4px">
+                <ul class="mini-list" id="todoList"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">热销 TOP · 今日</div>
+              <div class="card-extra"><button class="btn btn-sm btn-ghost" data-nav="selection">查看选品 →</button></div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>商品</th><th>Ozon SKU</th><th>今日销量</th><th>售价 ₽</th><th>预估毛利</th><th>库存</th></tr></thead>
+                  <tbody id="hotBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Selection -->
+        <section class="view" id="view-selection">
+          <div class="filter-bar">
+            <div class="filter-tabs" id="selTabs">
+              <button class="filter-tab active" data-sel-tab="hot">Ozon 爆款</button>
+              <button class="filter-tab" data-sel-tab="blue">蓝海机会</button>
+              <button class="filter-tab" data-sel-tab="follow">跟卖监控</button>
+            </div>
+            <select class="select-box" id="selCat">
+              <option value="">类目：全部</option>
+              <option>电子配件</option>
+              <option>家居收纳</option>
+              <option>美容个护</option>
+              <option>厨房小电</option>
+            </select>
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input placeholder="搜索商品 / SKU / 关键词…" id="selSearch" />
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnRefreshSel">刷新榜单</button>
+          </div>
+          <div class="grid-2" style="align-items:start">
+            <div><div class="prod-grid" id="selProdGrid"></div></div>
+            <div class="calc-panel" id="profitCalc" style="position:sticky;top:0">
+              <h3>💰 一键利润测算</h3>
+              <div class="calc-row"><span class="label">选中商品</span><span class="val" id="calcName">—</span></div>
+              <div class="calc-row"><span class="label">Ozon 售价 ₽</span><input class="calc-input" id="calcPrice" type="number" value="1890" /></div>
+              <div class="calc-row"><span class="label">1688 采购价 ¥</span><input class="calc-input" id="calcCost" type="number" value="48.5" step="0.1" /></div>
+              <div class="calc-row"><span class="label">重量 g</span><input class="calc-input" id="calcWeight" type="number" value="180" /></div>
+              <div class="calc-row"><span class="label">汇率 ¥→₽</span><span class="val" id="calcFx">11.85</span></div>
+              <div class="calc-row"><span class="label">平台佣金</span><span class="val" id="calcComm">—</span></div>
+              <div class="calc-row"><span class="label">头程物流</span><span class="val" id="calcShip">—</span></div>
+              <div class="calc-row"><span class="label">手续费+其他</span><span class="val" id="calcFee">—</span></div>
+              <div class="calc-row highlight"><span class="label">到手净利 ₽</span><span class="val" id="calcProfit">—</span></div>
+              <div class="calc-row"><span class="label">利润率</span><span class="val" id="calcMargin">—</span></div>
+              <button class="btn btn-primary btn-lg" style="width:100%;margin-top:14px;justify-content:center" id="btnCalc">一键测算利润</button>
+              <button class="btn btn-secondary" style="width:100%;margin-top:8px;justify-content:center;background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.15)" id="btnClaimFromCalc">认领到刊登草稿</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Listing -->
+        <section class="view" id="view-listing">
+          <div class="filter-bar">
+            <div class="filter-tabs" id="listingTabs"></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-secondary btn-sm" id="btnSyncOrdersFromListing">模拟出单</button>
+            <button class="btn btn-primary btn-sm" id="btnBatchPublish">批量发布待发布</button>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>商品信息</th>
+                      <th>俄文标题</th>
+                      <th>类目映射</th>
+                      <th>属性完整度</th>
+                      <th>状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="listingBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Orders -->
+        <section class="view" id="view-orders">
+          <div class="filter-bar">
+            <div class="filter-tabs" id="orderTabs"></div>
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input placeholder="订单号 / 买家 / SKU…" id="orderSearch" />
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnSyncOrders">同步订单</button>
+            <button class="btn btn-secondary btn-sm" id="btnAutoAudit">一键审单</button>
+            <button class="btn btn-primary btn-sm" id="btnBatchWaybill">批量申请面单</button>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>订单号</th><th>商品</th><th>买家 / 城市</th><th>金额 ₽</th>
+                      <th>物流</th><th>自动化</th><th>状态</th><th>剩余时效</th><th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orderBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Rules -->
+        <section class="view" id="view-rules">
+          <div class="filter-bar mb-16">
+            <div class="filter-tabs" id="ruleTypeTabs">
+              <button class="filter-tab active" data-rule-type="all">全部规则</button>
+              <button class="filter-tab" data-rule-type="audit">审单</button>
+              <button class="filter-tab" data-rule-type="logistics">物流匹配</button>
+              <button class="filter-tab" data-rule-type="purchase">采购</button>
+              <button class="filter-tab" data-rule-type="inventory">库存同步</button>
+              <button class="filter-tab" data-rule-type="waybill">取号</button>
+            </div>
+            <div style="flex:1"></div>
+            <button class="btn btn-primary btn-sm" id="btnRunRules">立即执行规则引擎</button>
+          </div>
+          <div class="rule-grid" id="ruleGrid"></div>
+        </section>
+
+        <!-- 6. Logistics -->
+        <section class="view" id="view-logistics">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">物流渠道</div>
+            </div>
+            <div class="card-body">
+              <div class="channel-grid" id="channelGrid"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">仓库库存同步</div>
+              <div class="card-extra">
+                <span class="hint" id="invSyncHint">上次同步：刚刚</span>
+                <button class="btn btn-sm btn-secondary" id="btnSyncInv">立即同步</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>SKU / 货号</th><th>商品</th><th>本地仓</th><th>Ozon 在售库存</th><th>安全库存</th><th>同步状态</th><th>操作</th></tr>
+                  </thead>
+                  <tbody id="invBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="orderDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="drawerTitle">订单详情</div>
+      <button class="drawer-close" id="drawerClose">×</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/demo-seeds.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
