@@ -35,6 +35,14 @@
             <span>刊登上架</span>
             <span class="badge" id="badgeListing">0</span>
           </button>
+          <button class="nav-item" data-view="profit">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>利润定价</span>
+          </button>
+          <button class="nav-item" data-view="weekly">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+            <span>经营周报</span>
+          </button>
         </div>
         <div class="nav-section">
           <div class="nav-section-title">履约</div>
@@ -51,9 +59,23 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6v-6l-4-4h-2"/><rect x="2" y="7" width="14" height="12" rx="1"/><circle cx="6.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
             <span>物流与库存</span>
           </button>
+          <button class="nav-item" data-view="returns">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span>退货异常</span>
+            <span class="badge" id="badgeReturns">0</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">服务</div>
+          <button class="nav-item" data-view="cs">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>客服评价</span>
+            <span class="badge" id="badgeCs">0</span>
+          </button>
         </div>
       </nav>
       <div class="sidebar-footer">
+        <button class="btn-wizard-entry" id="btnOpenWizard" title="开店引导">🚀 开店 Wizard</button>
         <div class="plan">
           <div class="plan-dot"></div>
           <div>
@@ -69,10 +91,9 @@
         <div class="topbar-title" id="pageTitle">经营总览</div>
         <div class="topbar-spacer"></div>
 
-        <!-- Demo dataset switcher -->
         <div class="demo-switcher" id="demoSwitcher">
           <span class="demo-label">演示集</span>
-          <span id="currentDemo">广州数码旺季</span>
+          <span id="currentDemo">旺季履约突击</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           <div class="demo-dropdown" id="demoDropdown"></div>
         </div>
@@ -82,6 +103,13 @@
           <span id="currentShop">—</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           <div class="shop-dropdown" id="shopDropdown"></div>
+        </div>
+
+        <div class="role-switcher" id="roleSwitcher">
+          <span class="role-label">角色</span>
+          <span id="currentRole">老板</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <div class="role-dropdown" id="roleDropdown"></div>
         </div>
 
         <div class="sync-status" id="syncStatus" title="最近同步时间">
@@ -94,20 +122,27 @@
           <span class="notif-dot" id="notifDot" style="display:none"></span>
         </button>
         <button class="btn btn-sm btn-ghost" id="btnReset" title="重置当前演示数据">重置</button>
-        <div class="avatar">张</div>
+        <div class="avatar" id="avatarBtn" title="当前角色">张</div>
       </header>
 
       <div class="content">
         <!-- 1. Dashboard -->
         <section class="view active" id="view-dashboard">
+          <div class="compliance-strip" id="complianceStrip">
+            <span class="cs-item">🇷🇺 <b>必填俄语属性</b>：Бренд / Страна / Состав</span>
+            <span class="cs-item">🚫 <b>禁售</b>：医疗器械、成人用品、部分电池类</span>
+            <span class="cs-item">⏱️ <b>rFBS 备货时效</b>：通常 24–72h，超时降权</span>
+            <button class="btn btn-sm btn-ghost" id="btnDashWizard">开店引导</button>
+          </div>
+          <div class="wizard-progress-card" id="wizardProgressCard" style="display:none"></div>
           <div class="competitor-panel" id="compPanel">
             <button class="collapse-btn" onclick="document.getElementById('compPanel').classList.toggle('collapsed')">收起/展开</button>
             <h3>🚀 可演示闭环（真实改状态）</h3>
             <ul>
-              <li><b>选品「认领」</b> → 出现在刊登上架草稿</li>
-              <li><b>刊登「发布」</b> → 在售商品 + 库存行</li>
-              <li><b>同步订单</b> → 订单履约列表；规则自动审单/匹配物流/标记采购</li>
-              <li><b>申请面单 / 发货</b> → 运单号 + 已发货；库存同步 / 补货 → 看板预警</li>
+              <li><b>开店 Wizard</b> → 绑定店铺 / rFBS / 物流 / 导入商品</li>
+              <li><b>选品「认领」</b> → 刊登草稿；<b>利润定价</b> 测算跟卖/活动价</li>
+              <li><b>发布 → 同步订单 → 审单/面单/发货</b>；客服差评 + 退货异常进待办</li>
+              <li><b>多店切换</b>真实分区数据；<b>角色</b>控制可见操作；<b>经营周报</b>导出</li>
             </ul>
           </div>
           <div class="kpi-grid" id="kpiGrid"></div>
@@ -120,7 +155,10 @@
               <div class="card-body"><div class="chart-bars" id="orderChart"></div></div>
             </div>
             <div class="card">
-              <div class="card-header"><div class="card-title">待办事项</div></div>
+              <div class="card-header">
+                <div class="card-title">今日待办</div>
+                <div class="card-extra"><span class="hint" id="todoCountHint"></span></div>
+              </div>
               <div class="card-body" style="padding-top:4px">
                 <ul class="mini-list" id="todoList"></ul>
               </div>
@@ -128,7 +166,7 @@
           </div>
           <div class="card">
             <div class="card-header">
-              <div class="card-title">热销 TOP · 今日</div>
+              <div class="card-title">热销 TOP · 今日（当前店铺）</div>
               <div class="card-extra"><button class="btn btn-sm btn-ghost" data-nav="selection">查看选品 →</button></div>
             </div>
             <div class="card-body" style="padding:0">
@@ -162,6 +200,7 @@
               <input placeholder="搜索商品 / SKU / 关键词…" id="selSearch" />
             </div>
             <button class="btn btn-secondary btn-sm" id="btnRefreshSel">刷新榜单</button>
+            <button class="btn btn-primary btn-sm" data-nav="profit">打开利润定价 →</button>
           </div>
           <div class="grid-2" style="align-items:start">
             <div><div class="prod-grid" id="selProdGrid"></div></div>
@@ -174,7 +213,7 @@
               <div class="calc-row"><span class="label">汇率 ¥→₽</span><span class="val" id="calcFx">11.85</span></div>
               <div class="calc-row"><span class="label">平台佣金</span><span class="val" id="calcComm">—</span></div>
               <div class="calc-row"><span class="label">头程物流</span><span class="val" id="calcShip">—</span></div>
-              <div class="calc-row"><span class="label">手续费+其他</span><span class="val" id="calcFee">—</span></div>
+              <div class="calc-row"><span class="label">手续费+退货拨备</span><span class="val" id="calcFee">—</span></div>
               <div class="calc-row highlight"><span class="label">到手净利 ₽</span><span class="val" id="calcProfit">—</span></div>
               <div class="calc-row"><span class="label">利润率</span><span class="val" id="calcMargin">—</span></div>
               <button class="btn btn-primary btn-lg" style="width:100%;margin-top:14px;justify-content:center" id="btnCalc">一键测算利润</button>
@@ -197,12 +236,8 @@
                 <table class="data-table">
                   <thead>
                     <tr>
-                      <th>商品信息</th>
-                      <th>俄文标题</th>
-                      <th>类目映射</th>
-                      <th>属性完整度</th>
-                      <th>状态</th>
-                      <th>操作</th>
+                      <th>商品信息</th><th>俄文标题</th><th>类目映射</th>
+                      <th>属性完整度</th><th>状态</th><th>操作</th>
                     </tr>
                   </thead>
                   <tbody id="listingBody"></tbody>
@@ -261,16 +296,12 @@
         <!-- 6. Logistics -->
         <section class="view" id="view-logistics">
           <div class="card">
-            <div class="card-header">
-              <div class="card-title">物流渠道</div>
-            </div>
-            <div class="card-body">
-              <div class="channel-grid" id="channelGrid"></div>
-            </div>
+            <div class="card-header"><div class="card-title">物流渠道</div></div>
+            <div class="card-body"><div class="channel-grid" id="channelGrid"></div></div>
           </div>
           <div class="card">
             <div class="card-header">
-              <div class="card-title">仓库库存同步</div>
+              <div class="card-title">仓库库存同步 · 当前店铺</div>
               <div class="card-extra">
                 <span class="hint" id="invSyncHint">上次同步：刚刚</span>
                 <button class="btn btn-sm btn-secondary" id="btnSyncInv">立即同步</button>
@@ -283,6 +314,121 @@
                     <tr><th>SKU / 货号</th><th>商品</th><th>本地仓</th><th>Ozon 在售库存</th><th>安全库存</th><th>同步状态</th><th>操作</th></tr>
                   </thead>
                   <tbody id="invBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. Profit / Pricing -->
+        <section class="view" id="view-profit">
+          <div class="grid-2" style="align-items:start">
+            <div>
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">共享费率（单位经济）</div>
+                  <div class="card-extra"><span class="hint">改费率后测算实时更新</span></div>
+                </div>
+                <div class="card-body">
+                  <div class="rate-grid" id="rateGrid"></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">选品 / 在售 · 快速测算</div></div>
+                <div class="card-body" style="padding:0">
+                  <div class="table-wrap">
+                    <table class="data-table">
+                      <thead><tr><th>商品</th><th>售价 ₽</th><th>成本 ¥</th><th>操作</th></tr></thead>
+                      <tbody id="profitPickBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">情景对比 · 跟卖价 / 活动价</div></div>
+                <div class="card-body" id="scenarioBody">
+                  <div class="hint" style="padding:20px;text-align:center">从左侧选择商品开始测算</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">自定义测算</div></div>
+                <div class="card-body">
+                  <div class="form-grid">
+                    <label>售价 ₽ <input class="input" id="pfPrice" type="number" value="1890" /></label>
+                    <label>采购价 ¥ <input class="input" id="pfCost" type="number" value="48.5" step="0.1" /></label>
+                    <label>重量 g <input class="input" id="pfWeight" type="number" value="180" /></label>
+                  </div>
+                  <button class="btn btn-primary" style="width:100%;margin-top:12px;justify-content:center" id="btnPfCalc">重新测算三情景</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. CS / Reviews -->
+        <section class="view" id="view-cs">
+          <div class="filter-bar">
+            <div class="filter-tabs" id="csTabs">
+              <button class="filter-tab active" data-cs-tab="reviews">评价</button>
+              <button class="filter-tab" data-cs-tab="qa">问答 Q&A</button>
+              <button class="filter-tab" data-cs-tab="templates">俄语回复模板</button>
+            </div>
+            <div style="flex:1"></div>
+            <span class="hint" id="csHint"></span>
+          </div>
+          <div id="csBody"></div>
+        </section>
+
+        <!-- 9. Returns -->
+        <section class="view" id="view-returns">
+          <div class="filter-bar">
+            <div class="filter-tabs" id="returnTabs"></div>
+            <div style="flex:1"></div>
+            <span class="hint">状态机：待处理 → 调查中 / 已同意 / 已拒绝 → 已退款 → 已关闭</span>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>单号</th><th>关联订单</th><th>类型</th><th>商品</th><th>原因</th><th>金额 ₽</th><th>状态</th><th>操作</th></tr>
+                  </thead>
+                  <tbody id="returnBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. Weekly -->
+        <section class="view" id="view-weekly">
+          <div class="filter-bar">
+            <div class="card-title" style="font-size:15px">经营周报</div>
+            <div style="flex:1"></div>
+            <button class="btn btn-secondary btn-sm" id="btnRefreshWeekly">刷新数据</button>
+            <button class="btn btn-primary btn-sm" id="btnExportWeekly">导出周报（模拟）</button>
+          </div>
+          <div class="kpi-grid" id="weeklyKpi" style="grid-template-columns:repeat(4,1fr)"></div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">分店铺汇总</div></div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>店铺</th><th>订单</th><th>已发货</th><th>销售额 ₽</th><th>净利 ₽</th><th>毛利率</th><th>超时率</th><th>退货率</th></tr></thead>
+                  <tbody id="weeklyShopBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">当前店铺 · SKU 明细</div></div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>SKU</th><th>商品</th><th>单量</th><th>销售额 ₽</th><th>净利 ₽</th><th>毛利率</th></tr></thead>
+                  <tbody id="weeklySkuBody"></tbody>
                 </table>
               </div>
             </div>
@@ -301,6 +447,22 @@
     </div>
     <div class="drawer-body" id="drawerBody"></div>
   </aside>
+
+  <!-- Wizard modal -->
+  <div class="modal-overlay" id="wizardOverlay">
+    <div class="modal wizard-modal" id="wizardModal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">🚀 新手开店 Wizard</div>
+          <div class="hint">Ozon Russia rFBS · 4 步完成冷启动</div>
+        </div>
+        <button class="drawer-close" id="wizardClose">×</button>
+      </div>
+      <div class="wizard-steps" id="wizardSteps"></div>
+      <div class="modal-body" id="wizardBody"></div>
+      <div class="modal-footer" id="wizardFooter"></div>
+    </div>
+  </div>
 
   <div class="toast-container" id="toastContainer"></div>
 

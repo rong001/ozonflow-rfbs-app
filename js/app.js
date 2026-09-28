@@ -1,5 +1,6 @@
 /**
- * OzonFlow · UI 层：六模块渲染 + 事件，全部读写共享 Store
+ * OzonFlow · UI 层：全模块渲染 + 事件，读写共享 Store
+ * 含 Wizard / 利润定价 / 客服评价 / 退货异常 / 周报 / 多店分区 / 角色
  */
 (function () {
   const Store = window.OzonFlowStore;
@@ -12,14 +13,22 @@
     orders: '订单履约',
     rules: '自动化规则',
     logistics: '物流与库存',
+    profit: '利润定价',
+    cs: '客服评价',
+    returns: '退货异常',
+    weekly: '经营周报',
   };
 
   let currentView = 'dashboard';
   let listFilter = 'all';
   let orderFilter = 'all';
   let ruleType = 'all';
+  let csTab = 'reviews';
+  let returnFilter = 'all';
   let selectedCatalogId = null;
   let openOrderId = null;
+  let wizardStep = 0;
+  let profitTarget = null;
 
   /* ---------- Toast ---------- */
   function showToast(type, msg) {
@@ -39,8 +48,18 @@
   window.showToast = showToast;
 
   /* ---------- Navigate ---------- */
-  function navigate(view) {
+  function navigate(view, opts) {
+    opts = opts || {};
+    if (!Store.canView(view)) {
+      showToast('info', '当前角色「' + Store.roleLabel() + '」无权访问「' + (TITLES[view] || view) + '」');
+      return;
+    }
     currentView = view;
+    if (opts.filter) {
+      if (view === 'orders') orderFilter = opts.filter;
+      if (view === 'returns') returnFilter = opts.filter;
+      if (view === 'cs') csTab = opts.filter === 'bad' ? 'reviews' : opts.filter;
+    }
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const el = document.getElementById('view-' + view);
@@ -52,11 +71,24 @@
   }
   window.navigate = navigate;
 
-  /* ---------- Topbar meta ---------- */
+  /* ---------- Role-aware action gate ---------- */
+  function guard(action, fn) {
+    return function () {
+      if (!Store.canDo(action) && Store.get().role !== 'boss') {
+        showToast('info', '当前角色「' + Store.roleLabel() + '」无权执行此操作');
+        return;
+      }
+      return fn.apply(this, arguments);
+    };
+  }
+
+  /* ---------- Topbar ---------- */
   function renderTopbar() {
     const s = Store.get();
+    const shop = Store.currentShop();
     document.getElementById('currentDemo').textContent = s.meta.name;
-    document.getElementById('currentShop').textContent = s.meta.shopName;
+    document.getElementById('currentShop').textContent = shop ? shop.name : s.meta.shopName;
+    document.getElementById('currentRole').textContent = Store.roleLabel();
 
     const demoDrop = document.getElementById('demoDropdown');
     demoDrop.innerHTML = Seeds.list().map(d =>
@@ -64,30 +96,61 @@
       '<span>' + d.label + '</span><span class="demo-meta">' + d.desc + '</span></button>'
     ).join('') +
       '<div class="demo-sep"></div>' +
-      '<button class="demo-opt" data-action="reset"><span>重置当前演示数据</span><span class="demo-meta">清除本集改动</span></button>';
+      '<button class="demo-opt" data-action="reset"><span>重置当前演示数据</span><span class="demo-meta">清除本集改动</span></button>' +
+      '<button class="demo-opt" data-action="wizard"><span>🚀 打开开店 Wizard</span><span class="demo-meta">小白冷启动入口</span></button>';
 
     const shopDrop = document.getElementById('shopDropdown');
-    shopDrop.innerHTML = s.shops.map(sh =>
-      '<button class="shop-opt' + (sh.name === s.meta.shopName ? ' active' : '') + '" data-shop="' + sh.name + '">' +
-      '<span>' + sh.name + '</span><span class="shop-meta">rFBS · ' +
-      (sh.status === 'online' ? '在线' : '同步中') + '</span></button>'
+    shopDrop.innerHTML = s.shops.map(sh => {
+      const oc = s.orders.filter(o => o.shopId === sh.id).length;
+      const rc = s.reviews.filter(r => r.shopId === sh.id && r.rating <= 3 && !r.replied).length;
+      return '<button class="shop-opt' + (sh.id === s.currentShopId ? ' active' : '') + '" data-shop-id="' + sh.id + '">' +
+        '<span>' + sh.name + '</span><span class="shop-meta">rFBS · ' + oc + '单' + (rc ? ' · ' + rc + '差评' : '') + '</span></button>';
+    }).join('');
+
+    const roleDrop = document.getElementById('roleDropdown');
+    roleDrop.innerHTML = Object.values(Store.ROLES).map(r =>
+      '<button class="role-opt' + (r.id === s.role ? ' active' : '') + '" data-role="' + r.id + '">' +
+      '<span>' + r.label + '</span><span class="role-meta">' + roleHint(r.id) + '</span></button>'
     ).join('');
+
+    // nav visibility by role
+    document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+      const v = btn.dataset.view;
+      btn.style.display = Store.canView(v) ? '' : 'none';
+    });
 
     const ago = s.syncAgoMin;
     document.getElementById('syncText').textContent =
       '订单同步 · ' + (ago === 0 ? '刚刚' : ago + ' 分钟前');
 
     const k = Store.kpi();
-    const dot = document.getElementById('notifDot');
-    dot.style.display = k.risk > 0 ? 'block' : 'none';
+    document.getElementById('notifDot').style.display = (k.risk > 0 || k.badReviews > 0) ? 'block' : 'none';
 
     const badges = Store.badges();
-    const bl = document.getElementById('badgeListing');
-    const bo = document.getElementById('badgeOrders');
-    bl.textContent = badges.listing;
-    bl.style.display = badges.listing ? '' : 'none';
-    bo.textContent = badges.orders;
-    bo.style.display = badges.orders ? '' : 'none';
+    setBadge('badgeListing', badges.listing);
+    setBadge('badgeOrders', badges.orders);
+    setBadge('badgeCs', badges.cs);
+    setBadge('badgeReturns', badges.returns);
+
+    const av = document.getElementById('avatarBtn');
+    av.textContent = Store.roleLabel().slice(0, 1);
+    av.title = '角色：' + Store.roleLabel();
+  }
+
+  function setBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n;
+    el.style.display = n ? '' : 'none';
+  }
+
+  function roleHint(id) {
+    return ({
+      boss: '全权限 · 看周报',
+      ops: '选品刊登履约',
+      warehouse: '仓配发货退货',
+      cs: '评价问答退货',
+    })[id] || '';
   }
 
   /* ---------- Dashboard ---------- */
@@ -95,11 +158,11 @@
     const s = Store.get();
     const k = Store.kpi();
     document.getElementById('kpiGrid').innerHTML = `
-      <div class="kpi-card blue"><div class="kpi-label">今日订单</div><div class="kpi-value">${k.todayOrders}</div><div class="kpi-sub up">演示集 · ${s.meta.name}</div></div>
-      <div class="kpi-card orange"><div class="kpi-label">待发货</div><div class="kpi-value">${k.pendingShip}</div><div class="kpi-sub neutral">含待采购</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">今日订单</div><div class="kpi-value">${k.todayOrders}</div><div class="kpi-sub up">${s.meta.shopName}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">待发货</div><div class="kpi-value">${k.pendingShip}</div><div class="kpi-sub neutral">含待采购 ${k.purchaseCount}</div></div>
       <div class="kpi-card red"><div class="kpi-label">超时风险</div><div class="kpi-value">${k.risk}</div><div class="kpi-sub down">距截单 &lt; 6h</div></div>
-      <div class="kpi-card green"><div class="kpi-label">预估毛利 (₽)</div><div class="kpi-value">${(k.gross / 1000).toFixed(1)}K</div><div class="kpi-sub up">共享费率测算</div></div>
-      <div class="kpi-card purple"><div class="kpi-label">库存预警</div><div class="kpi-value">${k.lowStock}</div><div class="kpi-sub down">SKU 低于安全库存</div></div>
+      <div class="kpi-card green"><div class="kpi-label">预估毛利 (₽)</div><div class="kpi-value">${(k.gross / 1000).toFixed(1)}K</div><div class="kpi-sub up">含退货拨备</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">差评/退货</div><div class="kpi-value">${k.badReviews + k.openReturns}</div><div class="kpi-sub down">待回 ${k.badReviews} · 异常 ${k.openReturns}</div></div>
     `;
 
     document.getElementById('chartShopTag').textContent = s.meta.shopName;
@@ -111,25 +174,39 @@
       return `<div class="chart-bar-wrap"><div class="chart-bar" style="height:${h}px" title="${v} 单"></div><div class="chart-bar-label">${days[i]}</div></div>`;
     }).join('');
 
-    const todos = [];
-    if (k.risk > 0) todos.push({ icon: '⚠️', bg: 'var(--danger-bg)', title: k.risk + ' 笔订单临近超时', sub: '建议立即采购或申请面单', btn: '去处理', view: 'orders', cls: 'btn-danger' });
-    if (k.draftCount > 0) todos.push({ icon: '📦', bg: 'var(--warning-bg)', title: k.draftCount + ' 条刊登待处理', sub: '草稿 / 映射 / 待发布', btn: '去刊登', view: 'listing', cls: 'btn-secondary' });
-    const ruleHits = s.rules.reduce((a, r) => a + (r.today || 0), 0);
-    if (ruleHits > 0) todos.push({ icon: '🔄', bg: 'var(--primary-light)', title: '规则今日命中 ' + ruleHits + ' 次', sub: '自动审单 / 物流 / 采购', btn: '查看', view: 'rules', cls: 'btn-ghost' });
-    if (k.lowStock > 0) todos.push({ icon: '📉', bg: 'var(--purple-bg)', title: k.lowStock + ' 个 SKU 低库存', sub: '去补货或同步', btn: '去库存', view: 'logistics', cls: 'btn-ghost' });
-    todos.push({ icon: '🔍', bg: 'var(--info-bg)', title: '选品池 ' + s.catalog.length + ' 个机会 SKU', sub: '认领后进入刊登草稿', btn: '去看看', view: 'selection', cls: 'btn-ghost' });
-
-    document.getElementById('todoList').innerHTML = todos.map(t => `
+    const todoList = Store.todos();
+    document.getElementById('todoCountHint').textContent = todoList.length + ' 项';
+    document.getElementById('todoList').innerHTML = todoList.length ? todoList.map(t => `
       <li>
         <div class="ml-icon" style="background:${t.bg}">${t.icon}</div>
         <div class="ml-text"><div class="ml-title">${t.title}</div><div class="ml-sub">${t.sub}</div></div>
-        <button class="btn btn-sm ${t.cls}" data-nav="${t.view}">${t.btn}</button>
+        <button class="btn btn-sm ${t.cls}" data-todo-nav="${t.view}" data-todo-filter="${t.filter || ''}">${t.btn}</button>
       </li>
-    `).join('');
+    `).join('') : '<li class="hint" style="padding:16px;justify-content:center">今日待办已清空 🎉</li>';
 
-    const hot = [...s.products].sort((a, b) => (b.todaySales || 0) - (a.todaySales || 0)).slice(0, 5);
+    // wizard progress card
+    const wp = Store.wizardProgress();
+    const card = document.getElementById('wizardProgressCard');
+    if (!wp.completed) {
+      card.style.display = '';
+      card.innerHTML = `
+        <div class="wp-head">
+          <div><b>开店进度</b> · ${wp.done}/${wp.total} 步完成</div>
+          <button class="btn btn-sm btn-primary" id="btnContinueWizard">继续引导</button>
+        </div>
+        <div class="progress" style="margin:10px 0"><div class="progress-bar" style="width:${wp.pct}%"></div></div>
+        <div class="wp-steps">${wp.steps.map(st =>
+          `<span class="wp-chip ${st.done ? 'done' : ''}">${st.done ? '✓' : '○'} ${st.label}</span>`
+        ).join('')}</div>`;
+    } else {
+      card.style.display = 'none';
+    }
+
+    const products = Store.forShop(s.products);
+    const inventory = Store.forShop(s.inventory);
+    const hot = [...products].sort((a, b) => (b.todaySales || 0) - (a.todaySales || 0)).slice(0, 5);
     document.getElementById('hotBody').innerHTML = hot.map(p => {
-      const inv = s.inventory.find(i => i.sku === p.sku);
+      const inv = inventory.find(i => i.sku === p.sku);
       const stock = inv ? inv.local : 0;
       const stockCls = stock <= (inv ? inv.safe : 20) ? 'stock-low' : 'stock-ok';
       return `<tr>
@@ -140,7 +217,7 @@
         <td><span class="tag tag-green">+${p.margin || 0}%</span></td>
         <td><span class="${stockCls}">${stock}</span></td>
       </tr>`;
-    }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">暂无在售商品 — 请先选品认领并发布</td></tr>';
+    }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">本店暂无在售 — 请先选品认领并发布，或打开开店 Wizard</td></tr>';
   }
 
   /* ---------- Selection ---------- */
@@ -152,8 +229,9 @@
     if (cat) list = list.filter(c => c.cat === cat);
     if (q) list = list.filter(c => c.name.toLowerCase().includes(q) || c.ru.toLowerCase().includes(q) || (c.skuHint || '').toLowerCase().includes(q));
 
+    const shopListings = Store.forShop(s.listings);
     document.getElementById('selProdGrid').innerHTML = list.map(p => {
-      const claimed = s.claimedIds.includes(p.id) || s.listings.some(l => l.sku === p.skuHint);
+      const claimed = s.claimedIds.includes(p.id) || shopListings.some(l => l.sku === p.skuHint);
       return `
       <div class="prod-card" data-cid="${p.id}">
         <div class="prod-card-img"><span class="rank">TOP ${p.rank}</span>${p.emoji}</div>
@@ -198,9 +276,9 @@
     const cost = parseFloat(document.getElementById('calcCost').value) || 0;
     const weight = parseFloat(document.getElementById('calcWeight').value) || 0;
     const r = Store.calcProfit({ price, costCNY: cost, weight });
-    document.getElementById('calcComm').textContent = Math.round(r.commission).toLocaleString('ru-RU') + ' ₽ (' + (r.commissionRate * 100) + '%)';
+    document.getElementById('calcComm').textContent = Math.round(r.commission).toLocaleString('ru-RU') + ' ₽ (' + (r.commissionRate * 100).toFixed(1) + '%)';
     document.getElementById('calcShip').textContent = Math.round(r.ship).toLocaleString('ru-RU') + ' ₽';
-    document.getElementById('calcFee').textContent = Math.round(r.fee).toLocaleString('ru-RU') + ' ₽';
+    document.getElementById('calcFee').textContent = Math.round(r.fee + r.retProv).toLocaleString('ru-RU') + ' ₽';
     document.getElementById('calcProfit').textContent = Math.round(r.profit).toLocaleString('ru-RU') + ' ₽';
     document.getElementById('calcMargin').textContent = r.margin.toFixed(1) + '%';
     document.getElementById('calcProfit').style.color = r.profit > 0 ? '#4ade80' : '#f87171';
@@ -210,13 +288,14 @@
   /* ---------- Listing ---------- */
   function renderListing() {
     const s = Store.get();
+    const listings = Store.forShop(s.listings);
     const counts = {
-      all: s.listings.length,
-      draft: s.listings.filter(l => l.status === 'draft').length,
-      mapping: s.listings.filter(l => l.status === 'mapping').length,
-      ready: s.listings.filter(l => l.status === 'ready').length,
-      failed: s.listings.filter(l => l.status === 'failed').length,
-      published: s.listings.filter(l => l.status === 'published').length,
+      all: listings.length,
+      draft: listings.filter(l => l.status === 'draft').length,
+      mapping: listings.filter(l => l.status === 'mapping').length,
+      ready: listings.filter(l => l.status === 'ready').length,
+      failed: listings.filter(l => l.status === 'failed').length,
+      published: listings.filter(l => l.status === 'published').length,
     };
     const tabs = [
       ['all', '全部'], ['draft', '草稿'], ['mapping', '映射中'],
@@ -226,7 +305,7 @@
       `<button class="filter-tab${listFilter === k ? ' active' : ''}" data-list-filter="${k}">${label} <span class="count">${counts[k] || 0}</span></button>`
     ).join('');
 
-    const rows = s.listings.filter(l => listFilter === 'all' || l.status === listFilter);
+    const rows = listings.filter(l => listFilter === 'all' || l.status === listFilter);
     const statusMap = {
       draft: ['草稿', 'tag-gray'], mapping: ['映射中', 'tag-orange'],
       ready: ['待发布', 'tag-blue'], failed: ['审核失败', 'tag-red'],
@@ -239,6 +318,7 @@
       if (l.status === 'ready') actions += ` <button class="btn btn-sm btn-primary" data-pub="${l.id}">发布</button>`;
       if (l.status === 'failed') actions += ` <button class="btn btn-sm btn-danger" data-fix="${l.id}">修复</button>`;
       if (l.status === 'published') actions = '<span class="hint">已上架</span>';
+      actions += ` <button class="btn btn-sm btn-ghost" data-pf-listing="${l.id}">测算</button>`;
       return `<tr>
         <td><div class="prod-cell"><div class="prod-img">${l.emoji}</div><div><div class="prod-name">${l.name}</div><div class="prod-sku">${l.sku}</div></div></div></td>
         <td style="max-width:220px;font-size:12px;color:var(--text-secondary)">${l.ru}</td>
@@ -247,22 +327,23 @@
           <div class="flex gap-8"><span style="font-weight:600;min-width:36px">${l.map}%</span>
           <div class="progress" style="flex:1;margin-top:6px"><div class="progress-bar ${barColor}" style="width:${l.map}%"></div></div></div>
         </td>
-        <td><span class="tag ${tag}">${label}</span></td>
+        <td><span class="tag ${tag}">${label}</span>${l.failReason ? '<div class="hint">' + l.failReason + '</div>' : ''}</td>
         <td>${actions}</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">暂无刊登 — 去「智能选品」认领商品</td></tr>';
+    }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">本店暂无刊登 — 去「智能选品」认领，或打开开店 Wizard</td></tr>';
   }
 
   /* ---------- Orders ---------- */
   function renderOrders() {
     const s = Store.get();
+    const orders = Store.forShop(s.orders);
     const counts = {
-      all: s.orders.length,
-      audit: s.orders.filter(o => o.status === 'audit').length,
-      purchase: s.orders.filter(o => o.status === 'purchase').length,
-      ship: s.orders.filter(o => o.status === 'ship').length,
-      shipped: s.orders.filter(o => o.status === 'shipped').length,
-      risk: s.orders.filter(o => o.risk || (o.etaH != null && o.etaH <= 6 && o.status !== 'shipped')).length,
+      all: orders.length,
+      audit: orders.filter(o => o.status === 'audit').length,
+      purchase: orders.filter(o => o.status === 'purchase').length,
+      ship: orders.filter(o => o.status === 'ship').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
+      risk: orders.filter(o => o.risk || (o.etaH != null && o.etaH <= 6 && o.status !== 'shipped')).length,
     };
     const tabs = [
       ['all', '全部'], ['audit', '待审核'], ['purchase', '待采购'],
@@ -273,7 +354,7 @@
     ).join('');
 
     const q = (document.getElementById('orderSearch').value || '').trim().toLowerCase();
-    let rows = s.orders.filter(o => {
+    let rows = orders.filter(o => {
       if (orderFilter === 'risk') return o.risk || (o.etaH != null && o.etaH <= 6 && o.status !== 'shipped');
       if (orderFilter !== 'all' && o.status !== orderFilter) return false;
       return true;
@@ -285,15 +366,20 @@
       );
     }
 
+    const canAudit = Store.canDo('audit') || s.role === 'boss';
+    const canWaybill = Store.canDo('waybill') || s.role === 'boss';
+    const canShip = Store.canDo('ship') || s.role === 'boss';
+    const canPurch = Store.canDo('purchase') || s.role === 'boss';
+
     document.getElementById('orderBody').innerHTML = rows.map(o => {
       const tag = Store.statusTag(o.status);
       const eta = o.etaH == null ? '—' : o.etaH + 'h';
       const isRisk = o.risk || (o.etaH != null && o.etaH <= 6 && o.status !== 'shipped');
       let ops = '';
-      if (o.status === 'audit') ops += `<button class="btn btn-sm btn-secondary" data-audit="${o.id}">审单</button> `;
-      if (o.status === 'purchase') ops += `<button class="btn btn-sm btn-secondary" data-purch="${o.id}">采购完成</button> `;
-      if ((o.status === 'ship' || o.status === 'purchase') && !o.track) ops += `<button class="btn btn-sm btn-primary" data-waybill="${o.id}">面单</button> `;
-      if ((o.status === 'ship' || o.status === 'purchase') && o.track) ops += `<button class="btn btn-sm btn-primary" data-ship="${o.id}">发货</button> `;
+      if (o.status === 'audit' && canAudit) ops += `<button class="btn btn-sm btn-secondary" data-audit="${o.id}">审单</button> `;
+      if (o.status === 'purchase' && canPurch) ops += `<button class="btn btn-sm btn-secondary" data-purch="${o.id}">采购完成</button> `;
+      if ((o.status === 'ship' || o.status === 'purchase') && !o.track && canWaybill) ops += `<button class="btn btn-sm btn-primary" data-waybill="${o.id}">面单</button> `;
+      if ((o.status === 'ship' || o.status === 'purchase') && o.track && canShip) ops += `<button class="btn btn-sm btn-primary" data-ship="${o.id}">发货</button> `;
       return `<tr class="clickable" data-open="${o.id}">
         <td class="mono">${o.id}</td>
         <td><div class="prod-cell"><div class="prod-img">${o.emoji}</div><div><div class="prod-name">${o.name}</div><div class="prod-sku">${o.sku}</div></div></div></td>
@@ -303,9 +389,9 @@
         <td>${(o.auto || []).map(a => `<span class="tag tag-green" style="margin:1px">${a}</span>`).join(' ') || '<span class="hint">—</span>'}</td>
         <td><span class="tag ${tag}">${o.statusLabel}</span></td>
         <td>${isRisk ? `<span class="tag tag-red">${eta}</span>` : `<span class="hint">${eta}</span>`}</td>
-        <td onclick="event.stopPropagation()">${ops}</td>
+        <td onclick="event.stopPropagation()">${ops || '<span class="hint">—</span>'}</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="9" class="hint" style="padding:24px;text-align:center">暂无订单 — 点击「同步订单」模拟出单</td></tr>';
+    }).join('') || '<tr><td colspan="9" class="hint" style="padding:24px;text-align:center">本店暂无订单 — 点击「同步订单」模拟出单</td></tr>';
   }
 
   function openOrderDrawer(id) {
@@ -322,7 +408,7 @@
           <div class="prod-img" style="width:56px;height:56px;font-size:28px">${o.emoji}</div>
           <div>
             <div style="font-weight:600">${o.name}</div>
-            <div class="hint">${o.sku} · ${o.weight}g</div>
+            <div class="hint">${o.sku} · ${o.weight}g · 店铺 ${o.shopId || '—'}</div>
             <div style="margin-top:4px"><span class="tag ${Store.statusTag(o.status)}">${o.statusLabel}</span></div>
           </div>
         </div>
@@ -371,6 +457,7 @@
     const s = Store.get();
     let rules = s.rules;
     if (ruleType !== 'all') rules = rules.filter(r => r.type === ruleType);
+    const canToggle = Store.canDo('rules') || s.role === 'boss';
     document.getElementById('ruleGrid').innerHTML = rules.map(r => `
       <div class="rule-card ${r.on ? '' : 'off'}" id="rule-${r.id}">
         <div class="rule-card-head">
@@ -380,7 +467,7 @@
             <div class="rule-desc">${r.desc}</div>
           </div>
           <label class="toggle" title="启用/停用">
-            <input type="checkbox" data-toggle-rule="${r.id}" ${r.on ? 'checked' : ''} />
+            <input type="checkbox" data-toggle-rule="${r.id}" ${r.on ? 'checked' : ''} ${canToggle ? '' : 'disabled'} />
             <span class="slider"></span>
           </label>
         </div>
@@ -412,12 +499,13 @@
         <div class="channel-stats">
           <div><span>均价</span><br/><strong>${ch.pricePerKg == null ? '按平台计费' : ch.pricePerKg === 0 ? '—' : '¥' + ch.pricePerKg + '/kg'}</strong></div>
           <div><span>时效</span><br/><strong>${ch.eta}</strong></div>
-          <div><span>${ch.isWarehouse ? '在库 SKU' : '今日'}</span><br/><strong>${ch.isWarehouse ? s.inventory.length : (ch.connected ? ch.today + ' 票' : '—')}</strong></div>
+          <div><span>${ch.isWarehouse ? '在库 SKU' : '今日'}</span><br/><strong>${ch.isWarehouse ? Store.forShop(s.inventory).length : (ch.connected ? ch.today + ' 票' : '—')}</strong></div>
         </div>
       </div>
     `).join('');
 
-    document.getElementById('invBody').innerHTML = s.inventory.map(i => {
+    const inv = Store.forShop(s.inventory);
+    document.getElementById('invBody').innerHTML = inv.map(i => {
       const syncTag = i.sync === 'ok' ? '<span class="tag tag-green">正常</span>'
         : i.sync === 'warn' ? '<span class="tag tag-orange">低库存</span>'
         : '<span class="tag tag-red">缺货</span>';
@@ -430,7 +518,344 @@
         <td>${syncTag}</td>
         <td><button class="btn btn-sm btn-secondary" data-restock="${i.sku}">补货 +50</button></td>
       </tr>`;
-    }).join('') || '<tr><td colspan="7" class="hint" style="padding:24px;text-align:center">暂无库存 — 发布商品后自动创建</td></tr>';
+    }).join('') || '<tr><td colspan="7" class="hint" style="padding:24px;text-align:center">本店暂无库存 — 发布商品后自动创建</td></tr>';
+  }
+
+  /* ---------- Profit page ---------- */
+  function renderProfit() {
+    const s = Store.get();
+    const set = s.settings;
+    document.getElementById('rateGrid').innerHTML = `
+      <div class="rate-item"><label>汇率 ¥→₽</label><input class="input" id="rateFx" type="number" step="0.01" value="${set.fx}" /></div>
+      <div class="rate-item"><label>头程 ¥/kg</label><input class="input" id="rateShip" type="number" step="0.1" value="${set.shipCnyPerKg}" /></div>
+      <div class="rate-item"><label>支付手续费</label><input class="input" id="rateFee" type="number" step="0.001" value="${set.paymentFee}" /></div>
+      <div class="rate-item"><label>退货拨备</label><input class="input" id="rateRet" type="number" step="0.01" value="${set.returnProvision}" /></div>
+      <div class="rate-tiers">
+        <div class="hint" style="margin-bottom:8px">佣金阶梯（按售价 ₽）</div>
+        ${(set.commissionTiers || []).map(t =>
+          `<div class="tier-row"><span>${t.label}</span><b>${(t.rate * 100).toFixed(1)}%</b></div>`
+        ).join('')}
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btnSaveRates" style="margin-top:10px">保存费率</button>
+    `;
+
+    const picks = [
+      ...s.catalog.slice(0, 6).map(c => ({ id: c.id, emoji: c.emoji, name: c.name, price: c.price, cost: c.cost, weight: c.weight, src: 'catalog' })),
+      ...Store.forShop(s.products).slice(0, 4).map(p => ({ id: p.id, emoji: p.emoji, name: p.name, price: p.price, cost: p.cost, weight: p.weight, src: 'product' })),
+    ];
+    document.getElementById('profitPickBody').innerHTML = picks.map(p => `
+      <tr>
+        <td><div class="prod-cell"><div class="prod-img">${p.emoji}</div><div class="prod-name">${p.name}</div></div></td>
+        <td>${p.price.toLocaleString('ru-RU')}</td>
+        <td>¥${p.cost}</td>
+        <td><button class="btn btn-sm btn-primary" data-pf-pick="${p.src}:${p.id}" data-pf-price="${p.price}" data-pf-cost="${p.cost}" data-pf-weight="${p.weight}" data-pf-name="${p.name}">测算利润</button></td>
+      </tr>
+    `).join('');
+
+    renderScenarios();
+  }
+
+  function renderScenarios() {
+    const price = parseFloat(document.getElementById('pfPrice').value) || 0;
+    const cost = parseFloat(document.getElementById('pfCost').value) || 0;
+    const weight = parseFloat(document.getElementById('pfWeight').value) || 0;
+    const name = profitTarget || '自定义商品';
+    const scenarios = [
+      { key: 'normal', label: '日常价', tip: '当前售价' },
+      { key: 'follow', label: '跟卖价', tip: '售价 × 95%' },
+      { key: 'promo', label: '活动价', tip: '售价 × 90%' },
+    ];
+    document.getElementById('scenarioBody').innerHTML = `
+      <div class="hint" style="margin-bottom:12px">测算对象：<b>${name}</b></div>
+      <div class="scenario-grid">
+        ${scenarios.map(sc => {
+          const r = Store.calcProfit({ price, costCNY: cost, weight, scenario: sc.key });
+          const ok = r.profit > 0;
+          return `<div class="scenario-card ${ok ? 'ok' : 'bad'}">
+            <div class="sc-label">${sc.label} <span class="hint">${sc.tip}</span></div>
+            <div class="sc-price">${r.sellPrice.toLocaleString('ru-RU')} ₽</div>
+            <div class="sc-row"><span>佣金 ${(r.commissionRate * 100).toFixed(1)}%</span><span>${Math.round(r.commission)} ₽</span></div>
+            <div class="sc-row"><span>头程</span><span>${Math.round(r.ship)} ₽</span></div>
+            <div class="sc-row"><span>手续费+拨备</span><span>${Math.round(r.fee + r.retProv)} ₽</span></div>
+            <div class="sc-profit">${Math.round(r.profit).toLocaleString('ru-RU')} ₽</div>
+            <div class="sc-margin">利润率 ${r.margin.toFixed(1)}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  /* ---------- CS ---------- */
+  function renderCs() {
+    const s = Store.get();
+    const reviews = Store.forShop(s.reviews);
+    const qa = Store.forShop(s.qa);
+    const bad = reviews.filter(r => r.rating <= 3 && !r.replied).length;
+    const unanswered = qa.filter(q => !q.answered).length;
+    document.getElementById('csHint').textContent = `待回差评 ${bad} · 待答问答 ${unanswered}`;
+
+    document.querySelectorAll('[data-cs-tab]').forEach(t => {
+      t.classList.toggle('active', t.dataset.csTab === csTab);
+    });
+
+    const body = document.getElementById('csBody');
+    if (csTab === 'templates') {
+      body.innerHTML = `<div class="card"><div class="card-body">
+        <div class="template-grid">
+          ${s.replyTemplates.map(t => `
+            <div class="template-card">
+              <div class="tpl-name">${t.name}</div>
+              <div class="hint">${t.zh}</div>
+              <div class="tpl-ru">${t.ru}</div>
+              <button class="btn btn-sm btn-secondary" data-copy-tpl="${t.id}">复制俄语模板</button>
+            </div>
+          `).join('')}
+        </div>
+      </div></div>`;
+      return;
+    }
+
+    if (csTab === 'qa') {
+      body.innerHTML = `<div class="card" style="margin:0"><div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>商品</th><th>提问</th><th>回答</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            ${qa.map(q => `
+              <tr>
+                <td><div class="prod-name">${q.product}</div><div class="prod-sku">${q.sku}</div></td>
+                <td style="max-width:260px">${q.question}</td>
+                <td style="max-width:260px;font-size:12px;color:var(--text-secondary)">${q.answer || '—'}</td>
+                <td>${q.answered ? '<span class="tag tag-green">已答</span>' : '<span class="tag tag-orange">待答</span>'}</td>
+                <td>${q.answered ? '' : `<button class="btn btn-sm btn-primary" data-answer-qa="${q.id}">快速回答</button>`}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="5" class="hint" style="padding:24px;text-align:center">本店暂无问答</td></tr>'}
+          </tbody>
+        </table>
+      </div></div>`;
+      return;
+    }
+
+    // reviews
+    const showBad = true;
+    body.innerHTML = `<div class="card" style="margin:0"><div class="card-body" style="padding:0">
+      <table class="data-table">
+        <thead><tr><th>商品</th><th>评分</th><th>评价内容</th><th>买家</th><th>回复</th><th>操作</th></tr></thead>
+        <tbody>
+          ${reviews.map(r => {
+            const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            const badCls = r.rating <= 3 ? 'tag-red' : 'tag-green';
+            return `<tr class="${r.rating <= 3 && !r.replied ? 'row-alert' : ''}">
+              <td><div class="prod-cell"><div class="prod-img">${r.emoji}</div><div><div class="prod-name">${r.product}</div><div class="prod-sku">${r.sku}</div></div></div></td>
+              <td><span class="tag ${badCls}">${stars}</span></td>
+              <td style="max-width:280px;font-size:12px">${r.text}</td>
+              <td>${r.buyer}<br/><span class="hint">${r.created}</span></td>
+              <td style="max-width:200px;font-size:12px;color:var(--text-secondary)">${r.replied ? r.reply : '<span class="tag tag-orange">待回复</span>'}</td>
+              <td>${r.replied ? '<span class="hint">已回</span>' : `<button class="btn btn-sm btn-primary" data-reply-review="${r.id}">模板回复</button>`}</td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">本店暂无评价</td></tr>'}
+        </tbody>
+      </table>
+    </div></div>`;
+  }
+
+  /* ---------- Returns ---------- */
+  function renderReturns() {
+    const s = Store.get();
+    const returns = Store.forShop(s.returns);
+    const counts = {
+      all: returns.length,
+      open: returns.filter(r => r.status === 'open').length,
+      investigating: returns.filter(r => r.status === 'investigating').length,
+      approved: returns.filter(r => r.status === 'approved').length,
+      closed: returns.filter(r => ['closed', 'refunded', 'rejected'].includes(r.status)).length,
+    };
+    const tabs = [
+      ['all', '全部'], ['open', '待处理'], ['investigating', '调查中'],
+      ['approved', '已同意'], ['closed', '已完结'],
+    ];
+    document.getElementById('returnTabs').innerHTML = tabs.map(([k, label]) =>
+      `<button class="filter-tab${returnFilter === k ? ' active' : ''}" data-return-filter="${k}">${label} <span class="count">${counts[k] || 0}</span></button>`
+    ).join('');
+
+    let rows = returns;
+    if (returnFilter === 'open') rows = returns.filter(r => r.status === 'open');
+    else if (returnFilter === 'investigating') rows = returns.filter(r => r.status === 'investigating');
+    else if (returnFilter === 'approved') rows = returns.filter(r => r.status === 'approved');
+    else if (returnFilter === 'closed') rows = returns.filter(r => ['closed', 'refunded', 'rejected'].includes(r.status));
+
+    const typeLabel = { cancel: '取消', return: '退货', claim: '索赔' };
+    const typeTag = { cancel: 'tag-gray', return: 'tag-orange', claim: 'tag-red' };
+    const statusTag = {
+      open: 'tag-orange', investigating: 'tag-blue', approved: 'tag-green',
+      rejected: 'tag-red', refunded: 'tag-purple', closed: 'tag-gray',
+    };
+
+    document.getElementById('returnBody').innerHTML = rows.map(r => {
+      const nextBtns = [];
+      if (r.status === 'open') {
+        nextBtns.push(`<button class="btn btn-sm btn-secondary" data-ret-adv="${r.id}" data-ret-to="investigating">调查</button>`);
+        nextBtns.push(`<button class="btn btn-sm btn-primary" data-ret-adv="${r.id}" data-ret-to="approved">同意</button>`);
+        nextBtns.push(`<button class="btn btn-sm btn-danger" data-ret-adv="${r.id}" data-ret-to="rejected">拒绝</button>`);
+      } else if (r.status === 'investigating') {
+        nextBtns.push(`<button class="btn btn-sm btn-primary" data-ret-adv="${r.id}" data-ret-to="approved">同意</button>`);
+        nextBtns.push(`<button class="btn btn-sm btn-danger" data-ret-adv="${r.id}" data-ret-to="rejected">拒绝</button>`);
+      } else if (r.status === 'approved') {
+        nextBtns.push(`<button class="btn btn-sm btn-primary" data-ret-adv="${r.id}" data-ret-to="refunded">退款</button>`);
+      } else if (r.status === 'refunded' || r.status === 'rejected') {
+        nextBtns.push(`<button class="btn btn-sm btn-ghost" data-ret-adv="${r.id}" data-ret-to="closed">关闭</button>`);
+      }
+      return `<tr>
+        <td class="mono">${r.id}</td>
+        <td class="mono">${r.orderId}</td>
+        <td><span class="tag ${typeTag[r.type] || 'tag-gray'}">${typeLabel[r.type] || r.type}</span></td>
+        <td><div class="prod-cell"><div class="prod-img">${r.emoji}</div><div class="prod-name">${r.product}</div></div></td>
+        <td style="max-width:200px;font-size:12px">${r.reason}</td>
+        <td><b>${r.amount.toLocaleString('ru-RU')}</b></td>
+        <td><span class="tag ${statusTag[r.status] || 'tag-gray'}">${Store.RETURN_LABELS[r.status] || r.status}</span></td>
+        <td>${nextBtns.join(' ') || '<span class="hint">—</span>'}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="hint" style="padding:24px;text-align:center">本店暂无退货异常</td></tr>';
+  }
+
+  /* ---------- Weekly ---------- */
+  function renderWeekly() {
+    const report = Store.weeklyReport();
+    const totalSales = report.shops.reduce((s, x) => s + x.sales, 0);
+    const totalProfit = report.shops.reduce((s, x) => s + x.profit, 0);
+    const avgTimeout = report.shops.length
+      ? (report.shops.reduce((s, x) => s + x.timeoutRate, 0) / report.shops.length)
+      : 0;
+    const avgReturn = report.shops.length
+      ? (report.shops.reduce((s, x) => s + x.returnRate, 0) / report.shops.length)
+      : 0;
+
+    document.getElementById('weeklyKpi').innerHTML = `
+      <div class="kpi-card blue"><div class="kpi-label">本周销售额</div><div class="kpi-value">${(totalSales / 1000).toFixed(1)}K</div><div class="kpi-sub neutral">₽ · 全店合计</div></div>
+      <div class="kpi-card green"><div class="kpi-label">预估净利</div><div class="kpi-value">${(totalProfit / 1000).toFixed(1)}K</div><div class="kpi-sub up">₽</div></div>
+      <div class="kpi-card red"><div class="kpi-label">平均超时率</div><div class="kpi-value">${avgTimeout.toFixed(1)}%</div><div class="kpi-sub down">rFBS 时效</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">平均退货率</div><div class="kpi-value">${avgReturn.toFixed(1)}%</div><div class="kpi-sub neutral">含取消/索赔</div></div>
+    `;
+
+    document.getElementById('weeklyShopBody').innerHTML = report.shops.map(sh => `
+      <tr class="${sh.shopId === Store.shopId() ? 'row-active' : ''}">
+        <td><b>${sh.name}</b>${sh.shopId === Store.shopId() ? ' <span class="tag tag-blue">当前</span>' : ''}</td>
+        <td>${sh.orders}</td>
+        <td>${sh.shipped}</td>
+        <td>${sh.sales.toLocaleString('ru-RU')}</td>
+        <td style="color:var(--success)">${sh.profit.toLocaleString('ru-RU')}</td>
+        <td><span class="tag tag-green">${sh.margin}%</span></td>
+        <td><span class="tag ${sh.timeoutRate > 20 ? 'tag-red' : 'tag-orange'}">${sh.timeoutRate}%</span></td>
+        <td><span class="tag ${sh.returnRate > 15 ? 'tag-red' : 'tag-gray'}">${sh.returnRate}%</span></td>
+      </tr>
+    `).join('');
+
+    document.getElementById('weeklySkuBody').innerHTML = report.skus.map(sk => `
+      <tr>
+        <td class="mono">${sk.sku}</td>
+        <td><div class="prod-cell"><div class="prod-img">${sk.emoji}</div><div class="prod-name">${sk.name}</div></div></td>
+        <td>${sk.qty}</td>
+        <td>${sk.sales.toLocaleString('ru-RU')}</td>
+        <td style="color:var(--success)">${sk.profit.toLocaleString('ru-RU')}</td>
+        <td><span class="tag tag-green">${sk.margin}%</span></td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">当前店铺暂无订单数据</td></tr>';
+  }
+
+  /* ---------- Wizard ---------- */
+  function openWizard(forceStep) {
+    const wp = Store.wizardProgress();
+    wizardStep = forceStep != null ? forceStep : (wp.completed ? 0 : wp.done);
+    if (wizardStep > 3) wizardStep = 3;
+    document.getElementById('wizardOverlay').classList.add('open');
+    renderWizard();
+  }
+
+  function closeWizard() {
+    document.getElementById('wizardOverlay').classList.remove('open');
+  }
+
+  function renderWizard() {
+    const s = Store.get();
+    const w = s.wizard;
+    const steps = [
+      { id: 0, label: '绑定店铺' },
+      { id: 1, label: '选择 rFBS' },
+      { id: 2, label: '默认物流' },
+      { id: 3, label: '导入商品' },
+    ];
+    document.getElementById('wizardSteps').innerHTML = steps.map(st =>
+      `<div class="wz-step ${st.id === wizardStep ? 'active' : ''} ${st.id < wizardStep || (st.id === 0 && w.shopBound) || (st.id === 1 && w.rfbsChosen) || (st.id === 2 && w.defaultLogistics) || (st.id === 3 && w.productsImported) ? 'done' : ''}">
+        <div class="wz-num">${st.id + 1}</div><div class="wz-label">${st.label}</div>
+      </div>`
+    ).join('<div class="wz-line"></div>');
+
+    const body = document.getElementById('wizardBody');
+    const footer = document.getElementById('wizardFooter');
+
+    if (wizardStep === 0) {
+      body.innerHTML = `
+        <h3>绑定 Ozon 店铺（演示）</h3>
+        <p class="hint" style="margin:8px 0 16px">填写 Client-Id / Api-Key（演示环境不会真正请求 Ozon API）</p>
+        <div class="form-grid">
+          <label>店铺名称 <input class="input" id="wzShopName" value="${(Store.currentShop() || {}).name || ''}" /></label>
+          <label>Client-Id <input class="input" id="wzClientId" placeholder="例如 123456" value="${w.clientId && w.clientId !== 'demo-client-****' ? w.clientId : ''}" /></label>
+          <label>Api-Key <input class="input" id="wzApiKey" type="password" placeholder="••••••••" value="" /></label>
+        </div>
+        <div class="compliance-mini">🇷🇺 建议先在 Seller Center 开通 rFBS / 跨境直发权限</div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" id="wzSkip">跳过引导</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="wzNext0">绑定并继续</button>`;
+    } else if (wizardStep === 1) {
+      body.innerHTML = `
+        <h3>选择履约模式</h3>
+        <p class="hint" style="margin:8px 0 16px">Ozon Russia 跨境卖家推荐 <b>rFBS</b>（卖家自发货）</p>
+        <div class="mode-grid">
+          <button class="mode-card active" data-mode="rfbs">
+            <div class="mode-title">rFBS · 跨境直发</div>
+            <div class="hint">中国仓发俄罗斯 · 自管库存与物流 · 本中台核心场景</div>
+          </button>
+          <button class="mode-card" disabled>
+            <div class="mode-title">FBO / FBS</div>
+            <div class="hint">本地仓入驻（演示未开放）</div>
+          </button>
+        </div>
+        <div class="compliance-mini">⏱️ rFBS 备货时效通常 24–72h，超时将影响搜索排名</div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" id="wzBack1">上一步</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="wzNext1">确认 rFBS</button>`;
+    } else if (wizardStep === 2) {
+      body.innerHTML = `
+        <h3>设置默认物流渠道</h3>
+        <p class="hint" style="margin:8px 0 16px">规则引擎将优先使用此渠道匹配轻小件</p>
+        <div class="mode-grid">
+          ${s.channels.filter(c => c.connected && !c.isWarehouse).map(c => `
+            <button class="mode-card ${w.defaultLogistics === c.id ? 'active' : ''}" data-wz-ch="${c.id}">
+              <div class="mode-title">${c.name}</div>
+              <div class="hint">${c.eta} · ${c.pricePerKg == null ? '平台计费' : '¥' + c.pricePerKg + '/kg'}</div>
+            </button>
+          `).join('')}
+        </div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" id="wzBack2">上一步</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="wzNext2">保存物流</button>`;
+    } else {
+      body.innerHTML = `
+        <h3>导入首批演示商品</h3>
+        <p class="hint" style="margin:8px 0 16px">将 3 个爆款加入本店刊登草稿，可继续映射发布</p>
+        <div class="import-preview">
+          <div class="ip-item">🎧 无线降噪耳机 TWS Pro</div>
+          <div class="ip-item">🔗 Type-C 编织数据线 2m</div>
+          <div class="ip-item">🔌 65W 氮化镓快充头</div>
+        </div>
+        <div class="compliance-mini">📋 刊登前请补齐必填俄语属性：Бренд / Страна производитель / Состав</div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" id="wzBack3">上一步</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="wzFinish">导入并完成</button>`;
+    }
   }
 
   /* ---------- Render all ---------- */
@@ -442,6 +867,10 @@
     if (currentView === 'orders') renderOrders();
     if (currentView === 'rules') renderRules();
     if (currentView === 'logistics') renderLogistics();
+    if (currentView === 'profit') renderProfit();
+    if (currentView === 'cs') renderCs();
+    if (currentView === 'returns') renderReturns();
+    if (currentView === 'weekly') renderWeekly();
     if (openOrderId) openOrderDrawer(openOrderId);
   }
 
@@ -460,13 +889,20 @@
   });
 
   on('[data-nav]', 'click', (e, t) => navigate(t.dataset.nav));
+  on('[data-todo-nav]', 'click', (e, t) => {
+    navigate(t.dataset.todoNav, { filter: t.dataset.todoFilter || null });
+  });
 
   // Demo switcher
   const demoSw = document.getElementById('demoSwitcher');
+  const shopSw = document.getElementById('shopSwitcher');
+  const roleSw = document.getElementById('roleSwitcher');
+
   demoSw.addEventListener('click', e => {
     e.stopPropagation();
     demoSw.classList.toggle('open');
-    document.getElementById('shopSwitcher').classList.remove('open');
+    shopSw.classList.remove('open');
+    roleSw.classList.remove('open');
   });
   on('[data-demo]', 'click', (e, t) => {
     e.stopPropagation();
@@ -474,6 +910,10 @@
     demoSw.classList.remove('open');
     showToast('success', '已切换演示集「' + Store.get().meta.name + '」');
     navigate('dashboard');
+    // auto-open wizard for 小白冷启动
+    if (t.dataset.demo === 'yiwu' && !Store.get().wizard.completed) {
+      setTimeout(() => openWizard(0), 400);
+    }
   });
   on('[data-action="reset"]', 'click', (e) => {
     e.stopPropagation();
@@ -482,24 +922,48 @@
     showToast('info', '已重置「' + Store.get().meta.name + '」');
     navigate('dashboard');
   });
+  on('[data-action="wizard"]', 'click', (e) => {
+    e.stopPropagation();
+    demoSw.classList.remove('open');
+    Store.wizardReopen();
+    openWizard(0);
+  });
 
-  // Shop switcher (cosmetic within demo)
-  const shopSw = document.getElementById('shopSwitcher');
+  // Shop switcher — REAL partition
   shopSw.addEventListener('click', e => {
     e.stopPropagation();
     shopSw.classList.toggle('open');
     demoSw.classList.remove('open');
+    roleSw.classList.remove('open');
   });
-  on('[data-shop]', 'click', (e, t) => {
+  on('[data-shop-id]', 'click', (e, t) => {
     e.stopPropagation();
-    Store.get().meta.shopName = t.dataset.shop;
+    const r = Store.switchShop(t.dataset.shopId);
     shopSw.classList.remove('open');
-    showToast('info', '已切换至「' + t.dataset.shop + '」');
+    showToast(r.ok ? 'success' : 'info', r.msg);
     renderAll();
   });
+
+  // Role switcher
+  roleSw.addEventListener('click', e => {
+    e.stopPropagation();
+    roleSw.classList.toggle('open');
+    demoSw.classList.remove('open');
+    shopSw.classList.remove('open');
+  });
+  on('[data-role]', 'click', (e, t) => {
+    e.stopPropagation();
+    const r = Store.setRole(t.dataset.role);
+    roleSw.classList.remove('open');
+    showToast('success', r.msg);
+    if (!Store.canView(currentView)) navigate('dashboard');
+    else renderAll();
+  });
+
   document.addEventListener('click', () => {
     demoSw.classList.remove('open');
     shopSw.classList.remove('open');
+    roleSw.classList.remove('open');
   });
 
   document.getElementById('btnReset').addEventListener('click', () => {
@@ -510,16 +974,82 @@
 
   document.getElementById('btnNotify').addEventListener('click', () => {
     const k = Store.kpi();
-    showToast('info', k.risk > 0
-      ? `今日有 ${k.risk} 笔订单临近超时，请尽快处理`
-      : '暂无紧急通知');
+    const parts = [];
+    if (k.risk > 0) parts.push(k.risk + ' 笔超时');
+    if (k.badReviews > 0) parts.push(k.badReviews + ' 条差评待回');
+    if (k.openReturns > 0) parts.push(k.openReturns + ' 笔退货异常');
+    showToast('info', parts.length ? parts.join(' · ') : '暂无紧急通知');
+  });
+
+  // Wizard buttons
+  document.getElementById('btnOpenWizard').addEventListener('click', () => {
+    Store.wizardReopen();
+    openWizard(0);
+  });
+  document.getElementById('btnDashWizard').addEventListener('click', () => openWizard());
+  document.getElementById('wizardClose').addEventListener('click', closeWizard);
+  document.getElementById('wizardOverlay').addEventListener('click', e => {
+    if (e.target.id === 'wizardOverlay') closeWizard();
+  });
+  on('#btnContinueWizard', 'click', () => openWizard());
+
+  on('#wzNext0', 'click', () => {
+    const r = Store.wizardBindShop({
+      clientId: document.getElementById('wzClientId').value,
+      apiKey: document.getElementById('wzApiKey').value,
+      shopName: document.getElementById('wzShopName').value,
+    });
+    showToast('success', r.msg);
+    wizardStep = 1;
+    renderWizard();
+  });
+  on('#wzNext1', 'click', () => {
+    const r = Store.wizardChooseRfbs();
+    showToast('success', r.msg);
+    wizardStep = 2;
+    renderWizard();
+  });
+  on('#wzNext2', 'click', () => {
+    const active = document.querySelector('.mode-card.active[data-wz-ch]');
+    const ch = active ? active.dataset.wzCh : 'yuntu';
+    const r = Store.wizardSetLogistics(ch);
+    showToast('success', r.msg);
+    wizardStep = 3;
+    renderWizard();
+  });
+  on('#wzFinish', 'click', () => {
+    Store.wizardImportProducts();
+    const r = Store.wizardComplete();
+    showToast('success', r.msg);
+    closeWizard();
+    navigate('listing');
+  });
+  on('#wzSkip', 'click', () => {
+    Store.wizardComplete();
+    closeWizard();
+    showToast('info', '已跳过引导（标记完成）');
+  });
+  on('#wzBack1', 'click', () => { wizardStep = 0; renderWizard(); });
+  on('#wzBack2', 'click', () => { wizardStep = 1; renderWizard(); });
+  on('#wzBack3', 'click', () => { wizardStep = 2; renderWizard(); });
+  on('[data-wz-ch]', 'click', (e, t) => {
+    document.querySelectorAll('[data-wz-ch]').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
   });
 
   // Selection
   on('[data-calc]', 'click', (e, t) => {
     selectedCatalogId = t.dataset.calc;
     const c = Store.get().catalog.find(x => x.id === selectedCatalogId);
-    if (c) { fillCalc(c); showToast('info', '已载入「' + c.name + '」'); }
+    if (c) {
+      fillCalc(c);
+      // also push to profit page inputs
+      profitTarget = c.name;
+      document.getElementById('pfPrice').value = c.price;
+      document.getElementById('pfCost').value = c.cost;
+      document.getElementById('pfWeight').value = c.weight;
+      showToast('info', '已载入「' + c.name + '」· 也可在「利润定价」看三情景');
+    }
   });
   on('[data-claim]', 'click', (e, t) => {
     const r = Store.claimProduct(t.dataset.claim);
@@ -562,6 +1092,15 @@
   on('[data-fix]', 'click', (e, t) => {
     const r = Store.advanceListing(t.dataset.fix);
     showToast(r.ok ? 'success' : 'info', r.msg || '已修复');
+  });
+  on('[data-pf-listing]', 'click', (e, t) => {
+    const l = Store.get().listings.find(x => x.id === t.dataset.pfListing);
+    if (!l) return;
+    profitTarget = l.name;
+    document.getElementById('pfPrice').value = l.price;
+    document.getElementById('pfCost').value = l.cost;
+    document.getElementById('pfWeight').value = l.weight;
+    navigate('profit');
   });
   document.getElementById('btnBatchPublish').addEventListener('click', () => {
     const r = Store.publishReadyBatch();
@@ -611,7 +1150,7 @@
   });
   document.getElementById('btnAutoAudit').addEventListener('click', () => {
     const r = Store.runAutoAudit();
-    showToast('success', r.msg);
+    showToast(r.ok ? 'success' : 'info', r.msg);
   });
   document.getElementById('btnBatchWaybill').addEventListener('click', () => {
     const r = Store.applyWaybillBatch();
@@ -620,7 +1159,9 @@
 
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);
   document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeDrawer(); closeWizard(); }
+  });
 
   // Rules
   on('[data-rule-type]', 'click', (e, t) => {
@@ -635,7 +1176,7 @@
   });
   document.getElementById('btnRunRules').addEventListener('click', () => {
     const r = Store.runAllRules();
-    showToast('success', r.msg);
+    showToast(r.ok ? 'success' : 'info', r.msg);
   });
 
   // Logistics
@@ -645,16 +1186,97 @@
   });
   on('[data-restock]', 'click', (e, t) => {
     const r = Store.restock(t.dataset.restock, 50);
-    showToast('success', r.msg);
+    showToast(r.ok ? 'success' : 'info', r.msg);
   });
   document.getElementById('btnSyncInv').addEventListener('click', () => {
     const r = Store.syncInventory();
     showToast('success', r.msg);
   });
 
+  // Profit
+  on('[data-pf-pick]', 'click', (e, t) => {
+    profitTarget = t.dataset.pfName;
+    document.getElementById('pfPrice').value = t.dataset.pfPrice;
+    document.getElementById('pfCost').value = t.dataset.pfCost;
+    document.getElementById('pfWeight').value = t.dataset.pfWeight;
+    renderScenarios();
+    showToast('info', '已载入「' + profitTarget + '」三情景');
+  });
+  document.getElementById('btnPfCalc').addEventListener('click', () => {
+    renderScenarios();
+    showToast('success', '三情景已更新');
+  });
+  on('#btnSaveRates', 'click', () => {
+    Store.updateSettings({
+      fx: parseFloat(document.getElementById('rateFx').value) || 11.85,
+      shipCnyPerKg: parseFloat(document.getElementById('rateShip').value) || 18.5,
+      paymentFee: parseFloat(document.getElementById('rateFee').value) || 0.0265,
+      returnProvision: parseFloat(document.getElementById('rateRet').value) || 0.03,
+    });
+    showToast('success', '共享费率已保存');
+    renderScenarios();
+  });
+
+  // CS
+  on('[data-cs-tab]', 'click', (e, t) => {
+    csTab = t.dataset.csTab;
+    renderCs();
+  });
+  on('[data-reply-review]', 'click', (e, t) => {
+    const templates = Store.get().replyTemplates;
+    const tpl = templates.find(x => x.id === 't1') || templates[0];
+    const r = Store.replyReview(t.dataset.replyReview, tpl ? tpl.ru : 'Спасибо за отзыв!');
+    showToast(r.ok ? 'success' : 'info', r.msg);
+  });
+  on('[data-answer-qa]', 'click', (e, t) => {
+    const templates = Store.get().replyTemplates;
+    const tpl = templates.find(x => x.id === 't4') || templates[0];
+    const r = Store.answerQa(t.dataset.answerQa, tpl ? tpl.ru : 'Спасибо за вопрос!');
+    showToast(r.ok ? 'success' : 'info', r.msg);
+  });
+  on('[data-copy-tpl]', 'click', (e, t) => {
+    const tpl = Store.get().replyTemplates.find(x => x.id === t.dataset.copyTpl);
+    if (!tpl) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(tpl.ru).then(() => showToast('success', '已复制「' + tpl.name + '」')).catch(() => showToast('info', tpl.ru.slice(0, 40) + '…'));
+    } else {
+      showToast('info', tpl.ru.slice(0, 60) + '…');
+    }
+  });
+
+  // Returns
+  on('[data-return-filter]', 'click', (e, t) => {
+    returnFilter = t.dataset.returnFilter;
+    renderReturns();
+  });
+  on('[data-ret-adv]', 'click', (e, t) => {
+    const r = Store.advanceReturn(t.dataset.retAdv, t.dataset.retTo);
+    showToast(r.ok ? 'success' : 'info', r.msg);
+  });
+
+  // Weekly
+  document.getElementById('btnRefreshWeekly').addEventListener('click', () => {
+    renderWeekly();
+    showToast('success', '周报已刷新 · ' + Store.weeklyReport().generatedAt);
+  });
+  document.getElementById('btnExportWeekly').addEventListener('click', () => {
+    const shop = Store.currentShop();
+    showToast('success', '已导出「' + (shop ? shop.name : '') + '」经营周报（演示 · PDF/Excel toast）');
+  });
+
   // Init
   navigate('dashboard');
-  // pre-fill calc
   const cat0 = Store.get().catalog[0];
-  if (cat0) { selectedCatalogId = cat0.id; fillCalc(cat0); }
+  if (cat0) {
+    selectedCatalogId = cat0.id;
+    profitTarget = cat0.name;
+    document.getElementById('pfPrice').value = cat0.price;
+    document.getElementById('pfCost').value = cat0.cost;
+    document.getElementById('pfWeight').value = cat0.weight;
+  }
+
+  // Auto-open wizard on first run of 小白冷启动
+  if (Store.get().meta.id === 'yiwu' && !Store.get().wizard.completed) {
+    setTimeout(() => openWizard(0), 600);
+  }
 })();
