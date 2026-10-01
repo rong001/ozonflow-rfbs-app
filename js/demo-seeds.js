@@ -143,6 +143,78 @@ window.OzonFlowSeeds = (function () {
     return arr.map(x => Object.assign({}, x, { shopId: x.shopId || shopId }));
   }
 
+
+  function defaultAgents(preset) {
+    /* preset: 'off' | 'peak' (旺季) | 'corp' (多店) */
+    const base = [
+      {
+        id: 'selection_radar', icon: '📡', name: '选品雷达 Agent',
+        desc: '扫描爆款热榜，按毛利阈值自动认领进刊登草稿',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { marginMin: 25 },
+      },
+      {
+        id: 'listing_publish', icon: '📤', name: '刊登过审 Agent',
+        desc: '推进类目映射完整度，就绪后自动发布上架',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'order_fulfill', icon: '📦', name: '审单履约 Agent',
+        desc: '自动审单 → 按规则匹配物流 → 申请面单',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'timeout_rescue', icon: '🚨', name: '超时抢救 Agent',
+        desc: '优先处理 eta≤6h：审单→面单→发货，缺货标采购',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { etaMaxH: 6 },
+      },
+      {
+        id: 'profit_guard', icon: '🛡️', name: '利润守门 Agent',
+        desc: '拦截/标记低于最低毛利的刊登与跟卖价，给出建议价',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { marginMin: 20 },
+      },
+      {
+        id: 'ru_cs', icon: '💬', name: '俄语客服 Agent',
+        desc: '对未回复差评一键发送俄语致歉模板',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'return_claim', icon: '↩️', name: '退货理赔 Agent',
+        desc: '推进开放退货单：调查 → 同意/拒绝 → 退款关闭',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'inventory_restock', icon: '📊', name: '库存补货 Agent',
+        desc: '低于安全库存的 SKU 自动补货入库',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { qty: 50 },
+      },
+      {
+        id: 'weekly_report', icon: '📈', name: '周报汇报 Agent',
+        desc: '生成经营周报快照并推送 Toast 摘要',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+    ];
+    const agents = clone(base);
+    if (preset === 'peak') {
+      // 旺季履约突击：履约/客服/超时/利润重点开启
+      const onIds = ['order_fulfill', 'timeout_rescue', 'ru_cs', 'return_claim', 'profit_guard', 'inventory_restock'];
+      agents.forEach(a => { a.on = onIds.includes(a.id); });
+    } else if (preset === 'corp') {
+      // 多店公司化：超时抢救 + 补货 + 周报 + 刊登 + 选品
+      const onIds = ['timeout_rescue', 'inventory_restock', 'weekly_report', 'listing_publish', 'selection_radar', 'order_fulfill'];
+      agents.forEach(a => { a.on = onIds.includes(a.id); });
+    }
+    return agents;
+  }
+
   /* ===== Dataset 1: 小白冷启动 ===== */
   function seedYiwu() {
     const shopId = 's_yiwu';
@@ -206,6 +278,9 @@ window.OzonFlowSeeds = (function () {
       nextOrderSeq: 1100,
       syncAgoMin: 2,
       fundAlert: false,
+      agents: defaultAgents('off'),
+      weeklySnapshot: null,
+      agentTodayTotal: 0,
     };
   }
 
@@ -257,14 +332,14 @@ window.OzonFlowSeeds = (function () {
     ];
     const orders = [
       ...tagShop([
-        { id: 'OZ-GZ-2001', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Иван П.', city: 'Москва', amount: 1890, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流'], status: 'ship', statusLabel: '待发货', etaH: 18, risk: false, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: null, note: '', timeline: [{ t: '今天 09:12', text: '订单同步自 Ozon', done: true }, { t: '今天 09:13', text: '自动审单通过', done: true }, { t: '今天 09:13', text: '物流匹配 → 云途', done: true }] },
+        { id: 'OZ-GZ-2001', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Иван П.', city: 'Москва', amount: 1890, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流'], status: 'ship', statusLabel: '待发货', etaH: 5, risk: true, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: null, note: '', timeline: [{ t: '今天 09:12', text: '订单同步自 Ozon', done: true }, { t: '今天 09:13', text: '自动审单通过', done: true }, { t: '今天 09:13', text: '物流匹配 → 云途', done: true }] },
         { id: 'OZ-GZ-2002', emoji: '🔌', name: '65W GaN 快充', buyer: 'Анна С.', city: 'СПб', amount: 980, logistics: '—', logisticsId: null, auto: ['已审单'], status: 'purchase', statusLabel: '待采购', etaH: 22, risk: false, weight: 95, sku: 'OF-GAN-65', cost: 22.0, track: null, note: '', timeline: [{ t: '今天 09:01', text: '订单同步自 Ozon', done: true }, { t: '今天 09:02', text: '自动审单通过', done: true }, { t: '今天 09:02', text: '库存不足 → 标记待采购', done: true }] },
         { id: 'OZ-GZ-2003', emoji: '🔗', name: 'Type-C 数据线', buyer: 'Сергей Н.', city: 'Краснодар', amount: 290, logistics: 'Ozon OGL 官方', logisticsId: 'ogl', auto: ['已审单', '已匹配物流'], status: 'ship', statusLabel: '待发货', etaH: 14, risk: false, weight: 45, sku: 'OF-CAB-USB', cost: 3.2, track: null, note: '', timeline: [{ t: '今天 08:40', text: '订单同步自 Ozon', done: true }, { t: '今天 08:41', text: '自动审单通过', done: true }] },
         { id: 'OZ-GZ-2004', emoji: '🔋', name: 'MagSafe 充电宝', buyer: 'Елена В.', city: 'Екб', amount: 2290, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 36, risk: false, weight: 380, sku: 'OF-PB-20K', cost: 68.0, track: null, note: '', timeline: [{ t: '今天 10:00', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-GZ-2005', emoji: '🎧', name: 'TWS Pro 耳机 ×2', buyer: 'Мария Л.', city: 'Москва', amount: 3780, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 40, risk: false, weight: 360, sku: 'OF-TWS-001', cost: 97.0, track: null, note: '', timeline: [{ t: '今天 10:15', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-GZ-2006', emoji: '🖱️', name: '静音无线鼠标', buyer: 'Ольга М.', city: 'Новосиб.', amount: 590, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'ship', statusLabel: '待发货', etaH: 20, risk: false, weight: 110, sku: 'OF-MSE-SIL', cost: 15.5, track: 'YT2409261001CN', note: '', timeline: [{ t: '今天 07:00', text: '订单同步自 Ozon', done: true }, { t: '今天 07:01', text: '自动审单通过', done: true }, { t: '今天 07:05', text: '运单号 YT2409261001CN', done: true }] },
         { id: 'OZ-GZ-2007', emoji: '🔗', name: 'Type-C 数据线', buyer: 'Игорь Б.', city: 'Тула', amount: 290, logistics: 'Ozon OGL 官方', logisticsId: 'ogl', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 45, sku: 'OF-CAB-USB', cost: 3.2, track: 'OGL882910445', note: '', timeline: [{ t: '昨天 14:00', text: '订单同步自 Ozon', done: true }, { t: '昨天 15:00', text: '已提交平台发货', done: true }] },
-        { id: 'OZ-GZ-2008', emoji: '🔌', name: '65W GaN 快充', buyer: 'Алексей Р.', city: 'Ростов', amount: 980, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流'], status: 'purchase', statusLabel: '待采购', etaH: 8, risk: false, weight: 95, sku: 'OF-GAN-65', cost: 22.0, track: null, note: '', timeline: [{ t: '今天 06:00', text: '订单同步自 Ozon', done: true }] },
+        { id: 'OZ-GZ-2008', emoji: '🔌', name: '65W GaN 快充', buyer: 'Алексей Р.', city: 'Ростов', amount: 980, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流'], status: 'purchase', statusLabel: '待采购', etaH: 4, risk: true, weight: 95, sku: 'OF-GAN-65', cost: 22.0, track: null, note: '', timeline: [{ t: '今天 06:00', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-GZ-2009', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Павел Г.', city: 'Москва', amount: 1890, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: 'YT2409258801CN', note: '', timeline: [{ t: '昨天 11:00', text: '已发货', done: true }] },
         { id: 'OZ-GZ-2010', emoji: '🖱️', name: '静音无线鼠标', buyer: 'Юлия Ф.', city: 'Воронеж', amount: 590, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 30, risk: false, weight: 110, sku: 'OF-MSE-SIL', cost: 15.5, track: null, note: '', timeline: [{ t: '今天 11:00', text: '订单同步自 Ozon', done: true }] },
       ], shopGz),
@@ -334,6 +409,9 @@ window.OzonFlowSeeds = (function () {
       nextOrderSeq: 2200,
       syncAgoMin: 1,
       fundAlert: true,
+      agents: defaultAgents('peak'),
+      weeklySnapshot: null,
+      agentTodayTotal: 0,
     };
   }
 
@@ -461,6 +539,9 @@ window.OzonFlowSeeds = (function () {
       nextOrderSeq: 3200,
       syncAgoMin: 0,
       fundAlert: true,
+      agents: defaultAgents('corp'),
+      weeklySnapshot: null,
+      agentTodayTotal: 0,
     };
   }
 
@@ -474,6 +555,7 @@ window.OzonFlowSeeds = (function () {
     DATASETS,
     REPLY_TEMPLATES,
     COMMISSION_TIERS,
+    defaultAgents,
     list() {
       return Object.keys(DATASETS).map(id => ({ id, ...DATASETS[id], label: DATASETS[id].label, desc: DATASETS[id].desc }));
     },

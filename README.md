@@ -63,3 +63,7 @@ ozonflow-rfbs-app/
 ## 技术栈
 
 Vanilla HTML / CSS / JS，无构建步骤，GitHub Pages 直接托管。
+
+## 自动化 Agent Hub
+
+侧栏 **自动化 Agent**：9 个垂直 Agent（选品雷达 / 刊登过审 / 审单履约 / 超时抢救 / 利润守门 / 俄语客服 / 退货理赔 / 库存补货 / 周报汇报）。支持 ON/OFF、运行、活动日志、一键跑全部级联；旺季与多店演示集预启用相关 Agent。详见 `DEMO.md` 与 `AGENTS_SPEC.md`。

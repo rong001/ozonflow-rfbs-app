@@ -16,17 +16,17 @@ window.OzonFlowStore = (function () {
 
   /* 角色可见导航与可执行动作 */
   const ROLE_VIEWS = {
-    boss: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly'],
-    ops: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly'],
-    warehouse: ['dashboard', 'orders', 'logistics', 'returns'],
-    cs: ['dashboard', 'orders', 'cs', 'returns'],
+    boss: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'],
+    ops: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents'],
+    warehouse: ['dashboard', 'orders', 'logistics', 'returns', 'agents'],
+    cs: ['dashboard', 'orders', 'cs', 'returns', 'agents'],
   };
 
   const ROLE_ACTIONS = {
     boss: '*',
-    ops: ['claim', 'publish', 'audit', 'waybill', 'ship', 'rules', 'profit', 'reply', 'return', 'wizard', 'sync'],
-    warehouse: ['waybill', 'ship', 'purchase', 'restock', 'sync', 'return'],
-    cs: ['reply', 'return', 'audit_view'],
+    ops: ['claim', 'publish', 'audit', 'waybill', 'ship', 'rules', 'profit', 'reply', 'return', 'wizard', 'sync', 'agents'],
+    warehouse: ['waybill', 'ship', 'purchase', 'restock', 'sync', 'return', 'agents'],
+    cs: ['reply', 'return', 'audit_view', 'agents'],
   };
 
   let state = null;
@@ -78,6 +78,23 @@ window.OzonFlowStore = (function () {
         : [];
     }
     if (parsed.fundAlert == null) parsed.fundAlert = false;
+    if (!parsed.agents || !Array.isArray(parsed.agents) || !parsed.agents.length) {
+      parsed.agents = window.OzonFlowSeeds.defaultAgents
+        ? window.OzonFlowSeeds.defaultAgents('off')
+        : [];
+    } else {
+      // ensure all known agents exist (merge by id)
+      const defs = window.OzonFlowSeeds.defaultAgents
+        ? window.OzonFlowSeeds.defaultAgents('off')
+        : [];
+      defs.forEach(d => {
+        if (!parsed.agents.find(a => a.id === d.id)) parsed.agents.push(JSON.parse(JSON.stringify(d)));
+      });
+    }
+    if (parsed.agentTodayTotal == null) {
+      parsed.agentTodayTotal = (parsed.agents || []).reduce((s, a) => s + (a.todayCount || 0), 0);
+    }
+    if (parsed.weeklySnapshot === undefined) parsed.weeklySnapshot = null;
     // tag shopId on entities missing it
     const sid = parsed.currentShopId || (parsed.shops && parsed.shops[0] && parsed.shops[0].id);
     ['listings', 'products', 'inventory', 'orders', 'reviews', 'qa', 'returns'].forEach(key => {
@@ -873,6 +890,360 @@ window.OzonFlowStore = (function () {
     };
   }
 
+  /* ---------- Automation Agents ---------- */
+  function ensureAgents() {
+    if (!state.agents || !state.agents.length) {
+      state.agents = window.OzonFlowSeeds.defaultAgents
+        ? window.OzonFlowSeeds.defaultAgents('off')
+        : [];
+    }
+    return state.agents;
+  }
+
+  function agentById(id) {
+    return ensureAgents().find(a => a.id === id);
+  }
+
+  function pushAgentLog(agent, text) {
+    agent.log = agent.log || [];
+    agent.log.unshift({ t: nowLabel(), text: text });
+    if (agent.log.length > 30) agent.log.length = 30;
+  }
+
+  function bumpAgent(agent, n) {
+    n = n || 0;
+    agent.lastRun = nowLabel();
+    agent.todayCount = (agent.todayCount || 0) + n;
+    state.agentTodayTotal = (state.agentTodayTotal || 0) + n;
+  }
+
+  function suggestedPriceForMargin(price, costCNY, weight, targetMargin) {
+    // binary-search-ish: raise price until margin >= target
+    let lo = price, hi = Math.max(price * 2, price + 500);
+    for (let i = 0; i < 16; i++) {
+      const mid = Math.round((lo + hi) / 2);
+      const m = calcProfit({ price: mid, costCNY, weight }).margin;
+      if (m >= targetMargin) hi = mid; else lo = mid + 1;
+    }
+    return hi;
+  }
+
+  function runSelectionRadar(agent) {
+    const minM = (agent.config && agent.config.marginMin) || 25;
+    let n = 0;
+    const msgs = [];
+    (state.catalog || []).forEach(c => {
+      if (state.claimedIds.includes(c.id)) return;
+      const p = calcProfit({ price: c.price, costCNY: c.cost, weight: c.weight });
+      if (p.margin >= minM) {
+        const r = claimProduct(c.id);
+        if (r.ok) {
+          n++;
+          msgs.push('认领「' + c.name + '」毛利 ' + p.margin.toFixed(1) + '%');
+        }
+      }
+    });
+    if (!n) msgs.push('无符合毛利≥' + minM + '% 的可认领爆款');
+    msgs.slice(0, 5).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '选品雷达 · 认领 ' + n + ' 个 SKU' };
+  }
+
+  function runListingPublish(agent) {
+    let n = 0;
+    const msgs = [];
+    // advance drafts/mappings first
+    forShop(state.listings).slice().forEach(l => {
+      if (l.status === 'draft' || l.status === 'mapping' || l.status === 'failed') {
+        const r = advanceListing(l.id);
+        if (r.ok) {
+          n++;
+          msgs.push(l.name + ' · ' + r.msg);
+        }
+      }
+    });
+    // publish ready
+    forShop(state.listings).filter(l => l.status === 'ready').forEach(l => {
+      const r = publishListing(l.id);
+      if (r.ok) {
+        n++;
+        msgs.push('已发布「' + l.name + '」');
+      }
+    });
+    if (!n) msgs.push('暂无可推进/发布的草稿');
+    msgs.slice(0, 6).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '刊登过审 · 处理 ' + n + ' 项' };
+  }
+
+  function runOrderFulfill(agent) {
+    let n = 0;
+    const msgs = [];
+    // auto audit pending
+    forShop(state.orders).filter(o => o.status === 'audit').forEach(o => {
+      const r = auditOrder(o.id);
+      if (r.ok) { n++; msgs.push('审单 ' + o.id); }
+    });
+    // assign logistics + waybill for ship/purchase without track
+    forShop(state.orders).filter(o =>
+      (o.status === 'ship' || o.status === 'purchase') && !o.track
+    ).forEach(o => {
+      if (!o.logisticsId) assignLogistics(o.id);
+      const r = applyWaybill(o.id);
+      if (r.ok) { n++; msgs.push('面单 ' + o.id + ' · ' + (r.track || '')); }
+    });
+    if (!n) msgs.push('无可履约订单');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '审单履约 · 处理 ' + n + ' 笔' };
+  }
+
+  function runTimeoutRescue(agent) {
+    const etaMax = (agent.config && agent.config.etaMaxH) || 6;
+    let n = 0;
+    const msgs = [];
+    const risks = forShop(state.orders).filter(o =>
+      o.status !== 'shipped' && (o.risk || (o.etaH != null && o.etaH <= etaMax))
+    ).sort((a, b) => (a.etaH || 99) - (b.etaH || 99));
+
+    risks.forEach(o => {
+      const inv = findInv(o.sku);
+      const local = inv ? inv.local : 0;
+      if (local <= 0 || o.status === 'purchase') {
+        if (o.status !== 'purchase') {
+          o.status = 'purchase';
+          o.statusLabel = statusLabel('purchase');
+          pushAuto(o, '已标记采购');
+          pushTL(o, '超时抢救 Agent → 缺货标采购');
+        }
+        n++;
+        msgs.push('⚠ ' + o.id + ' eta=' + o.etaH + 'h · 缺货→采购');
+        return;
+      }
+      if (o.status === 'audit') auditOrder(o.id);
+      if (!o.logisticsId) assignLogistics(o.id);
+      if (!o.track) applyWaybill(o.id);
+      if (o.track && o.status !== 'shipped') {
+        const r = shipOrder(o.id);
+        if (r.ok) {
+          n++;
+          msgs.push('🚀 ' + o.id + ' 超时抢救已发货 · ' + o.track);
+        }
+      } else {
+        n++;
+        msgs.push(o.id + ' 已推进（待发）');
+      }
+    });
+    if (!n) msgs.push('当前无 eta≤' + etaMax + 'h 风险单');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '超时抢救 · 处理 ' + n + ' 笔' };
+  }
+
+  function runProfitGuard(agent) {
+    const minM = (agent.config && agent.config.marginMin) || 20;
+    let n = 0;
+    const msgs = [];
+    // check listings (drafts + ready) and active products
+    forShop(state.listings).forEach(l => {
+      if (l.status === 'published') return;
+      const p = calcProfit({ price: l.price, costCNY: l.cost, weight: l.weight });
+      if (p.margin < minM) {
+        const sug = suggestedPriceForMargin(l.price, l.cost, l.weight, minM);
+        l.flagged = true;
+        l.marginFlag = 'below_min';
+        l.suggestedPrice = sug;
+        n++;
+        msgs.push('旗标「' + l.name + '」毛利 ' + p.margin.toFixed(1) + '% → 建议 ' + sug + '₽');
+      } else if (l.flagged) {
+        l.flagged = false;
+        l.marginFlag = null;
+      }
+    });
+    forShop(state.products).forEach(pr => {
+      const p = calcProfit({ price: pr.price, costCNY: pr.cost, weight: pr.weight, scenario: 'follow' });
+      if (p.margin < minM) {
+        const sug = suggestedPriceForMargin(pr.price, pr.cost, pr.weight, minM);
+        pr.flagged = true;
+        pr.suggestedPrice = sug;
+        n++;
+        msgs.push('跟卖风险「' + pr.name + '」建议价 ' + sug + '₽');
+      }
+    });
+    if (!n) msgs.push('全部 SKU 毛利 ≥ ' + minM + '%');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '利润守门 · 标记 ' + n + ' 项' };
+  }
+
+  function runRuCs(agent) {
+    let n = 0;
+    const msgs = [];
+    const templates = state.replyTemplates || [];
+    const tpl = templates.find(t => t.id === 't1') || templates[0];
+    const text = tpl ? tpl.ru : 'Здравствуйте! Приносим извинения. Напишите нам в чат — поможем!';
+    forShop(state.reviews).filter(r => r.rating <= 3 && !r.replied).forEach(r => {
+      const res = replyReview(r.id, text);
+      if (res.ok) {
+        n++;
+        msgs.push('回复差评「' + (r.product || r.sku) + '」★' + r.rating);
+      }
+    });
+    // also answer unanswered QA lightly
+    forShop(state.qa).filter(q => !q.answered).slice(0, 3).forEach(q => {
+      const t4 = templates.find(t => t.id === 't4') || tpl;
+      const res = answerQa(q.id, t4 ? t4.ru : 'Спасибо за вопрос!');
+      if (res.ok) {
+        n++;
+        msgs.push('回答 Q&A · ' + (q.product || q.sku));
+      }
+    });
+    if (!n) msgs.push('无待回复差评 / 问答');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '俄语客服 · 处理 ' + n + ' 条' };
+  }
+
+  function runReturnClaim(agent) {
+    let n = 0;
+    const msgs = [];
+    // demo decision tree
+    forShop(state.returns).slice().forEach(r => {
+      let next = null;
+      if (r.status === 'open') {
+        next = r.type === 'cancel' ? 'approved' : 'investigating';
+      } else if (r.status === 'investigating') {
+        // claims with damage/defect → approve; else reject lightly by reason length
+        const bad = /Брак|брак|не работает|поврежд|Трещина|лопнул/i.test(r.reason || '');
+        next = bad || r.type === 'return' ? 'approved' : 'rejected';
+      } else if (r.status === 'approved') {
+        next = r.type === 'cancel' ? 'closed' : 'refunded';
+      } else if (r.status === 'refunded' || r.status === 'rejected') {
+        next = 'closed';
+      }
+      if (next) {
+        const res = advanceReturn(r.id, next);
+        if (res.ok) {
+          n++;
+          msgs.push(r.id + ' → ' + (RETURN_LABELS[next] || next));
+        }
+      }
+    });
+    if (!n) msgs.push('无开放退货/索赔可推进');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '退货理赔 · 推进 ' + n + ' 笔' };
+  }
+
+  function runInventoryRestock(agent) {
+    const qty = (agent.config && agent.config.qty) || 50;
+    let n = 0;
+    const msgs = [];
+    forShop(state.inventory).filter(i => i.local <= i.safe).forEach(i => {
+      const r = restock(i.sku, qty);
+      if (r.ok) {
+        n++;
+        msgs.push('补货「' + i.name + '」+' + qty + ' → 本地 ' + i.local);
+      }
+    });
+    if (!n) msgs.push('无低于安全库存的 SKU');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '库存补货 · ' + n + ' SKU' };
+  }
+
+  function runWeeklyReportAgent(agent) {
+    const report = weeklyReport();
+    state.weeklySnapshot = report;
+    const totalSales = report.shops.reduce((s, x) => s + x.sales, 0);
+    const totalProfit = report.shops.reduce((s, x) => s + x.profit, 0);
+    const msg = '周报 · ' + report.shops.length + ' 店 · 销售 ' + totalSales.toLocaleString('ru-RU') + '₽ · 净利 ' + totalProfit.toLocaleString('ru-RU') + '₽';
+    pushAgentLog(agent, msg);
+    report.shops.forEach(sh => {
+      pushAgentLog(agent, sh.name + ' · 单量 ' + sh.orders + ' · 超时率 ' + sh.timeoutRate + '%');
+    });
+    bumpAgent(agent, 1);
+    return { ok: true, count: 1, msg: msg, report: report };
+  }
+
+  const AGENT_RUNNERS = {
+    selection_radar: runSelectionRadar,
+    listing_publish: runListingPublish,
+    order_fulfill: runOrderFulfill,
+    timeout_rescue: runTimeoutRescue,
+    profit_guard: runProfitGuard,
+    ru_cs: runRuCs,
+    return_claim: runReturnClaim,
+    inventory_restock: runInventoryRestock,
+    weekly_report: runWeeklyReportAgent,
+  };
+
+  function toggleAgent(agentId, on) {
+    const a = agentById(agentId);
+    if (!a) return { ok: false, msg: 'Agent 不存在' };
+    a.on = !!on;
+    emit('toggleAgent');
+    return { ok: true, msg: a.name + ' 已' + (on ? '启用' : '停用') };
+  }
+
+  function runAgent(agentId, opts) {
+    opts = opts || {};
+    const a = agentById(agentId);
+    if (!a) return { ok: false, msg: 'Agent 不存在' };
+    if (!opts.force && !a.on && !opts.manual) {
+      return { ok: false, msg: a.name + ' 未启用' };
+    }
+    const runner = AGENT_RUNNERS[agentId];
+    if (!runner) return { ok: false, msg: '未实现的 Agent' };
+    // manual run-now always allowed even if off
+    const result = runner(a);
+    emit('runAgent');
+    return result;
+  }
+
+  function runAllAgents() {
+    ensureAgents();
+    const results = [];
+    let total = 0;
+    // cascade order matters for demo
+    const order = [
+      'selection_radar', 'listing_publish', 'profit_guard',
+      'timeout_rescue', 'order_fulfill', 'inventory_restock',
+      'ru_cs', 'return_claim', 'weekly_report',
+    ];
+    order.forEach(id => {
+      const a = agentById(id);
+      if (!a) return;
+      // one-click runs all (force), cascade demo
+      const r = runAgent(id, { force: true, manual: true });
+      results.push({ id, name: a.name, count: r.count || 0, msg: r.msg });
+      total += r.count || 0;
+    });
+    emit('runAllAgents');
+    return { ok: true, count: total, results, msg: '一键跑全部 Agent · 共处理 ' + total + ' 项' };
+  }
+
+  function runEnabledAgentsTick() {
+    ensureAgents();
+    let total = 0;
+    state.agents.filter(a => a.on).forEach(a => {
+      const r = runAgent(a.id, { force: true });
+      total += r.count || 0;
+    });
+    return { ok: true, count: total, msg: '定时 Agent 回合 · 处理 ' + total };
+  }
+
+  function agentsSummary() {
+    ensureAgents();
+    return {
+      agents: state.agents,
+      todayTotal: state.agentTodayTotal || state.agents.reduce((s, a) => s + (a.todayCount || 0), 0),
+      onCount: state.agents.filter(a => a.on).length,
+      snapshot: state.weeklySnapshot,
+    };
+  }
+
+
   // init
   loadOrSeed();
 
@@ -891,5 +1262,6 @@ window.OzonFlowStore = (function () {
     syncInventory, restock, connectChannel,
     applyRulesToOrder,
     replyReview, answerQa, advanceReturn, weeklyReport,
+    toggleAgent, runAgent, runAllAgents, runEnabledAgentsTick, agentsSummary,
   };
 })();

@@ -17,6 +17,7 @@
     cs: '客服评价',
     returns: '退货异常',
     weekly: '经营周报',
+    agents: '自动化 Agent',
   };
 
   let currentView = 'dashboard';
@@ -131,6 +132,8 @@
     setBadge('badgeOrders', badges.orders);
     setBadge('badgeCs', badges.cs);
     setBadge('badgeReturns', badges.returns);
+    const asTop = Store.agentsSummary();
+    setBadge('badgeAgents', asTop.onCount);
 
     const av = document.getElementById('avatarBtn');
     av.textContent = Store.roleLabel().slice(0, 1);
@@ -218,6 +221,14 @@
         <td><span class="${stockCls}">${stock}</span></td>
       </tr>`;
     }).join('') || '<tr><td colspan="6" class="hint" style="padding:24px;text-align:center">本店暂无在售 — 请先选品认领并发布，或打开开店 Wizard</td></tr>';
+
+    // Agent 今日已处理 strip
+    const as = Store.agentsSummary();
+    const countEl = document.getElementById('agentTodayCount');
+    if (countEl) countEl.textContent = as.todayTotal;
+    const onHint = document.getElementById('agentOnHint');
+    if (onHint) onHint.textContent = '· ' + as.onCount + '/' + as.agents.length + ' 已启用';
+
   }
 
   /* ---------- Selection ---------- */
@@ -858,6 +869,90 @@
     }
   }
 
+
+  /* ---------- Agents Hub ---------- */
+  function renderAgents() {
+    const as = Store.agentsSummary();
+    const s = Store.get();
+    document.getElementById('agentsHubHint').textContent =
+      s.meta.name + ' · ' + as.onCount + ' 个启用 · 今日已处理 ' + as.todayTotal;
+
+    const banner = document.getElementById('agentHubBanner');
+    banner.innerHTML = `
+      <div class="ahb-stat"><b>${as.onCount}</b><span>启用中</span></div>
+      <div class="ahb-stat"><b>${as.todayTotal}</b><span>今日处理</span></div>
+      <div class="ahb-stat"><b>${as.agents.length}</b><span>专业 Agent</span></div>
+      <div class="ahb-copy">老板演示：点「一键跑全部 Agent」观察选品→刊登→履约→客服→退货→补货→周报级联改状态。</div>
+    `;
+
+    document.getElementById('agentGrid').innerHTML = as.agents.map(a => {
+      const last = a.lastRun || '尚未运行';
+      const logs = (a.log || []).slice(0, 4);
+      return `
+      <div class="agent-card ${a.on ? 'on' : 'off'}" data-agent-id="${a.id}">
+        <div class="agent-card-head">
+          <div class="agent-icon">${a.icon}</div>
+          <div class="agent-titles">
+            <div class="agent-name">${a.name}</div>
+            <div class="agent-desc">${a.desc}</div>
+          </div>
+          <label class="toggle" title="启用/停用">
+            <input type="checkbox" data-toggle-agent="${a.id}" ${a.on ? 'checked' : ''} />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="agent-meta">
+          <span>上次：${last}</span>
+          <span class="tag ${a.todayCount ? 'tag-green' : 'tag-gray'}">今日 ${a.todayCount || 0}</span>
+        </div>
+        <div class="agent-actions">
+          <button class="btn btn-sm btn-primary" data-run-agent="${a.id}">运行</button>
+          <button class="btn btn-sm btn-ghost" data-nav="${agentNavTarget(a.id)}">查看模块 →</button>
+        </div>
+        <ul class="agent-mini-log">
+          ${logs.length ? logs.map(l => `<li><span class="aml-t">${l.t}</span> ${escapeHtml(l.text)}</li>`).join('')
+            : '<li class="hint">暂无活动日志</li>'}
+        </ul>
+      </div>`;
+    }).join('');
+
+    // merged feed
+    const feed = [];
+    as.agents.forEach(a => (a.log || []).forEach(l => feed.push({ agent: a.name, icon: a.icon, ...l })));
+    feed.sort((a, b) => 0); // already newest-first per agent; keep interleave by unshift order
+    // re-sort by putting all together - keep first 20 from round-robin
+    const merged = [];
+    as.agents.forEach(a => {
+      (a.log || []).slice(0, 3).forEach(l => merged.push({ agent: a.name, icon: a.icon, t: l.t, text: l.text }));
+    });
+    document.getElementById('agentFeedHint').textContent = merged.length + ' 条';
+    document.getElementById('agentFeed').innerHTML = merged.length
+      ? merged.slice(0, 24).map(l =>
+          `<li><span class="af-icon">${l.icon}</span><div><div class="af-title">${l.agent}</div><div class="af-sub">${escapeHtml(l.text)}</div></div><span class="af-t">${l.t}</span></li>`
+        ).join('')
+      : '<li class="hint" style="padding:16px;justify-content:center">运行 Agent 后活动会出现在这里</li>';
+  }
+
+  function agentNavTarget(id) {
+    return ({
+      selection_radar: 'selection',
+      listing_publish: 'listing',
+      order_fulfill: 'orders',
+      timeout_rescue: 'orders',
+      profit_guard: 'profit',
+      ru_cs: 'cs',
+      return_claim: 'returns',
+      inventory_restock: 'logistics',
+      weekly_report: 'weekly',
+    })[id] || 'dashboard';
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[c]);
+  }
+
   /* ---------- Render all ---------- */
   function renderAll() {
     renderTopbar();
@@ -871,6 +966,7 @@
     if (currentView === 'cs') renderCs();
     if (currentView === 'returns') renderReturns();
     if (currentView === 'weekly') renderWeekly();
+    if (currentView === 'agents') renderAgents();
     if (openOrderId) openOrderDrawer(openOrderId);
   }
 
@@ -1263,6 +1359,52 @@
     const shop = Store.currentShop();
     showToast('success', '已导出「' + (shop ? shop.name : '') + '」经营周报（演示 · PDF/Excel toast）');
   });
+
+
+  // Agents Hub
+  function doRunAllAgents() {
+    const r = Store.runAllAgents();
+    showToast('success', r.msg);
+    if (r.results && r.results.length) {
+      const top = r.results.filter(x => x.count > 0).slice(0, 3).map(x => x.name.replace(' Agent', '') + '×' + x.count);
+      if (top.length) showToast('info', '级联：' + top.join(' · '));
+    }
+    // if weekly snapshot, nudge
+    const snap = Store.get().weeklySnapshot;
+    if (snap) {
+      const sales = snap.shops.reduce((s, x) => s + x.sales, 0);
+      setTimeout(() => showToast('success', '周报快照已写入 · 销售 ' + sales.toLocaleString('ru-RU') + '₽'), 600);
+    }
+  }
+  on('[data-toggle-agent]', 'change', (e, t) => {
+    const r = Store.toggleAgent(t.dataset.toggleAgent, t.checked);
+    showToast(r.ok ? (t.checked ? 'success' : 'info') : 'info', r.msg);
+  });
+  on('[data-run-agent]', 'click', (e, t) => {
+    const r = Store.runAgent(t.dataset.runAgent, { manual: true, force: true });
+    showToast(r.ok ? 'success' : 'info', r.msg);
+  });
+  const btnRunAll = document.getElementById('btnRunAllAgents');
+  if (btnRunAll) btnRunAll.addEventListener('click', doRunAllAgents);
+  const btnRunAllDash = document.getElementById('btnRunAllAgentsDash');
+  if (btnRunAllDash) btnRunAllDash.addEventListener('click', doRunAllAgents);
+  const btnTick = document.getElementById('btnTickAgents');
+  if (btnTick) btnTick.addEventListener('click', () => {
+    const r = Store.runEnabledAgentsTick();
+    showToast(r.count ? 'success' : 'info', r.msg);
+  });
+
+  // Interval simulation: every 45s run enabled agents lightly when on dashboard/agents
+  setInterval(() => {
+    const as = Store.agentsSummary();
+    if (!as.onCount) return;
+    // only auto-tick if at least one on and page visible
+    if (document.hidden) return;
+    const r = Store.runEnabledAgentsTick();
+    if (r.count > 0) {
+      showToast('info', '⏱ Agent 定时 · +' + r.count);
+    }
+  }, 45000);
 
   // Init
   navigate('dashboard');

@@ -55,6 +55,11 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5"/></svg>
             <span>自动化规则</span>
           </button>
+          <button class="nav-item" data-view="agents">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+            <span>自动化 Agent</span>
+            <span class="badge" id="badgeAgents">0</span>
+          </button>
           <button class="nav-item" data-view="logistics">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6v-6l-4-4h-2"/><rect x="2" y="7" width="14" height="12" rx="1"/><circle cx="6.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
             <span>物流与库存</span>
@@ -143,7 +148,19 @@
               <li><b>选品「认领」</b> → 刊登草稿；<b>利润定价</b> 测算跟卖/活动价</li>
               <li><b>发布 → 同步订单 → 审单/面单/发货</b>；客服差评 + 退货异常进待办</li>
               <li><b>多店切换</b>真实分区数据；<b>角色</b>控制可见操作；<b>经营周报</b>导出</li>
+              <li><b>自动化 Agent</b>：选品/刊登/履约/超时/客服/退货/补货/周报 · 一键跑全部</li>
             </ul>
+          </div>
+                    <div class="agent-today-strip" id="agentTodayStrip">
+            <div class="ats-left">
+              <span class="ats-icon">🤖</span>
+              <span><b>Agent 今日已处理</b> <span id="agentTodayCount">0</span> 项</span>
+              <span class="hint" id="agentOnHint"></span>
+            </div>
+            <div class="ats-right">
+              <button class="btn btn-sm btn-ghost" data-nav="agents">打开 Agent Hub</button>
+              <button class="btn btn-sm btn-primary" id="btnRunAllAgentsDash">一键跑全部 Agent</button>
+            </div>
           </div>
           <div class="kpi-grid" id="kpiGrid"></div>
           <div class="grid-2">
@@ -431,6 +448,28 @@
                   <tbody id="weeklySkuBody"></tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. Agents Hub -->
+        <section class="view" id="view-agents">
+          <div class="filter-bar">
+            <div class="card-title" style="font-size:15px">自动化 Agent Hub</div>
+            <span class="hint" id="agentsHubHint">跨境 rFBS 垂直自动化 · 真实改 store 状态</span>
+            <div style="flex:1"></div>
+            <button class="btn btn-secondary btn-sm" id="btnTickAgents">模拟定时回合</button>
+            <button class="btn btn-primary btn-sm" id="btnRunAllAgents">一键跑全部 Agent</button>
+          </div>
+          <div class="agent-hub-banner" id="agentHubBanner"></div>
+          <div class="agent-grid" id="agentGrid"></div>
+          <div class="card" style="margin-top:16px">
+            <div class="card-header">
+              <div class="card-title">最近活动合流</div>
+              <div class="card-extra"><span class="hint" id="agentFeedHint"></span></div>
+            </div>
+            <div class="card-body" style="padding-top:4px">
+              <ul class="agent-feed" id="agentFeed"></ul>
             </div>
           </div>
         </section>
