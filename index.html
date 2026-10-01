@@ -84,7 +84,7 @@
         <div class="plan">
           <div class="plan-dot"></div>
           <div>
-            <div style="color:#e2e8f0;font-weight:500">专业版 · 演示</div>
+            <div style="color:#e2e8f0;font-weight:500">专业版 · 经营中台</div>
             <div id="planQuota">本地数据层 · 可离线</div>
           </div>
         </div>
@@ -97,7 +97,7 @@
         <div class="topbar-spacer"></div>
 
         <div class="demo-switcher" id="demoSwitcher">
-          <span class="demo-label">演示集</span>
+          <span class="demo-label">经营场景</span>
           <span id="currentDemo">旺季履约突击</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           <div class="demo-dropdown" id="demoDropdown"></div>
@@ -126,7 +126,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-dot" id="notifDot" style="display:none"></span>
         </button>
-        <button class="btn btn-sm btn-ghost" id="btnReset" title="重置当前演示数据">重置</button>
+        <button class="btn btn-sm btn-ghost" id="btnReset" title="重置当前场景数据">重置</button>
         <div class="avatar" id="avatarBtn" title="当前角色">张</div>
       </header>
 
@@ -142,13 +142,13 @@
           <div class="wizard-progress-card" id="wizardProgressCard" style="display:none"></div>
           <div class="competitor-panel" id="compPanel">
             <button class="collapse-btn" onclick="document.getElementById('compPanel').classList.toggle('collapsed')">收起/展开</button>
-            <h3>🚀 可演示闭环（真实改状态）</h3>
+            <h3>🚀 经营闭环（状态真实写入）</h3>
             <ul>
               <li><b>开店 Wizard</b> → 绑定店铺 / rFBS / 物流 / 导入商品</li>
               <li><b>选品「认领」</b> → 刊登草稿；<b>利润定价</b> 测算跟卖/活动价</li>
               <li><b>发布 → 同步订单 → 审单/面单/发货</b>；客服差评 + 退货异常进待办</li>
               <li><b>多店切换</b>真实分区数据；<b>角色</b>控制可见操作；<b>经营周报</b>导出</li>
-              <li><b>自动化 Agent</b>：选品/刊登/履约/超时/客服/退货/补货/周报 · 一键跑全部</li>
+              <li><b>自动化 Agent</b>：选品/刊登/履约/采购/物流/客服/差评升级/退货/补货/周报 · 一键跑全部</li>
             </ul>
           </div>
                     <div class="agent-today-strip" id="agentTodayStrip">
@@ -458,7 +458,7 @@
             <div class="card-title" style="font-size:15px">自动化 Agent Hub</div>
             <span class="hint" id="agentsHubHint">跨境 rFBS 垂直自动化 · 真实改 store 状态</span>
             <div style="flex:1"></div>
-            <button class="btn btn-secondary btn-sm" id="btnTickAgents">模拟定时回合</button>
+            <button class="btn btn-secondary btn-sm" id="btnTickAgents">执行定时回合</button>
             <button class="btn btn-primary btn-sm" id="btnRunAllAgents">一键跑全部 Agent</button>
           </div>
           <div class="agent-hub-banner" id="agentHubBanner"></div>

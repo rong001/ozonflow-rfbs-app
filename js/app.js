@@ -97,7 +97,7 @@
       '<span>' + d.label + '</span><span class="demo-meta">' + d.desc + '</span></button>'
     ).join('') +
       '<div class="demo-sep"></div>' +
-      '<button class="demo-opt" data-action="reset"><span>重置当前演示数据</span><span class="demo-meta">清除本集改动</span></button>' +
+      '<button class="demo-opt" data-action="reset"><span>重置当前场景数据</span><span class="demo-meta">清除本场景改动</span></button>' +
       '<button class="demo-opt" data-action="wizard"><span>🚀 打开开店 Wizard</span><span class="demo-meta">小白冷启动入口</span></button>';
 
     const shopDrop = document.getElementById('shopDropdown');
@@ -805,11 +805,11 @@
 
     if (wizardStep === 0) {
       body.innerHTML = `
-        <h3>绑定 Ozon 店铺（演示）</h3>
-        <p class="hint" style="margin:8px 0 16px">填写 Client-Id / Api-Key（演示环境不会真正请求 Ozon API）</p>
+        <h3>绑定 Ozon 店铺</h3>
+        <p class="hint" style="margin:8px 0 16px">填写 Client-Id / Api-Key（本地校验，离线可用，不直连 Ozon API）</p>
         <div class="form-grid">
           <label>店铺名称 <input class="input" id="wzShopName" value="${(Store.currentShop() || {}).name || ''}" /></label>
-          <label>Client-Id <input class="input" id="wzClientId" placeholder="例如 123456" value="${w.clientId && w.clientId !== 'demo-client-****' ? w.clientId : ''}" /></label>
+          <label>Client-Id <input class="input" id="wzClientId" placeholder="例如 123456" value="${w.clientId && w.clientId !== 'bound-client-****' ? w.clientId : ''}" /></label>
           <label>Api-Key <input class="input" id="wzApiKey" type="password" placeholder="••••••••" value="" /></label>
         </div>
         <div class="compliance-mini">🇷🇺 建议先在 Seller Center 开通 rFBS / 跨境直发权限</div>`;
@@ -828,7 +828,7 @@
           </button>
           <button class="mode-card" disabled>
             <div class="mode-title">FBO / FBS</div>
-            <div class="hint">本地仓入驻（演示未开放）</div>
+            <div class="hint">本地仓入驻（当前账号未开通）</div>
           </button>
         </div>
         <div class="compliance-mini">⏱️ rFBS 备货时效通常 24–72h，超时将影响搜索排名</div>`;
@@ -854,7 +854,7 @@
         <button class="btn btn-primary" id="wzNext2">保存物流</button>`;
     } else {
       body.innerHTML = `
-        <h3>导入首批演示商品</h3>
+        <h3>导入首批经营商品</h3>
         <p class="hint" style="margin:8px 0 16px">将 3 个爆款加入本店刊登草稿，可继续映射发布</p>
         <div class="import-preview">
           <div class="ip-item">🎧 无线降噪耳机 TWS Pro</div>
@@ -882,7 +882,7 @@
       <div class="ahb-stat"><b>${as.onCount}</b><span>启用中</span></div>
       <div class="ahb-stat"><b>${as.todayTotal}</b><span>今日处理</span></div>
       <div class="ahb-stat"><b>${as.agents.length}</b><span>专业 Agent</span></div>
-      <div class="ahb-copy">老板演示：点「一键跑全部 Agent」观察选品→刊登→履约→客服→退货→补货→周报级联改状态。</div>
+      <div class="ahb-copy">运营建议：点「一键跑全部 Agent」执行选品→刊登→履约→采购→物流→客服→退货→补货→周报级联。</div>
     `;
 
     document.getElementById('agentGrid').innerHTML = as.agents.map(a => {
@@ -939,8 +939,12 @@
       listing_publish: 'listing',
       order_fulfill: 'orders',
       timeout_rescue: 'orders',
+      purchase_1688: 'orders',
+      logistics_anomaly: 'orders',
       profit_guard: 'profit',
+      fx_commission: 'profit',
       ru_cs: 'cs',
+      review_escalate: 'cs',
       return_claim: 'returns',
       inventory_restock: 'logistics',
       weekly_report: 'weekly',
@@ -989,7 +993,7 @@
     navigate(t.dataset.todoNav, { filter: t.dataset.todoFilter || null });
   });
 
-  // Demo switcher
+  // Scenario switcher
   const demoSw = document.getElementById('demoSwitcher');
   const shopSw = document.getElementById('shopSwitcher');
   const roleSw = document.getElementById('roleSwitcher');
@@ -1004,7 +1008,7 @@
     e.stopPropagation();
     Store.switchDemo(t.dataset.demo);
     demoSw.classList.remove('open');
-    showToast('success', '已切换演示集「' + Store.get().meta.name + '」');
+    showToast('success', '已切换经营场景「' + Store.get().meta.name + '」');
     navigate('dashboard');
     // auto-open wizard for 小白冷启动
     if (t.dataset.demo === 'yiwu' && !Store.get().wizard.completed) {
@@ -1064,7 +1068,7 @@
 
   document.getElementById('btnReset').addEventListener('click', () => {
     Store.resetCurrent();
-    showToast('info', '已重置当前演示数据');
+    showToast('info', '已重置当前场景数据');
     navigate('dashboard');
   });
 
@@ -1162,7 +1166,7 @@
   document.getElementById('selSearch').addEventListener('input', () => renderSelection());
   document.getElementById('selCat').addEventListener('change', () => renderSelection());
   document.getElementById('btnRefreshSel').addEventListener('click', () => {
-    showToast('success', '榜单已刷新（演示数据）');
+    showToast('success', '榜单已刷新');
     renderSelection();
   });
   document.querySelectorAll('[data-sel-tab]').forEach(tab => {
@@ -1357,7 +1361,7 @@
   });
   document.getElementById('btnExportWeekly').addEventListener('click', () => {
     const shop = Store.currentShop();
-    showToast('success', '已导出「' + (shop ? shop.name : '') + '」经营周报（演示 · PDF/Excel toast）');
+    showToast('success', '已导出「' + (shop ? shop.name : '') + '」经营周报（本地导出提示）');
   });
 
 

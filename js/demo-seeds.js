@@ -1,7 +1,7 @@
 /**
- * OzonFlow · 三套演示数据集（老板演示脚本）
- * yiwu      — 小白冷启动（Wizard + 少 SKU 闭环）
- * guangzhou — 旺季履约突击（爆款多、规则引擎、客服差评）
+ * OzonFlow · 三套经营场景数据集
+ * yiwu      — 小白冷启动（Wizard + SKU 闭环）
+ * guangzhou — 旺季履约突击（爆款 / 规则 / 客服 / 履约压力）
  * pressure  — 多店公司化（多店分区 + 角色 + 超时压力）
  */
 window.OzonFlowSeeds = (function () {
@@ -111,6 +111,11 @@ window.OzonFlowSeeds = (function () {
       { id: 'c8', emoji: '⌨️', name: '机械键盘 87 键', ru: 'Механическая клавиатура 87', price: 2490, sales: 420, cost: 88.0, weight: 780, match: 90, margin: 22, rank: 8, cat: '电子配件', skuHint: 'OF-KB-87' },
       { id: 'c9', emoji: '🧴', name: '保温杯 500ml', ru: 'Термос 500 мл', price: 790, sales: 640, cost: 18.0, weight: 350, match: 88, margin: 24, rank: 9, cat: '厨房小电', skuHint: 'OF-THM-500' },
       { id: 'c10', emoji: '🪞', name: 'LED 化妆镜', ru: 'Зеркало с подсветкой LED', price: 1190, sales: 510, cost: 28.0, weight: 480, match: 86, margin: 27, rank: 10, cat: '美容个护', skuHint: 'OF-MIR-LED' },
+      { id: 'c11', emoji: '📱', name: '车载磁吸支架', ru: 'Магнитный держатель в авто', price: 490, sales: 1320, cost: 9.5, weight: 160, match: 95, margin: 38, rank: 11, cat: '汽车用品', skuHint: 'OF-CAR-MAG' },
+      { id: 'c12', emoji: '🎮', name: '蓝牙游戏手柄', ru: 'Bluetooth геймпад', price: 1590, sales: 740, cost: 42.0, weight: 280, match: 92, margin: 29, rank: 12, cat: '电子配件', skuHint: 'OF-PAD-BT' },
+      { id: 'c13', emoji: '📷', name: '手机广角镜头套装', ru: 'Набор линз для телефона', price: 890, sales: 680, cost: 19.0, weight: 120, match: 89, margin: 33, rank: 13, cat: '电子配件', skuHint: 'OF-LENS-3' },
+      { id: 'c14', emoji: '🧹', name: '迷你桌面吸尘器', ru: 'Мини пылесос настольный', price: 690, sales: 910, cost: 16.5, weight: 240, match: 87, margin: 21, rank: 14, cat: '家居收纳', skuHint: 'OF-VAC-MINI' },
+      { id: 'c15', emoji: '🧦', name: '运动压缩袜 3 双', ru: 'Компрессионные носки 3 пары', price: 590, sales: 1100, cost: 11.0, weight: 180, match: 84, margin: 16, rank: 15, cat: '运动户外', skuHint: 'OF-SOCK-3' },
     ];
   }
 
@@ -131,7 +136,7 @@ window.OzonFlowSeeds = (function () {
       completed: !!completed,
       step: completed ? 4 : 0,
       shopBound: !!completed,
-      clientId: completed ? 'demo-client-****' : '',
+      clientId: completed ? 'bound-client-****' : '',
       apiKey: completed ? '••••••••' : '',
       rfbsChosen: !!completed,
       defaultLogistics: 'yuntu',
@@ -172,14 +177,38 @@ window.OzonFlowSeeds = (function () {
         config: { etaMaxH: 6 },
       },
       {
+        id: 'purchase_1688', icon: '🛒', name: '1688采购跟单 Agent',
+        desc: '待采购订单自动下单跟单，回写入库并推进待发货',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'logistics_anomaly', icon: '🚚', name: '物流轨迹异常 Agent',
+        desc: '扫描已发货轨迹停滞/清关异常，写入预警并推送待办',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { staleDays: 3 },
+      },
+      {
         id: 'profit_guard', icon: '🛡️', name: '利润守门 Agent',
         desc: '拦截/标记低于最低毛利的刊登与跟卖价，给出建议价',
         on: false, lastRun: null, todayCount: 0, log: [],
         config: { marginMin: 20 },
       },
       {
+        id: 'fx_commission', icon: '💱', name: '汇率佣金重算 Agent',
+        desc: '按最新汇率与佣金阶梯重算在售/草稿净利，标出利润异常',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: { marginWarn: 18 },
+      },
+      {
         id: 'ru_cs', icon: '💬', name: '俄语客服 Agent',
         desc: '对未回复差评一键发送俄语致歉模板',
+        on: false, lastRun: null, todayCount: 0, log: [],
+        config: {},
+      },
+      {
+        id: 'review_escalate', icon: '⚠️', name: '差评预警升级 Agent',
+        desc: '1 星差评升级为理赔工单并通知运营，联动退货队列',
         on: false, lastRun: null, todayCount: 0, log: [],
         config: {},
       },
@@ -204,12 +233,10 @@ window.OzonFlowSeeds = (function () {
     ];
     const agents = clone(base);
     if (preset === 'peak') {
-      // 旺季履约突击：履约/客服/超时/利润重点开启
-      const onIds = ['order_fulfill', 'timeout_rescue', 'ru_cs', 'return_claim', 'profit_guard', 'inventory_restock'];
+      const onIds = ['order_fulfill', 'timeout_rescue', 'purchase_1688', 'logistics_anomaly', 'ru_cs', 'review_escalate', 'return_claim', 'profit_guard', 'inventory_restock'];
       agents.forEach(a => { a.on = onIds.includes(a.id); });
     } else if (preset === 'corp') {
-      // 多店公司化：超时抢救 + 补货 + 周报 + 刊登 + 选品
-      const onIds = ['timeout_rescue', 'inventory_restock', 'weekly_report', 'listing_publish', 'selection_radar', 'order_fulfill'];
+      const onIds = ['timeout_rescue', 'purchase_1688', 'inventory_restock', 'weekly_report', 'listing_publish', 'selection_radar', 'order_fulfill', 'fx_commission', 'review_escalate'];
       agents.forEach(a => { a.on = onIds.includes(a.id); });
     }
     return agents;
@@ -226,14 +253,18 @@ window.OzonFlowSeeds = (function () {
       { id: 'L1', emoji: '🖱️', name: '静音无线鼠标', ru: 'Беспроводная мышь бесшумная', cat: 'Электроника › Мыши', map: 40, status: 'draft', price: 590, cost: 15.5, weight: 110, sku: 'OF-MSE-SIL', stockInit: 50 },
       { id: 'L2', emoji: '⌨️', name: '机械键盘 87 键', ru: 'Механическая клавиатура 87', cat: '— 待映射 —', map: 20, status: 'draft', price: 2490, cost: 88.0, weight: 780, sku: 'OF-KB-87', stockInit: 30 },
       { id: 'L3', emoji: '🧴', name: '保温杯 500ml', ru: 'Термос 500 мл', cat: '— 待映射 —', map: 10, status: 'draft', price: 790, cost: 18.0, weight: 350, sku: 'OF-THM-500', stockInit: 80 },
+      { id: 'L4', emoji: '📱', name: '车载磁吸支架', ru: 'Магнитный держатель в авто', cat: 'Авто › Держатели', map: 70, status: 'mapping', price: 490, cost: 9.5, weight: 160, sku: 'OF-CAR-MAG', stockInit: 60 },
+      { id: 'L5', emoji: '📷', name: '手机广角镜头套装', ru: 'Набор линз для телефона', cat: 'Электроника › Объективы', map: 55, status: 'mapping', price: 890, cost: 19.0, weight: 120, sku: 'OF-LENS-3', stockInit: 40 },
     ], shopId);
     const products = tagShop([
       { id: 'P1', emoji: '🎧', name: '无线降噪耳机 TWS Pro', ru: 'Беспроводные наушники TWS Pro', sku: 'OF-TWS-001', ozonSku: '168924751', price: 1890, cost: 48.5, weight: 180, status: 'active', todaySales: 8, margin: 32 },
       { id: 'P2', emoji: '🔗', name: 'Type-C 编织数据线 2m', ru: 'Кабель USB-C 2м нейлон', sku: 'OF-CAB-USB', ozonSku: '168924800', price: 290, cost: 3.2, weight: 45, status: 'active', todaySales: 15, margin: 42 },
+      { id: 'P3', emoji: '🔌', name: '65W 氮化镓快充头', ru: 'ЗУ 65W GaN', sku: 'OF-GAN-65', ozonSku: '172038812', price: 980, cost: 22.0, weight: 95, status: 'active', todaySales: 5, margin: 28 },
     ], shopId);
     const inventory = tagShop([
       { sku: 'OF-TWS-001', name: '无线降噪耳机 TWS Pro', emoji: '🎧', local: 45, ozon: 40, safe: 20, sync: 'ok' },
       { sku: 'OF-CAB-USB', name: 'Type-C 编织数据线 2m', emoji: '🔗', local: 220, ozon: 200, safe: 50, sync: 'ok' },
+      { sku: 'OF-GAN-65', name: '65W 氮化镓快充头', emoji: '🔌', local: 18, ozon: 15, safe: 20, sync: 'warn' },
     ], shopId);
     const orders = tagShop([
       { id: 'OZ-YI-1001', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Иван П.', city: 'Москва', amount: 1890, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 36, risk: false, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: null, note: '', timeline: [{ t: '今天 08:00', text: '订单同步自 Ozon', done: true }] },
@@ -243,14 +274,19 @@ window.OzonFlowSeeds = (function () {
         { t: '昨天 16:01', text: '自动审单通过', done: true },
         { t: '昨天 16:01', text: '物流匹配 → 云途专线·俄线', done: true },
       ]},
+      { id: 'OZ-YI-1004', emoji: '🔌', name: '65W GaN 快充', buyer: 'Ольга М.', city: 'Новосиб.', amount: 980, logistics: '—', logisticsId: null, auto: ['已审单'], status: 'purchase', statusLabel: '待采购', etaH: 28, risk: false, weight: 95, sku: 'OF-GAN-65', cost: 22.0, track: null, note: '', timeline: [{ t: '今天 09:00', text: '库存不足 → 待采购', done: true }] },
+      { id: 'OZ-YI-1005', emoji: '🔗', name: 'Type-C 数据线', buyer: 'Сергей Н.', city: 'Краснодар', amount: 290, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 45, sku: 'OF-CAB-USB', cost: 3.2, track: 'YT2409201005CN', note: '', trackStatus: 'in_transit', lastTrackAt: '今天 06:00', timeline: [{ t: '昨天 10:00', text: '已发货', done: true }, { t: '今天 06:00', text: '轨迹：离开广州集散中心', done: true }] },
+      { id: 'OZ-YI-1006', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Мария Л.', city: 'Москва', amount: 1890, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: 'YW2409181006CN', note: '', trackStatus: 'stale', lastTrackAt: '4天前', anomaly: true, timeline: [{ t: '4天前', text: '已发货', done: true }, { t: '3天前', text: '轨迹：抵达莫斯科口岸', done: true }] },
     ], shopId);
     const reviews = tagShop([
       { id: 'RV1', sku: 'OF-TWS-001', product: 'TWS Pro 耳机', emoji: '🎧', rating: 5, text: 'Отличный звук, быстрая доставка!', buyer: 'Иван П.', replied: true, reply: 'Спасибо за ваш отзыв! 💙', created: '昨天 18:00' },
       { id: 'RV2', sku: 'OF-CAB-USB', product: 'Type-C 数据线', emoji: '🔗', rating: 3, text: 'Кабель нормальный, но упаковка помята.', buyer: 'Анна С.', replied: false, reply: '', created: '今天 09:20' },
+      { id: 'RV3', sku: 'OF-GAN-65', product: '65W GaN 快充', emoji: '🔌', rating: 1, text: 'Не заряжает телефон, брак!', buyer: 'Ольга М.', replied: false, reply: '', created: '今天 10:10', escalated: false },
     ], shopId);
     const qa = tagShop([
       { id: 'QA1', sku: 'OF-TWS-001', product: 'TWS Pro 耳机', question: 'Есть ли шумоподавление ANC?', answer: 'Да, активное шумоподавление ANC поддерживается.', answered: true, created: '昨天 12:00' },
       { id: 'QA2', sku: 'OF-CAB-USB', product: 'Type-C 数据线', question: 'Поддерживает ли зарядку 65W?', answer: '', answered: false, created: '今天 10:00' },
+      { id: 'QA3', sku: 'OF-GAN-65', product: '65W GaN 快充', question: 'Подходит для MacBook Air?', answer: '', answered: false, created: '今天 11:00' },
     ], shopId);
     const returns = tagShop([
       { id: 'RT1', orderId: 'OZ-YI-1003', type: 'return', status: 'open', reason: 'Не подошёл цвет', sku: 'OF-TWS-001', product: 'TWS Pro 耳机', emoji: '🎧', amount: 1890, created: '今天 11:00', timeline: [{ t: '今天 11:00', text: '买家申请退货', done: true }] },
@@ -304,6 +340,8 @@ window.OzonFlowSeeds = (function () {
       ...tagShop([
         { id: 'L6', emoji: '🔗', name: 'Type-C 编织数据线 2m', ru: 'Кабель USB-C 2м', cat: 'Электроника › Кабели', map: 100, status: 'ready', price: 290, cost: 3.2, weight: 45, sku: 'OF-CAB-USB-SZ', stockInit: 200 },
         { id: 'L7', emoji: '🖱️', name: '静音无线鼠标·深圳仓', ru: 'Мышь бесшумная SZ', cat: 'Электроника › Мыши', map: 60, status: 'mapping', price: 590, cost: 15.5, weight: 110, sku: 'OF-MSE-SZ', stockInit: 80 },
+        { id: 'L8', emoji: '🎮', name: '蓝牙游戏手柄', ru: 'Bluetooth геймпад', cat: 'Электроника › Геймпады', map: 45, status: 'draft', price: 1590, cost: 42.0, weight: 280, sku: 'OF-PAD-BT-SZ', stockInit: 25 },
+        { id: 'L9', emoji: '🧹', name: '迷你桌面吸尘器', ru: 'Мини пылесос', cat: 'Дом › Пылесосы', map: 82, status: 'mapping', price: 690, cost: 16.5, weight: 240, sku: 'OF-VAC-SZ', stockInit: 50 },
       ], shopSz),
     ];
     const products = [
@@ -316,7 +354,11 @@ window.OzonFlowSeeds = (function () {
       ...tagShop([
         { id: 'P5', emoji: '🔗', name: 'Type-C 数据线·深圳', ru: 'Кабель USB-C SZ', sku: 'OF-CAB-USB-SZ', ozonSku: '172200100', price: 290, cost: 3.2, weight: 45, status: 'active', todaySales: 24, margin: 42 },
         { id: 'P6', emoji: '🧴', name: '保温杯 500ml·深圳', ru: 'Термос SZ', sku: 'OF-THM-SZ', ozonSku: '172200200', price: 790, cost: 18.0, weight: 350, status: 'active', todaySales: 9, margin: 24 },
+        { id: 'P7', emoji: '📱', name: '车载磁吸支架·深圳', ru: 'Держатель авто SZ', sku: 'OF-CAR-SZ', ozonSku: '172200300', price: 490, cost: 9.5, weight: 160, status: 'active', todaySales: 14, margin: 38 },
       ], shopSz),
+      ...tagShop([
+        { id: 'P8', emoji: '🧦', name: '运动压缩袜 3 双', ru: 'Компрессионные носки', sku: 'OF-SOCK-3', ozonSku: '172038900', price: 590, cost: 11.0, weight: 180, status: 'active', todaySales: 7, margin: 16 },
+      ], shopGz),
     ];
     const inventory = [
       ...tagShop([
@@ -328,7 +370,11 @@ window.OzonFlowSeeds = (function () {
       ...tagShop([
         { sku: 'OF-CAB-USB-SZ', name: 'Type-C 数据线·深圳', emoji: '🔗', local: 150, ozon: 140, safe: 40, sync: 'ok' },
         { sku: 'OF-THM-SZ', name: '保温杯 500ml·深圳', emoji: '🧴', local: 4, ozon: 3, safe: 15, sync: 'warn' },
+        { sku: 'OF-CAR-SZ', name: '车载磁吸支架·深圳', emoji: '📱', local: 22, ozon: 20, safe: 15, sync: 'ok' },
       ], shopSz),
+      ...tagShop([
+        { sku: 'OF-SOCK-3', name: '运动压缩袜 3 双', emoji: '🧦', local: 6, ozon: 5, safe: 25, sync: 'warn' },
+      ], shopGz),
     ];
     const orders = [
       ...tagShop([
@@ -347,7 +393,16 @@ window.OzonFlowSeeds = (function () {
         { id: 'OZ-SZ-2101', emoji: '🔗', name: 'Type-C 数据线·深圳', buyer: 'Никита В.', city: 'Москва', amount: 290, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流'], status: 'ship', statusLabel: '待发货', etaH: 16, risk: false, weight: 45, sku: 'OF-CAB-USB-SZ', cost: 3.2, track: null, note: '', timeline: [{ t: '今天 08:00', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-SZ-2102', emoji: '🧴', name: '保温杯·深圳', buyer: 'Дарья К.', city: 'СПб', amount: 790, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 28, risk: false, weight: 350, sku: 'OF-THM-SZ', cost: 18.0, track: null, note: '', timeline: [{ t: '今天 09:30', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-SZ-2103', emoji: '🧴', name: '保温杯·深圳', buyer: 'Роман Л.', city: 'Казань', amount: 790, logistics: '—', logisticsId: null, auto: ['已审单'], status: 'purchase', statusLabel: '待采购', etaH: 10, risk: false, weight: 350, sku: 'OF-THM-SZ', cost: 18.0, track: null, note: '', timeline: [{ t: '今天 07:00', text: '库存不足 → 待采购', done: true }] },
+        { id: 'OZ-SZ-2104', emoji: '📱', name: '车载支架·深圳', buyer: 'Виктор А.', city: 'Уфа', amount: 490, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 160, sku: 'OF-CAR-SZ', cost: 9.5, track: 'YT2409172104CN', note: '', trackStatus: 'customs_hold', lastTrackAt: '5天前', anomaly: true, timeline: [{ t: '5天前', text: '已发货', done: true }, { t: '4天前', text: '轨迹：清关查验中', done: true }] },
+        { id: 'OZ-SZ-2105', emoji: '🔗', name: 'Type-C 数据线·深圳', buyer: 'Инна П.', city: 'Сочи', amount: 290, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 5, risk: true, weight: 45, sku: 'OF-CAB-USB-SZ', cost: 3.2, track: null, note: '', timeline: [{ t: '今天 11:20', text: '订单同步自 Ozon', done: true }] },
       ], shopSz),
+      ...tagShop([
+        { id: 'OZ-GZ-2011', emoji: '🧦', name: '运动压缩袜', buyer: 'Кирилл Д.', city: 'Москва', amount: 590, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 32, risk: false, weight: 180, sku: 'OF-SOCK-3', cost: 11.0, track: null, note: '', timeline: [{ t: '今天 11:40', text: '订单同步自 Ozon', done: true }] },
+        { id: 'OZ-GZ-2012', emoji: '🧦', name: '运动压缩袜', buyer: 'Татьяна Ж.', city: 'СПб', amount: 590, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流'], status: 'purchase', statusLabel: '待采购', etaH: 8, risk: true, weight: 180, sku: 'OF-SOCK-3', cost: 11.0, track: null, note: '', timeline: [{ t: '今天 06:40', text: '低库存 → 待采购', done: true }] },
+        { id: 'OZ-GZ-2013', emoji: '🎧', name: 'TWS Pro 耳机', buyer: 'Артем С.', city: 'Казань', amount: 1890, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 180, sku: 'OF-TWS-001', cost: 48.5, track: 'YT2409152013CN', note: '', trackStatus: 'stale', lastTrackAt: '6天前', anomaly: true, timeline: [{ t: '6天前', text: '已发货', done: true }, { t: '5天前', text: '轨迹：离港', done: true }] },
+        { id: 'OZ-GZ-2014', emoji: '🔌', name: '65W GaN 快充', buyer: 'Надежда К.', city: 'Екб', amount: 980, logistics: 'Ozon OGL 官方', logisticsId: 'ogl', auto: ['已审单', '已匹配物流', '已取号'], status: 'ship', statusLabel: '待发货', etaH: 18, risk: false, weight: 95, sku: 'OF-GAN-65', cost: 22.0, track: 'OGL882910900', note: '', timeline: [{ t: '今天 08:50', text: '已取号待揽收', done: true }] },
+        { id: 'OZ-GZ-2015', emoji: '🖱️', name: '静音无线鼠标', buyer: 'Глеб М.', city: 'Пермь', amount: 590, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 110, sku: 'OF-MSE-SIL', cost: 15.5, track: 'YT2409222015CN', note: '', trackStatus: 'in_transit', lastTrackAt: '昨天 20:00', timeline: [{ t: '昨天 12:00', text: '已发货', done: true }] },
+      ], shopGz),
     ];
     const reviews = [
       ...tagShop([
@@ -359,7 +414,12 @@ window.OzonFlowSeeds = (function () {
       ], shopGz),
       ...tagShop([
         { id: 'RV6', sku: 'OF-THM-SZ', product: '保温杯·深圳', emoji: '🧴', rating: 2, text: 'Держит тепло только 4 часа, обещали 12.', buyer: 'Дарья К.', replied: false, reply: '', created: '今天 11:00' },
+        { id: 'RV7', sku: 'OF-CAR-SZ', product: '车载支架·深圳', emoji: '📱', rating: 1, text: 'Сломался через 2 дня. Ужасное качество!', buyer: 'Виктор А.', replied: false, reply: '', created: '今天 12:00', escalated: false },
       ], shopSz),
+      ...tagShop([
+        { id: 'RV8', sku: 'OF-SOCK-3', product: '运动压缩袜', emoji: '🧦', rating: 1, text: 'Размер не соответствует, брак пошива.', buyer: 'Кирилл Д.', replied: false, reply: '', created: '今天 12:30', escalated: false },
+        { id: 'RV9', sku: 'OF-GAN-65', product: '65W GaN 快充', emoji: '🔌', rating: 4, text: 'Хорошая зарядка, чуть греется.', buyer: 'Надежда К.', replied: false, reply: '', created: '今天 13:00' },
+      ], shopGz),
     ];
     const qa = [
       ...tagShop([
@@ -369,7 +429,11 @@ window.OzonFlowSeeds = (function () {
       ], shopGz),
       ...tagShop([
         { id: 'QA4', sku: 'OF-CAB-USB-SZ', product: 'Type-C 数据线·深圳', question: 'Длина точно 2 метра?', answer: 'Да, длина 2.0 м ±2 см.', answered: true, created: '昨天 14:00' },
+        { id: 'QA5', sku: 'OF-CAR-SZ', product: '车载支架·深圳', question: 'Подходит для iPhone 16 Pro Max?', answer: '', answered: false, created: '今天 10:20' },
       ], shopSz),
+      ...tagShop([
+        { id: 'QA6', sku: 'OF-SOCK-3', product: '运动压缩袜', question: 'Какой размер выбрать при 42 ноге?', answer: '', answered: false, created: '今天 11:50' },
+      ], shopGz),
     ];
     const returns = [
       ...tagShop([
@@ -379,7 +443,11 @@ window.OzonFlowSeeds = (function () {
       ], shopGz),
       ...tagShop([
         { id: 'RT4', orderId: 'OZ-SZ-2101', type: 'return', status: 'approved', reason: 'Не тот цвет', sku: 'OF-CAB-USB-SZ', product: 'Type-C 数据线·深圳', emoji: '🔗', amount: 290, created: '昨天 11:00', timeline: [{ t: '昨天 11:00', text: '申请退货', done: true }, { t: '昨天 14:00', text: '卖家同意退货', done: true }] },
+        { id: 'RT5', orderId: 'OZ-SZ-2104', type: 'claim', status: 'open', reason: 'Задержка на таможне более 5 дней', sku: 'OF-CAR-SZ', product: '车载支架·深圳', emoji: '📱', amount: 490, created: '今天 12:10', timeline: [{ t: '今天 12:10', text: '买家发起索赔（清关延误）', done: true }] },
       ], shopSz),
+      ...tagShop([
+        { id: 'RT6', orderId: 'OZ-GZ-2013', type: 'claim', status: 'investigating', reason: 'Посылка не двигается 6 дней', sku: 'OF-TWS-001', product: 'TWS Pro 耳机', emoji: '🎧', amount: 1890, created: '今天 09:00', timeline: [{ t: '今天 09:00', text: '买家发起索赔', done: true }, { t: '今天 10:00', text: '平台调查中', done: true }] },
+      ], shopGz),
     ];
     const trend = [98, 124, 110, 156, 142, 168, 186];
     const rules = clone(BASE_RULES);
@@ -396,7 +464,7 @@ window.OzonFlowSeeds = (function () {
       meta: {
         id: 'guangzhou',
         name: '旺季履约突击',
-        desc: '爆款多、出单快、差评待回，适合规则引擎 + 客服评价演示',
+        desc: '爆款多、出单快、差评待回，适合规则引擎 + 客服评价与履约突击',
         shopName: '广州数码专营',
       },
       settings: defaultSettings(),
@@ -429,11 +497,16 @@ window.OzonFlowSeeds = (function () {
     const listings = [
       ...tagShop([
         { id: 'L1', emoji: '💡', name: 'RGB 护眼台灯', ru: 'Настольная лампа LED RGB', cat: 'Дом › Освещение', map: 100, status: 'ready', price: 1450, cost: 35.5, weight: 420, sku: 'OF-LED-RGB', stockInit: 20 },
+        { id: 'L4', emoji: '🎮', name: '蓝牙游戏手柄', ru: 'Bluetooth геймпад', cat: 'Электроника › Геймпады', map: 35, status: 'draft', price: 1590, cost: 42.0, weight: 280, sku: 'OF-PAD-BT', stockInit: 18 },
       ], sYiwu),
       ...tagShop([
         { id: 'L2', emoji: '🧺', name: '冰箱收纳盒', ru: 'Органайзер для холодильника', cat: 'Дом › Хранение', map: 92, status: 'ready', price: 690, cost: 12.8, weight: 520, sku: 'OF-ORG-FR', stockInit: 40 },
         { id: 'L3', emoji: '🪞', name: 'LED 化妆镜', ru: 'Зеркало LED', cat: 'Красота › Зеркала', map: 55, status: 'mapping', price: 1190, cost: 28.0, weight: 480, sku: 'OF-MIR-LED', stockInit: 15 },
+        { id: 'L5', emoji: '🧹', name: '迷你桌面吸尘器', ru: 'Мини пылесос', cat: 'Дом › Пылесосы', map: 68, status: 'mapping', price: 690, cost: 16.5, weight: 240, sku: 'OF-VAC-MINI', stockInit: 30 },
       ], sGz),
+      ...tagShop([
+        { id: 'L6', emoji: '🧴', name: '保温杯 500ml', ru: 'Термос 500 мл', cat: '— 待映射 —', map: 12, status: 'draft', price: 790, cost: 18.0, weight: 350, sku: 'OF-THM-500', stockInit: 40 },
+      ], sSz),
     ];
     const products = [
       ...tagShop([
@@ -446,6 +519,7 @@ window.OzonFlowSeeds = (function () {
       ], sGz),
       ...tagShop([
         { id: 'P5', emoji: '🧺', name: '冰箱收纳盒', ru: 'Органайзер', sku: 'OF-ORG-FR', ozonSku: '181002334', price: 690, cost: 12.8, weight: 520, status: 'active', todaySales: 19, margin: 18 },
+        { id: 'P6', emoji: '🧴', name: '保温杯 500ml', ru: 'Термос', sku: 'OF-THM-500', ozonSku: '181002400', price: 790, cost: 18.0, weight: 350, status: 'active', todaySales: 6, margin: 24 },
       ], sSz),
     ];
     const inventory = [
@@ -459,6 +533,7 @@ window.OzonFlowSeeds = (function () {
       ], sGz),
       ...tagShop([
         { sku: 'OF-ORG-FR', name: '冰箱收纳盒', emoji: '🧺', local: 8, ozon: 6, safe: 30, sync: 'warn' },
+        { sku: 'OF-THM-500', name: '保温杯 500ml', emoji: '🧴', local: 2, ozon: 1, safe: 12, sync: 'warn' },
       ], sSz),
     ];
     const orders = [
@@ -480,7 +555,9 @@ window.OzonFlowSeeds = (function () {
         { id: 'OZ-PR-3005', emoji: '🧺', name: '冰箱收纳盒', buyer: 'Ольга М.', city: 'Новосиб.', amount: 690, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 7, risk: true, weight: 520, sku: 'OF-ORG-FR', cost: 12.8, track: null, note: '', timeline: [{ t: '今天 07:10', text: '订单同步自 Ozon', done: true }] },
         { id: 'OZ-PR-3008', emoji: '🧺', name: '冰箱收纳盒', buyer: 'Наталья Т.', city: 'Самара', amount: 690, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流'], status: 'ship', statusLabel: '待发货', etaH: 16, risk: false, weight: 520, sku: 'OF-ORG-FR', cost: 12.8, track: null, note: '', timeline: [{ t: '今天 04:00', text: '已审单', done: true }] },
         { id: 'OZ-PR-3009', emoji: '🧺', name: '冰箱收纳盒', buyer: 'Юлия Ф.', city: 'Воронеж', amount: 690, logistics: '—', logisticsId: null, auto: [], status: 'audit', statusLabel: '待审核', etaH: 12, risk: false, weight: 520, sku: 'OF-ORG-FR', cost: 12.8, track: null, note: '', timeline: [{ t: '今天 07:40', text: '订单同步自 Ozon', done: true }] },
-        { id: 'OZ-PR-3013', emoji: '🧺', name: '冰箱收纳盒', buyer: 'Олег С.', city: 'Пермь', amount: 690, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 520, sku: 'OF-ORG-FR', cost: 12.8, track: 'YW2409243013CN', note: '', timeline: [{ t: '昨天 12:00', text: '已发货', done: true }] },
+        { id: 'OZ-PR-3013', emoji: '🧺', name: '冰箱收纳盒', buyer: 'Олег С.', city: 'Пермь', amount: 690, logistics: '燕文物流·经济', logisticsId: 'yanwen', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 520, sku: 'OF-ORG-FR', cost: 12.8, track: 'YW2409243013CN', note: '', trackStatus: 'stale', lastTrackAt: '4天前', anomaly: true, timeline: [{ t: '4天前', text: '已发货', done: true }, { t: '3天前', text: '轨迹：清关中', done: true }] },
+        { id: 'OZ-PR-3015', emoji: '🧴', name: '保温杯 500ml', buyer: 'Ирина В.', city: 'Москва', amount: 790, logistics: '—', logisticsId: null, auto: ['已审单'], status: 'purchase', statusLabel: '待采购', etaH: 9, risk: true, weight: 350, sku: 'OF-THM-500', cost: 18.0, track: null, note: '', timeline: [{ t: '今天 08:20', text: '库存不足 → 待采购', done: true }] },
+        { id: 'OZ-PR-3016', emoji: '🧴', name: '保温杯 500ml', buyer: 'Максим Б.', city: 'СПб', amount: 790, logistics: '云途专线·俄线', logisticsId: 'yuntu', auto: ['已审单', '已匹配物流', '已取号'], status: 'shipped', statusLabel: '已发货', etaH: null, risk: false, weight: 350, sku: 'OF-THM-500', cost: 18.0, track: 'YT2409213016CN', note: '', trackStatus: 'customs_hold', lastTrackAt: '5天前', anomaly: true, timeline: [{ t: '5天前', text: '已发货', done: true }, { t: '4天前', text: '轨迹：海关查验', done: true }] },
       ], sSz),
     ];
     const reviews = [
@@ -494,6 +571,7 @@ window.OzonFlowSeeds = (function () {
       ], sGz),
       ...tagShop([
         { id: 'RV5', sku: 'OF-ORG-FR', product: '冰箱收纳盒', emoji: '🧺', rating: 2, text: 'Хрупкий пластик, один лопнул.', buyer: 'Ольга М.', replied: false, reply: '', created: '今天 09:00' },
+        { id: 'RV6', sku: 'OF-THM-500', product: '保温杯 500ml', emoji: '🧴', rating: 1, text: 'Протекает! Полный брак.', buyer: 'Ирина В.', replied: false, reply: '', created: '今天 10:30', escalated: false },
       ], sSz),
     ];
     const qa = [
@@ -514,6 +592,7 @@ window.OzonFlowSeeds = (function () {
       ], sGz),
       ...tagShop([
         { id: 'RT4', orderId: 'OZ-PR-3013', type: 'return', status: 'investigating', reason: 'Трещина на пластике', sku: 'OF-ORG-FR', product: '冰箱收纳盒', emoji: '🧺', amount: 690, created: '今天 10:00', timeline: [{ t: '今天 10:00', text: '申请退货', done: true }, { t: '今天 10:30', text: '平台调查中', done: true }] },
+        { id: 'RT5', orderId: 'OZ-PR-3016', type: 'claim', status: 'open', reason: 'Таможня держит посылку', sku: 'OF-THM-500', product: '保温杯 500ml', emoji: '🧴', amount: 790, created: '今天 11:20', timeline: [{ t: '今天 11:20', text: '买家发起索赔', done: true }] },
       ], sSz),
     ];
     const trend = [140, 155, 168, 172, 180, 195, 210];
@@ -547,7 +626,7 @@ window.OzonFlowSeeds = (function () {
 
   const DATASETS = {
     yiwu: { build: seedYiwu, label: '小白冷启动', desc: 'Wizard · 少 SKU · 完整闭环' },
-    guangzhou: { build: seedGuangzhou, label: '旺季履约突击', desc: '爆款 · 规则 · 客服差评' },
+    guangzhou: { build: seedGuangzhou, label: '旺季履约突击', desc: '爆款 · 规则 · 客服 · 履约' },
     pressure: { build: seedPressure, label: '多店公司化', desc: '多店分区 · 角色 · 周报' },
   };
 

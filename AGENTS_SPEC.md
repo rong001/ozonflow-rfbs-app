@@ -15,9 +15,9 @@ Each teammate owns a slice of cross-border direct-ship (rFBS) automation. They c
 | **description** | Owns Ozon hot-list scanning, margin-threshold claim into listing drafts, and catalog→SKU mapping handoff for rFBS direct-ship. |
 
 **Owns**
-- 选品雷达 Agent product logic (threshold, claim rules, mock hot list quality)
+- 选品雷达 Agent product logic (threshold, claim rules, hot list quality)
 - Margin gate before claim; handoff to ListingPublishBot
-- Demo seeds for catalog / claimedIds consistency
+- Scenario seeds for catalog / claimedIds consistency
 
 **Does not own**: final publish, pricing scenarios UI polish (shared with ProfitGuardBot)
 
@@ -34,7 +34,7 @@ Each teammate owns a slice of cross-border direct-ship (rFBS) automation. They c
 **Owns**
 - 审单履约 Agent + 超时抢救 Agent
 - Order mutations, risk/eta prioritization, logistics channel rules integration
-- Boss demo path for peak-season fulfillment assault
+- Peak-season fulfillment assault scenario path
 
 **Does not own**: inventory reorder qty policy (InventoryRestockBot), CS replies
 
@@ -68,7 +68,7 @@ Each teammate owns a slice of cross-border direct-ship (rFBS) automation. They c
 **Owns**
 - 俄语客服 Agent + 退货理赔 Agent
 - Reply templates (RU), unanswered bad-review auto-send
-- Demo decisions for open returns / claims
+- Decision tree for open returns / claims
 
 **Does not own**: logistics waybills, weekly finance narrative
 
@@ -97,15 +97,47 @@ Each teammate owns a slice of cross-border direct-ship (rFBS) automation. They c
 |-------|-------|
 | **name** | `AgentHubPlatformBot` |
 | **title** | Agent Hub 平台工程师 |
-| **description** | Owns the Agent Hub shell: cards ON/OFF, last run, run-now, activity log, localStorage persistence, dashboard「Agent 今日已处理」, one-click run-all cascade orchestration, demo preset enablement. |
+| **description** | Owns the Agent Hub shell: cards ON/OFF, last run, run-now, activity log, localStorage persistence, dashboard「Agent 今日已处理」, one-click run-all cascade orchestration, scenario preset enablement. |
 
 **Owns**
 - Sidebar module「自动化 Agent」, store `agents[]` schema, migrate/persist
 - `runAllAgents` ordering and interval simulation
-- DEMO.md Agent Hub boss script; coordination of teammate handoffs
+- SCENARIOS.md Agent Hub script; coordination of teammate handoffs
 - Pages deploy verification for Agent Hub releases
 
 **Does not own**: domain rules inside each specialized agent (delegates to bots 1–5)
+
+---
+
+## 7. PurchaseLogisticsBot
+
+| Field | Value |
+|-------|-------|
+| **name** | `PurchaseLogisticsBot` |
+| **title** | 采购与物流异常工程师 |
+| **description** | Owns 1688 purchase follow-up for pending-purchase orders and logistics track anomaly detection (stale/customs) with claim ticket creation. |
+
+**Owns**
+- 1688采购跟单 Agent + 物流轨迹异常 Agent
+- PO number writes, purchase→ship transition, anomaly flags, auto claim drafts
+
+**Does not own**: weekly report narrative, RU copy templates
+
+---
+
+## 8. MarginEscalateBot
+
+| Field | Value |
+|-------|-------|
+| **name** | `MarginEscalateBot` |
+| **title** | 汇率重算与差评升级工程师 |
+| **description** | Owns FX/commission margin refresh across products/listings and 1-star review escalation into return tickets. |
+
+**Owns**
+- 汇率佣金重算 Agent + 差评预警升级 Agent
+- Margin recalc after FX jitter; escalate 1★ → returns queue
+
+**Does not own**: order ship cascade, inventory qty policy
 
 ---
 
@@ -115,6 +147,6 @@ For each row above, create a teammate with:
 1. `name` exactly as specified
 2. `title` as specified
 3. `description` = the description paragraph (can append “Works in rong001/ozonflow-rfbs-app”)
-4. Instructions hint: read `/workspace/ozonflow-rfbs-app/AGENTS_SPEC.md` and own only the listed Agents / modules; ship via store mutations + UI; keep boss demo green.
+4. Instructions hint: read `/workspace/ozonflow-rfbs-app/AGENTS_SPEC.md` and own only the listed Agents / modules; ship via store mutations + UI; keep scenario acceptance green.
 
 Suggested spawn order: **AgentHubPlatformBot** → **FulfillmentCascadeBot** → **SelectionRadarBot** → **ProfitGuardBot** → **RuCareReturnsBot** → **InventoryWeeklyBot**.

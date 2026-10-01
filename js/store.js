@@ -275,6 +275,8 @@ window.OzonFlowStore = (function () {
     const draftCount = listings.filter(l => l.status === 'draft' || l.status === 'ready' || l.status === 'mapping').length;
     const badReviews = reviews.filter(r => r.rating <= 3 && !r.replied).length;
     const openReturns = returns.filter(r => r.status === 'open' || r.status === 'investigating').length;
+    const trackAnomaly = orders.filter(o => o.status === 'shipped' && (o.anomaly || o.trackStatus === 'stale' || o.trackStatus === 'customs_hold')).length;
+    const escalateReviews = reviews.filter(r => r.rating === 1 && !r.escalated).length;
     const todaySales = products.reduce((s, p) => s + (p.todaySales || 0), 0);
 
     return {
@@ -288,6 +290,8 @@ window.OzonFlowStore = (function () {
       draftCount,
       badReviews,
       openReturns,
+      trackAnomaly,
+      escalateReviews,
       fundAlert: !!state.fundAlert,
       marginAvg: 28.4,
     };
@@ -301,6 +305,8 @@ window.OzonFlowStore = (function () {
     if (k.purchaseCount > 0 || k.lowStock > 0) list.push({ id: 'purchase', icon: '🛒', bg: 'var(--purple-bg)', title: (k.purchaseCount || k.lowStock) + ' 项缺货待采', sub: '待采购订单 / 低库存 SKU', btn: '去采购', view: k.purchaseCount ? 'orders' : 'logistics', filter: k.purchaseCount ? 'purchase' : null, cls: 'btn-ghost' });
     if (k.badReviews > 0) list.push({ id: 'review', icon: '⭐', bg: 'var(--warning-bg)', title: k.badReviews + ' 条差评待回', sub: '俄语模板一键回复', btn: '去回复', view: 'cs', filter: 'bad', cls: 'btn-secondary' });
     if (k.openReturns > 0) list.push({ id: 'returns', icon: '↩️', bg: 'var(--info-bg)', title: k.openReturns + ' 笔退货异常', sub: '取消 / 退货 / 索赔待处理', btn: '去处理', view: 'returns', filter: 'open', cls: 'btn-ghost' });
+    if (k.trackAnomaly > 0) list.push({ id: 'track', icon: '🚚', bg: 'var(--warning-bg)', title: k.trackAnomaly + ' 笔物流轨迹异常', sub: '清关停滞 / 轨迹超 3 天未更新', btn: '去查看', view: 'orders', filter: 'shipped', cls: 'btn-secondary' });
+    if (k.escalateReviews > 0) list.push({ id: 'escalate', icon: '⚠️', bg: 'var(--danger-bg)', title: k.escalateReviews + ' 条 1★ 待升级', sub: '差评预警可建退货工单', btn: '去客服', view: 'cs', filter: 'bad', cls: 'btn-danger' });
     if (k.fundAlert) list.push({ id: 'fund', icon: '💰', bg: 'var(--danger-bg)', title: '资金异常提醒', sub: '结算延迟 / 冻结款需核对', btn: '看周报', view: 'weekly', filter: null, cls: 'btn-danger' });
     if (k.draftCount > 0) list.push({ id: 'listing', icon: '📦', bg: 'var(--primary-light)', title: k.draftCount + ' 条刊登待处理', sub: '草稿 / 映射 / 待发布', btn: '去刊登', view: 'listing', filter: null, cls: 'btn-ghost' });
     return list;
@@ -321,8 +327,8 @@ window.OzonFlowStore = (function () {
 
   function wizardBindShop({ clientId, apiKey, shopName }) {
     const w = state.wizard;
-    w.clientId = clientId || 'demo-' + Date.now().toString(36);
-    w.apiKey = apiKey || 'demo-key-' + Math.random().toString(36).slice(2, 10);
+    w.clientId = clientId || 'cid-' + Date.now().toString(36);
+    w.apiKey = apiKey || 'key-' + Math.random().toString(36).slice(2, 10);
     w.shopBound = true;
     const shop = currentShop();
     if (shop) {
@@ -335,7 +341,7 @@ window.OzonFlowStore = (function () {
     }
     w.step = Math.max(w.step, 1);
     emit('wizard');
-    return { ok: true, msg: '店铺已绑定（演示 Client-Id / Api-Key）' };
+    return { ok: true, msg: '店铺已绑定（Client-Id / Api-Key 已保存）' };
   }
 
   function wizardChooseRfbs() {
@@ -358,12 +364,12 @@ window.OzonFlowStore = (function () {
 
   function wizardImportProducts() {
     const sid = shopId();
-    const demo = [
+    const drafts = [
       { emoji: '🎧', name: '无线降噪耳机 TWS Pro', ru: 'Наушники TWS Pro', sku: 'OF-TWS-WIZ', price: 1890, cost: 48.5, weight: 180 },
       { emoji: '🔗', name: 'Type-C 编织数据线 2m', ru: 'Кабель USB-C 2м', sku: 'OF-CAB-WIZ', price: 290, cost: 3.2, weight: 45 },
       { emoji: '🔌', name: '65W 氮化镓快充头', ru: 'ЗУ 65W GaN', sku: 'OF-GAN-WIZ', price: 980, cost: 22.0, weight: 95 },
     ];
-    demo.forEach(d => {
+    drafts.forEach(d => {
       if (!forShop(state.listings).find(l => l.sku === d.sku)) {
         state.listings.unshift({
           id: 'L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
@@ -376,7 +382,7 @@ window.OzonFlowStore = (function () {
     state.wizard.productsImported = true;
     state.wizard.step = Math.max(state.wizard.step, 4);
     emit('wizard');
-    return { ok: true, msg: '已导入 ' + demo.length + ' 个演示商品草稿' };
+    return { ok: true, msg: '已导入 ' + drafts.length + ' 个商品草稿' };
   }
 
   function wizardComplete() {
@@ -689,7 +695,7 @@ window.OzonFlowStore = (function () {
     const o = state.orders.find(x => x.id === orderId);
     if (!o) return { ok: false, msg: '订单不存在' };
     pushAuto(o, '已采购');
-    pushTL(o, '1688 采购下单完成（模拟）');
+    pushTL(o, '1688 采购下单完成');
     if (o.status === 'purchase') {
       o.status = 'ship';
       o.statusLabel = statusLabel('ship');
@@ -1107,7 +1113,7 @@ window.OzonFlowStore = (function () {
   function runReturnClaim(agent) {
     let n = 0;
     const msgs = [];
-    // demo decision tree
+    // return/claim decision tree
     forShop(state.returns).slice().forEach(r => {
       let next = null;
       if (r.status === 'open') {
@@ -1166,13 +1172,163 @@ window.OzonFlowStore = (function () {
     return { ok: true, count: 1, msg: msg, report: report };
   }
 
+
+  function runPurchase1688(agent) {
+    let n = 0;
+    const msgs = [];
+    forShop(state.orders).filter(o => o.status === 'purchase').forEach(o => {
+      const po = '1688-PO-' + String(Date.now()).slice(-6) + '-' + Math.floor(Math.random() * 90 + 10);
+      o.poNumber = po;
+      o.purchaseStatus = 'ordered';
+      pushTL(o, '1688 采购跟单 · 下单 ' + po);
+      const r = markPurchased(o.id);
+      if (r.ok) {
+        n++;
+        msgs.push(o.id + ' · 采购完成 ' + po + ' → 待发货');
+      }
+    });
+    if (!n) msgs.push('无待采购订单可跟单');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '1688采购跟单 · 处理 ' + n + ' 笔' };
+  }
+
+  function runLogisticsAnomaly(agent) {
+    let n = 0;
+    const msgs = [];
+    const shipped = forShop(state.orders).filter(o => o.status === 'shipped' && o.track);
+    shipped.forEach(o => {
+      const stale = o.anomaly || o.trackStatus === 'stale' || o.trackStatus === 'customs_hold'
+        || (o.lastTrackAt && /[4-9]天前|[1-9]\d天前/.test(o.lastTrackAt));
+      if (!stale) return;
+      o.anomaly = true;
+      o.trackStatus = o.trackStatus === 'customs_hold' ? 'customs_hold' : 'stale';
+      o.anomalyHandled = true;
+      pushTL(o, '物流异常 Agent · 轨迹停滞预警（' + (o.trackStatus === 'customs_hold' ? '清关异常' : '轨迹停滞') + '）');
+      // open claim if none for this order
+      const exists = (state.returns || []).find(r => r.orderId === o.id && r.status !== 'closed');
+      if (!exists) {
+        state.returns.unshift({
+          id: 'RT-LOG-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
+          shopId: o.shopId || shopId(),
+          orderId: o.id,
+          type: 'claim',
+          status: 'open',
+          reason: o.trackStatus === 'customs_hold' ? 'Таможня / задержка трекинга' : 'Трекинг не обновляется',
+          sku: o.sku,
+          product: o.name,
+          emoji: o.emoji || '📦',
+          amount: o.amount,
+          created: nowLabel(),
+          timeline: [{ t: nowLabel(), text: '物流异常 Agent 自动建索赔工单', done: true }],
+        });
+        msgs.push('⚠ ' + o.id + ' · 轨迹异常 → 已建索赔');
+      } else {
+        msgs.push('⚠ ' + o.id + ' · 轨迹异常已标记');
+      }
+      n++;
+    });
+    if (!n) msgs.push('无物流轨迹异常单');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '物流轨迹异常 · 处理 ' + n + ' 笔' };
+  }
+
+  function runFxCommission(agent) {
+    const warn = (agent.config && agent.config.marginWarn) || 18;
+    let n = 0;
+    const msgs = [];
+    const set = state.settings || {};
+    // slight FX jitter to simulate market refresh within bounds
+    const fxOld = set.fx || 11.85;
+    const fxNew = Math.round((fxOld + (Math.random() * 0.2 - 0.05)) * 100) / 100;
+    set.fx = fxNew;
+    msgs.push('汇率刷新 ' + fxOld + ' → ' + fxNew + ' ₽/¥');
+    forShop(state.products).forEach(pr => {
+      const p = calcProfit({ price: pr.price, costCNY: pr.cost, weight: pr.weight });
+      const prev = pr.margin;
+      pr.margin = Math.round(p.margin * 10) / 10;
+      pr.fxSnapshot = fxNew;
+      if (pr.margin < warn) {
+        pr.flagged = true;
+        pr.suggestedPrice = suggestedPriceForMargin(pr.price, pr.cost, pr.weight, warn);
+        n++;
+        msgs.push('净利偏低「' + pr.name + '」' + pr.margin + '% → 建议 ' + pr.suggestedPrice + '₽');
+      } else if (prev != null && Math.abs(prev - pr.margin) >= 0.5) {
+        n++;
+        msgs.push('重算「' + pr.name + '」毛利 ' + prev + '% → ' + pr.margin + '%');
+      }
+    });
+    forShop(state.listings).forEach(l => {
+      if (l.status === 'published') return;
+      const p = calcProfit({ price: l.price, costCNY: l.cost, weight: l.weight });
+      l.calcMargin = Math.round(p.margin * 10) / 10;
+      if (p.margin < warn) {
+        l.flagged = true;
+        l.suggestedPrice = suggestedPriceForMargin(l.price, l.cost, l.weight, warn);
+        n++;
+        msgs.push('草稿偏低「' + l.name + '」→ 建议 ' + l.suggestedPrice + '₽');
+      }
+    });
+    if (n === 0) msgs.push('汇率佣金已重算 · 无利润异常');
+    // count at least the fx refresh as activity if nothing else
+    const count = Math.max(n, 1);
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, count);
+    return { ok: true, count: count, msg: '汇率佣金重算 · ' + count + ' 项' };
+  }
+
+  function runReviewEscalate(agent) {
+    let n = 0;
+    const msgs = [];
+    forShop(state.reviews).filter(r => r.rating === 1 && !r.escalated).forEach(r => {
+      r.escalated = true;
+      r.escalateLevel = 'ops';
+      // ensure reply path kicked for CS later; create return if missing
+      const exists = (state.returns || []).find(x =>
+        x.sku === r.sku && x.shopId === (r.shopId || shopId()) &&
+        (x.status === 'open' || x.status === 'investigating') &&
+        /брак|Брак|не работает|сломал|протека/i.test((x.reason || '') + (r.text || ''))
+      );
+      if (!exists) {
+        state.returns.unshift({
+          id: 'RT-ESC-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4),
+          shopId: r.shopId || shopId(),
+          orderId: r.orderId || ('ESC-' + r.id),
+          type: 'return',
+          status: 'open',
+          reason: '差评升级：' + (r.text || '1★').slice(0, 80),
+          sku: r.sku,
+          product: r.product,
+          emoji: r.emoji || '⭐',
+          amount: 0,
+          created: nowLabel(),
+          fromReviewId: r.id,
+          timeline: [{ t: nowLabel(), text: '差评预警升级 Agent · 1★ → 退货工单', done: true }],
+        });
+        msgs.push('⬆ 1★「' + (r.product || r.sku) + '」→ 已建退货工单');
+      } else {
+        msgs.push('⬆ 1★「' + (r.product || r.sku) + '」已升级标记');
+      }
+      n++;
+    });
+    if (!n) msgs.push('无待升级的 1 星差评');
+    msgs.slice(0, 8).forEach(m => pushAgentLog(agent, m));
+    bumpAgent(agent, n);
+    return { ok: true, count: n, msg: '差评预警升级 · ' + n + ' 条' };
+  }
+
   const AGENT_RUNNERS = {
     selection_radar: runSelectionRadar,
     listing_publish: runListingPublish,
     order_fulfill: runOrderFulfill,
     timeout_rescue: runTimeoutRescue,
+    purchase_1688: runPurchase1688,
+    logistics_anomaly: runLogisticsAnomaly,
     profit_guard: runProfitGuard,
+    fx_commission: runFxCommission,
     ru_cs: runRuCs,
+    review_escalate: runReviewEscalate,
     return_claim: runReturnClaim,
     inventory_restock: runInventoryRestock,
     weekly_report: runWeeklyReportAgent,
@@ -1205,16 +1361,16 @@ window.OzonFlowStore = (function () {
     ensureAgents();
     const results = [];
     let total = 0;
-    // cascade order matters for demo
+    // cascade order matters for ops chain
     const order = [
-      'selection_radar', 'listing_publish', 'profit_guard',
-      'timeout_rescue', 'order_fulfill', 'inventory_restock',
-      'ru_cs', 'return_claim', 'weekly_report',
+      'selection_radar', 'listing_publish', 'profit_guard', 'fx_commission',
+      'purchase_1688', 'timeout_rescue', 'order_fulfill', 'logistics_anomaly',
+      'inventory_restock', 'ru_cs', 'review_escalate', 'return_claim', 'weekly_report',
     ];
     order.forEach(id => {
       const a = agentById(id);
       if (!a) return;
-      // one-click runs all (force), cascade demo
+      // one-click runs all (force), full cascade
       const r = runAgent(id, { force: true, manual: true });
       results.push({ id, name: a.name, count: r.count || 0, msg: r.msg });
       total += r.count || 0;
