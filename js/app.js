@@ -48,6 +48,29 @@
   }
   window.showToast = showToast;
 
+  function thumb(name, large) {
+    const label = String(name || '品').trim() || '品';
+    const ch = label.charAt(0);
+    const palette = [215, 199, 168, 262, 152, 28, 188];
+    let n = 0;
+    for (let i = 0; i < label.length; i++) n = (n + label.charCodeAt(i)) % palette.length;
+    return '<span class="thumb' + (large ? ' lg' : '') + '" style="--hue:' + palette[n] + '" aria-hidden="true">' + ch + '</span>';
+  }
+
+  const TONE_BY_TODO = {
+    timeout: 'danger', audit: 'warn', purchase: 'accent', review: 'warn',
+    returns: 'info', track: 'info', escalate: 'danger', fund: 'accent', listing: 'info'
+  };
+  const TONE_BY_AGENT = {
+    selection_radar: 'info', listing_publish: 'info', order_fulfill: 'ok',
+    timeout_rescue: 'danger', purchase_1688: 'accent', logistics_anomaly: 'warn',
+    profit_guard: 'ok', fx_commission: 'info', ru_cs: 'info', review_escalate: 'danger',
+    return_claim: 'warn', inventory_restock: 'accent', weekly_report: 'info'
+  };
+  function mark(tone) {
+    return '<span class="ui-mark tone-' + (tone || 'info') + '" aria-hidden="true"></span>';
+  }
+
   /* ---------- Navigate ---------- */
   function navigate(view, opts) {
     opts = opts || {};
@@ -65,8 +88,12 @@
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const el = document.getElementById('view-' + view);
     if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-item[data-view]').forEach(n => n.removeAttribute('aria-current'));
     const nav = document.querySelector('.nav-item[data-view="' + view + '"]');
-    if (nav) nav.classList.add('active');
+    if (nav) {
+      nav.classList.add('active');
+      nav.setAttribute('aria-current', 'page');
+    }
     document.getElementById('pageTitle').textContent = TITLES[view] || view;
     renderAll();
   }
@@ -98,7 +125,7 @@
     ).join('') +
       '<div class="demo-sep"></div>' +
       '<button class="demo-opt" data-action="reset"><span>重置当前场景数据</span><span class="demo-meta">清除本场景改动</span></button>' +
-      '<button class="demo-opt" data-action="wizard"><span>🚀 打开开店 Wizard</span><span class="demo-meta">小白冷启动入口</span></button>';
+      '<button class="demo-opt" data-action="wizard"><span>打开开店引导</span><span class="demo-meta">冷启动入口</span></button>';
 
     const shopDrop = document.getElementById('shopDropdown');
     shopDrop.innerHTML = s.shops.map(sh => {
@@ -172,20 +199,23 @@
     const vals = s.trend;
     const max = Math.max(...vals, 1);
     const days = ['日', '一', '二', '三', '四', '五', '六'];
-    document.getElementById('orderChart').innerHTML = vals.map((v, i) => {
-      const h = Math.round((v / max) * 120);
-      return `<div class="chart-bar-wrap"><div class="chart-bar" style="height:${h}px" title="${v} 单"></div><div class="chart-bar-label">${days[i]}</div></div>`;
+    const chart = document.getElementById('orderChart');
+    chart.setAttribute('aria-label', '近 7 日订单：' + vals.map((v, i) => '周' + days[i] + ' ' + v + ' 单').join('，'));
+    chart.innerHTML = vals.map((v, i) => {
+      const h = Math.round((v / max) * 112);
+      const peak = v === max && max > 0 ? ' is-peak' : '';
+      return `<div class="chart-bar-wrap"><div class="chart-bar${peak}" style="height:${h}px" title="${v} 单"></div><div class="chart-bar-val">${v}</div><div class="chart-bar-label">周${days[i]}</div></div>`;
     }).join('');
 
     const todoList = Store.todos();
     document.getElementById('todoCountHint').textContent = todoList.length + ' 项';
     document.getElementById('todoList').innerHTML = todoList.length ? todoList.map(t => `
       <li>
-        <div class="ml-icon" style="background:${t.bg}">${t.icon}</div>
+        <div class="ml-icon tone-${TONE_BY_TODO[t.id] || 'info'}">${mark(TONE_BY_TODO[t.id] || 'info')}</div>
         <div class="ml-text"><div class="ml-title">${t.title}</div><div class="ml-sub">${t.sub}</div></div>
         <button class="btn btn-sm ${t.cls}" data-todo-nav="${t.view}" data-todo-filter="${t.filter || ''}">${t.btn}</button>
       </li>
-    `).join('') : '<li class="hint" style="padding:16px;justify-content:center">今日待办已清空 🎉</li>';
+    `).join('') : '<li class="hint empty-panel" style="border:none">今日待办已清空</li>';
 
     // wizard progress card
     const wp = Store.wizardProgress();
@@ -213,7 +243,7 @@
       const stock = inv ? inv.local : 0;
       const stockCls = stock <= (inv ? inv.safe : 20) ? 'stock-low' : 'stock-ok';
       return `<tr>
-        <td><div class="prod-cell"><div class="prod-img">${p.emoji}</div><div><div class="prod-name">${p.ru || p.name}</div><div class="prod-sku">${p.name}</div></div></div></td>
+        <td><div class="prod-cell">${thumb(p.name)}<div><div class="prod-name">${p.ru || p.name}</div><div class="prod-sku">${p.name}</div></div></div></td>
         <td class="mono">${p.ozonSku || '—'}</td>
         <td><b>${p.todaySales || 0}</b></td>
         <td>${p.price.toLocaleString('ru-RU')} ₽</td>
@@ -245,7 +275,7 @@
       const claimed = s.claimedIds.includes(p.id) || shopListings.some(l => l.sku === p.skuHint);
       return `
       <div class="prod-card" data-cid="${p.id}">
-        <div class="prod-card-img"><span class="rank">TOP ${p.rank}</span>${p.emoji}</div>
+        <div class="prod-card-img"><span class="rank">TOP ${p.rank}</span>${thumb(p.name)}</div>
         <div class="prod-card-body">
           <div class="prod-card-title">${p.name}</div>
           <div class="prod-card-ru">${p.ru}</div>
@@ -262,7 +292,7 @@
           </div>
         </div>
       </div>`;
-    }).join('');
+    }).join('') || '<div class="empty-panel">没有匹配的选品。调整类目或关键词后再试。</div>';
 
     document.getElementById('calcFx').textContent = s.settings.fx;
     if (selectedCatalogId) {
@@ -331,7 +361,7 @@
       if (l.status === 'published') actions = '<span class="hint">已上架</span>';
       actions += ` <button class="btn btn-sm btn-ghost" data-pf-listing="${l.id}">测算</button>`;
       return `<tr>
-        <td><div class="prod-cell"><div class="prod-img">${l.emoji}</div><div><div class="prod-name">${l.name}</div><div class="prod-sku">${l.sku}</div></div></div></td>
+        <td><div class="prod-cell">${thumb(l.name)}<div><div class="prod-name">${l.name}</div><div class="prod-sku">${l.sku}</div></div></div></td>
         <td style="max-width:220px;font-size:12px;color:var(--text-secondary)">${l.ru}</td>
         <td style="font-size:12px">${l.cat}</td>
         <td style="min-width:120px">
@@ -393,7 +423,7 @@
       if ((o.status === 'ship' || o.status === 'purchase') && o.track && canShip) ops += `<button class="btn btn-sm btn-primary" data-ship="${o.id}">发货</button> `;
       return `<tr class="clickable" data-open="${o.id}">
         <td class="mono">${o.id}</td>
-        <td><div class="prod-cell"><div class="prod-img">${o.emoji}</div><div><div class="prod-name">${o.name}</div><div class="prod-sku">${o.sku}</div></div></div></td>
+        <td><div class="prod-cell">${thumb(o.name)}<div><div class="prod-name">${o.name}</div><div class="prod-sku">${o.sku}</div></div></div></td>
         <td>${o.buyer}<br/><span class="hint">${o.city}</span></td>
         <td><b>${o.amount.toLocaleString('ru-RU')}</b></td>
         <td>${o.logistics === '—' ? '<span class="hint">未分配</span>' : o.logistics}</td>
@@ -416,7 +446,7 @@
       <div class="detail-section">
         <h4>商品信息</h4>
         <div class="prod-cell" style="margin-bottom:12px">
-          <div class="prod-img" style="width:56px;height:56px;font-size:28px">${o.emoji}</div>
+          ${thumb(o.name, true)}
           <div>
             <div style="font-weight:600">${o.name}</div>
             <div class="hint">${o.sku} · ${o.weight}g · 店铺 ${o.shopId || '—'}</div>
@@ -472,13 +502,13 @@
     document.getElementById('ruleGrid').innerHTML = rules.map(r => `
       <div class="rule-card ${r.on ? '' : 'off'}" id="rule-${r.id}">
         <div class="rule-card-head">
-          <div class="rule-icon ${r.iconClass}">${r.icon}</div>
+          <div class="rule-icon ${r.iconClass}">${mark(r.iconClass === 'green' ? 'ok' : r.iconClass === 'orange' ? 'warn' : r.iconClass === 'purple' ? 'accent' : 'info')}</div>
           <div class="rule-info">
             <div class="rule-name">${r.name}</div>
             <div class="rule-desc">${r.desc}</div>
           </div>
           <label class="toggle" title="启用/停用">
-            <input type="checkbox" data-toggle-rule="${r.id}" ${r.on ? 'checked' : ''} ${canToggle ? '' : 'disabled'} />
+            <input type="checkbox" data-toggle-rule="${r.id}" ${r.on ? 'checked' : ''} ${canToggle ? '' : 'disabled'} aria-label="启用或停用 ${r.name}" />
             <span class="slider"></span>
           </label>
         </div>
@@ -522,7 +552,7 @@
         : '<span class="tag tag-red">缺货</span>';
       return `<tr>
         <td class="mono">${i.sku}</td>
-        <td><div class="prod-cell"><div class="prod-img">${i.emoji}</div><div class="prod-name">${i.name}</div></div></td>
+        <td><div class="prod-cell">${thumb(i.name)}<div class="prod-name">${i.name}</div></div></td>
         <td><b>${i.local}</b></td>
         <td>${i.ozon}</td>
         <td>${i.safe}</td>
@@ -556,7 +586,7 @@
     ];
     document.getElementById('profitPickBody').innerHTML = picks.map(p => `
       <tr>
-        <td><div class="prod-cell"><div class="prod-img">${p.emoji}</div><div class="prod-name">${p.name}</div></div></td>
+        <td><div class="prod-cell">${thumb(p.name)}<div class="prod-name">${p.name}</div></div></td>
         <td>${p.price.toLocaleString('ru-RU')}</td>
         <td>¥${p.cost}</td>
         <td><button class="btn btn-sm btn-primary" data-pf-pick="${p.src}:${p.id}" data-pf-price="${p.price}" data-pf-cost="${p.cost}" data-pf-weight="${p.weight}" data-pf-name="${p.name}">测算利润</button></td>
@@ -656,7 +686,7 @@
             const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
             const badCls = r.rating <= 3 ? 'tag-red' : 'tag-green';
             return `<tr class="${r.rating <= 3 && !r.replied ? 'row-alert' : ''}">
-              <td><div class="prod-cell"><div class="prod-img">${r.emoji}</div><div><div class="prod-name">${r.product}</div><div class="prod-sku">${r.sku}</div></div></div></td>
+              <td><div class="prod-cell">${thumb(r.product)}<div><div class="prod-name">${r.product}</div><div class="prod-sku">${r.sku}</div></div></div></td>
               <td><span class="tag ${badCls}">${stars}</span></td>
               <td style="max-width:280px;font-size:12px">${r.text}</td>
               <td>${r.buyer}<br/><span class="hint">${r.created}</span></td>
@@ -719,7 +749,7 @@
         <td class="mono">${r.id}</td>
         <td class="mono">${r.orderId}</td>
         <td><span class="tag ${typeTag[r.type] || 'tag-gray'}">${typeLabel[r.type] || r.type}</span></td>
-        <td><div class="prod-cell"><div class="prod-img">${r.emoji}</div><div class="prod-name">${r.product}</div></div></td>
+        <td><div class="prod-cell">${thumb(r.product)}<div class="prod-name">${r.product}</div></div></td>
         <td style="max-width:200px;font-size:12px">${r.reason}</td>
         <td><b>${r.amount.toLocaleString('ru-RU')}</b></td>
         <td><span class="tag ${statusTag[r.status] || 'tag-gray'}">${Store.RETURN_LABELS[r.status] || r.status}</span></td>
@@ -763,7 +793,7 @@
     document.getElementById('weeklySkuBody').innerHTML = report.skus.map(sk => `
       <tr>
         <td class="mono">${sk.sku}</td>
-        <td><div class="prod-cell"><div class="prod-img">${sk.emoji}</div><div class="prod-name">${sk.name}</div></div></td>
+        <td><div class="prod-cell">${thumb(sk.name)}<div class="prod-name">${sk.name}</div></div></td>
         <td>${sk.qty}</td>
         <td>${sk.sales.toLocaleString('ru-RU')}</td>
         <td style="color:var(--success)">${sk.profit.toLocaleString('ru-RU')}</td>
@@ -812,7 +842,7 @@
           <label>Client-Id <input class="input" id="wzClientId" placeholder="例如 123456" value="${w.clientId && w.clientId !== 'bound-client-****' ? w.clientId : ''}" /></label>
           <label>Api-Key <input class="input" id="wzApiKey" type="password" placeholder="••••••••" value="" /></label>
         </div>
-        <div class="compliance-mini">🇷🇺 建议先在 Seller Center 开通 rFBS / 跨境直发权限</div>`;
+        <div class="compliance-mini">建议先在 Seller Center 开通 rFBS / 跨境直发权限</div>`;
       footer.innerHTML = `
         <button class="btn btn-ghost" id="wzSkip">跳过引导</button>
         <div style="flex:1"></div>
@@ -831,7 +861,7 @@
             <div class="hint">本地仓入驻（当前账号未开通）</div>
           </button>
         </div>
-        <div class="compliance-mini">⏱️ rFBS 备货时效通常 24–72h，超时将影响搜索排名</div>`;
+        <div class="compliance-mini">rFBS 备货时效通常 24–72h，超时将影响搜索排名</div>`;
       footer.innerHTML = `
         <button class="btn btn-ghost" id="wzBack1">上一步</button>
         <div style="flex:1"></div>
@@ -857,11 +887,11 @@
         <h3>导入首批经营商品</h3>
         <p class="hint" style="margin:8px 0 16px">将 3 个爆款加入本店刊登草稿，可继续映射发布</p>
         <div class="import-preview">
-          <div class="ip-item">🎧 无线降噪耳机 TWS Pro</div>
-          <div class="ip-item">🔗 Type-C 编织数据线 2m</div>
-          <div class="ip-item">🔌 65W 氮化镓快充头</div>
+          <div class="ip-item">${thumb('无线降噪耳机')} 无线降噪耳机 TWS Pro</div>
+          <div class="ip-item">${thumb('数据线')} Type-C 编织数据线 2m</div>
+          <div class="ip-item">${thumb('快充头')} 65W 氮化镓快充头</div>
         </div>
-        <div class="compliance-mini">📋 刊登前请补齐必填俄语属性：Бренд / Страна производитель / Состав</div>`;
+        <div class="compliance-mini">刊登前请补齐必填俄语属性：Бренд / Страна производитель / Состав</div>`;
       footer.innerHTML = `
         <button class="btn btn-ghost" id="wzBack3">上一步</button>
         <div style="flex:1"></div>
@@ -891,13 +921,13 @@
       return `
       <div class="agent-card ${a.on ? 'on' : 'off'}" data-agent-id="${a.id}">
         <div class="agent-card-head">
-          <div class="agent-icon">${a.icon}</div>
+          <div class="agent-icon tone-${TONE_BY_AGENT[a.id] || 'info'}">${mark(TONE_BY_AGENT[a.id] || 'info')}</div>
           <div class="agent-titles">
             <div class="agent-name">${a.name}</div>
             <div class="agent-desc">${a.desc}</div>
           </div>
           <label class="toggle" title="启用/停用">
-            <input type="checkbox" data-toggle-agent="${a.id}" ${a.on ? 'checked' : ''} />
+            <input type="checkbox" data-toggle-agent="${a.id}" ${a.on ? 'checked' : ''} aria-label="启用或停用 ${a.name}" />
             <span class="slider"></span>
           </label>
         </div>
@@ -928,7 +958,7 @@
     document.getElementById('agentFeedHint').textContent = merged.length + ' 条';
     document.getElementById('agentFeed').innerHTML = merged.length
       ? merged.slice(0, 24).map(l =>
-          `<li><span class="af-icon">${l.icon}</span><div><div class="af-title">${l.agent}</div><div class="af-sub">${escapeHtml(l.text)}</div></div><span class="af-t">${l.t}</span></li>`
+          `<li><span class="af-icon">${mark('info')}</span><div><div class="af-title">${l.agent}</div><div class="af-sub">${escapeHtml(l.text)}</div></div><span class="af-t">${l.t}</span></li>`
         ).join('')
       : '<li class="hint" style="padding:16px;justify-content:center">运行 Agent 后活动会出现在这里</li>';
   }
