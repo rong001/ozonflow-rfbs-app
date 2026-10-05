@@ -266,13 +266,12 @@ window.OzonFlowOps = (function () {
     el.innerHTML = `
       <div class="card">
         <div class="card-body">
-          <label for="cpInput" class="cp-label">用一句话告诉系统要做什么</label>
+          <div class="cp-head"><label for="cpInput" class="cp-label">想让系统做什么？</label><button type="button" class="info-tip" aria-label="说明" data-tip="先预览影响范围，确认后才执行。改价超 ${Store.APPROVAL_RULES.priceChangePct}%、退款 ≥ ${Store.APPROVAL_RULES.refundRub}₽、采购 ≥ ¥${Store.APPROVAL_RULES.poCny}、取消订单都会进审批中心。语义解析在浏览器本地运行，数据不出本机。"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.01"/></svg></button></div>
           <div class="cp-input-row">
             <input id="cpInput" class="cp-input" autocomplete="off" placeholder="例如：把毛利低于20%的商品提价8%" value="${esc(lastInput)}" />
-            <button class="btn btn-accent" id="cpRun">解析指令</button>
+            <button class="btn btn-primary" id="cpRun">解析指令</button>
           </div>
-          <div class="cp-chips">${EXAMPLES.map(x => `<button class="cp-chip" data-cp-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div>
-          <div class="hint" style="margin-top:8px">先预览影响范围，确认后才执行；改价超 ${Store.APPROVAL_RULES.priceChangePct}%、退款 ≥ ${Store.APPROVAL_RULES.refundRub}₽、采购 ≥ ¥${Store.APPROVAL_RULES.poCny}、取消订单都进审批中心。解析顺序：规则引擎 → 本地语义模型（浏览器内运行，无需大模型 Key，数据不出本机）。</div>
+          <div class="cp-chips">${EXAMPLES.slice(0, 7).map(x => `<button class="cp-chip" data-cp-ex="${esc(x)}">${esc(x)}</button>`).join('')}<details class="cp-more"><summary class="cp-chip cp-chip-more">更多 ${EXAMPLES.length - 7} 条</summary><div class="cp-chips">${EXAMPLES.slice(7).map(x => `<button class="cp-chip" data-cp-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div></details></div>
         </div>
       </div>
       ${planHtml}

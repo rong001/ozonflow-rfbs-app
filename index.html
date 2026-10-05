@@ -6,8 +6,9 @@
   <title>OzonFlow · rFBS 跨境直发中台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/v3.css" />
 </head>
 <body>
   <div class="app">
@@ -16,161 +17,129 @@
         <div class="logo">OF</div>
         <div class="brand-text">
           <div class="brand-name">OzonFlow</div>
-          <div class="brand-sub">rFBS 直发中台</div>
+          <div class="brand-sub">rFBS 直发</div>
         </div>
       </div>
       <nav class="sidebar-nav" aria-label="功能分区">
-        <div class="nav-section">
-          <div class="nav-section-title">AI 中枢</div>
-          <button class="nav-item" data-view="copilot">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
-            <span>AI 指令台</span>
-          </button>
-          <button class="nav-item" data-view="approvals">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>
+        <div class="nav-section nav-group" data-group="home">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="home"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg><span class="ng-label">工作台</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">工作台</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="dashboard"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <span>经营总览</span></button>
+            <button class="nav-item" data-view="copilot"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+            <span>AI 指令台</span></button>
+            <button class="nav-item" data-view="approvals"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>
             <span>审批中心</span>
-            <span class="badge" id="badgeApprovals">0</span>
-          </button>
-          <button class="nav-item" data-view="capability">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            <span>能力矩阵</span>
-          </button>
-          <button class="nav-item" data-view="platform">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v4M16 3v4M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>
-            <span>平台集成</span>
-          </button>
-          <button class="nav-item" data-view="connect">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
-            <span>数据连接</span>
-          </button>
+            <span class="badge" id="badgeApprovals">0</span></button>
+            <button class="nav-item" data-view="weekly"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+            <span>经营周报</span></button>
+          </div>
         </div>
-        <div class="nav-section">
-          <div class="nav-section-title">经营</div>
-          <button class="nav-item active" data-view="dashboard">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-            <span>经营总览</span>
-          </button>
-          <button class="nav-item" data-view="selection">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
-            <span>智能选品</span>
-          </button>
-          <button class="nav-item" data-view="listing">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
-            <span>刊登上架</span>
-            <span class="badge" id="badgeListing">0</span>
-          </button>
-          <button class="nav-item" data-view="profit">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <span>利润定价</span>
-          </button>
-          <button class="nav-item" data-view="weekly">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
-            <span>经营周报</span>
-          </button>
-        </div>
-        <div class="nav-section">
-          <div class="nav-section-title">增长</div>
-          <button class="nav-item" data-view="market">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l3-5 3 3 5-7"/><circle cx="18" cy="6" r="1.5"/></svg>
-            <span>市场选品</span>
-          </button>
-          <button class="nav-item" data-view="compete">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10l-3-3M17 17H7l3 3"/></svg>
-            <span>价格竞争</span>
-            <span class="badge" id="badge-compete" hidden>0</span>
-          </button>
-          <button class="nav-item" data-view="content">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
-            <span>内容合规</span>
-            <span class="badge" id="badge-content" hidden>0</span>
-          </button>
-          <button class="nav-item" data-view="promo">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>
-            <span>推广活动</span>
-            <span class="badge" id="badge-promo" hidden>0</span>
-          </button>
-          <button class="nav-item" data-view="studio">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            <span>素材工坊</span>
-          </button>
-        </div>
-        <div class="nav-section">
-          <div class="nav-section-title">风控财务</div>
-          <button class="nav-item" data-view="health">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
-            <span>店铺健康</span>
-            <span class="badge" id="badge-health" hidden>0</span>
-          </button>
-          <button class="nav-item" data-view="finance">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-            <span>财务对账</span>
-            <span class="badge" id="badge-finance" hidden>0</span>
-          </button>
-        </div>
-        <div class="nav-section">
-          <div class="nav-section-title">履约</div>
-          <button class="nav-item" data-view="orders">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
+        <div class="nav-section nav-group" data-group="fulfil">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="fulfil"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg><span class="ng-label">订单履约</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">订单履约</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="orders"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>
             <span>订单履约</span>
-            <span class="badge" id="badgeOrders">0</span>
-          </button>
-          <button class="nav-item" data-view="rules">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5"/></svg>
-            <span>自动化规则</span>
-          </button>
-          <button class="nav-item" data-view="agents">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
-            <span>自动化 Agent</span>
-            <span class="badge" id="badgeAgents">0</span>
-          </button>
-          <button class="nav-item" data-view="logistics">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6v-6l-4-4h-2"/><rect x="2" y="7" width="14" height="12" rx="1"/><circle cx="6.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
-            <span>物流与库存</span>
-          </button>
-          <button class="nav-item" data-view="returns">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            <span>退货异常</span>
-            <span class="badge" id="badgeReturns">0</span>
-          </button>
-          <button class="nav-item" data-view="sla">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>
+            <span class="badge" id="badgeOrders">0</span></button>
+            <div class="nav-leaves" data-leaves-of="orders"><button class="nav-leaf" type="button" data-leaf-view="orders" data-leaf-filter="audit">待审核</button><button class="nav-leaf" type="button" data-leaf-view="orders" data-leaf-filter="purchase">待采购</button><button class="nav-leaf" type="button" data-leaf-view="orders" data-leaf-filter="ship">待发货</button><button class="nav-leaf" type="button" data-leaf-view="orders" data-leaf-filter="risk">超时风险</button></div>
+            <button class="nav-item" data-view="sla"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>
             <span>时效物流</span>
-            <span class="badge" id="badge-sla" hidden>0</span>
-          </button>
-          <button class="nav-item" data-view="supply">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>
-            <span>供应链库存</span>
-          </button>
+            <span class="badge" id="badge-sla" hidden>0</span></button>
+            <button class="nav-item" data-view="logistics"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16h6v-6l-4-4h-2"/><rect x="2" y="7" width="14" height="12" rx="1"/><circle cx="6.5" cy="19.5" r="1.5"/><circle cx="18.5" cy="19.5" r="1.5"/></svg>
+            <span>物流与库存</span></button>
+            <button class="nav-item" data-view="supply"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>
+            <span>供应链库存</span></button>
+            <button class="nav-item" data-view="rules"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5"/></svg>
+            <span>自动化规则</span></button>
+          </div>
         </div>
-        <div class="nav-section">
-          <div class="nav-section-title">服务</div>
-          <button class="nav-item" data-view="cs">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="nav-section nav-group" data-group="growth">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="growth"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="ng-label">商品增长</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">商品增长</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="selection"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+            <span>智能选品</span></button>
+            <button class="nav-item" data-view="market"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l3-5 3 3 5-7"/><circle cx="18" cy="6" r="1.5"/></svg>
+            <span>市场选品</span></button>
+            <button class="nav-item" data-view="listing"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
+            <span>刊登上架</span>
+            <span class="badge" id="badgeListing">0</span></button>
+            <button class="nav-item" data-view="studio"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span>素材工坊</span></button>
+            <button class="nav-item" data-view="content"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+            <span>内容合规</span>
+            <span class="badge" id="badge-content" hidden>0</span></button>
+            <button class="nav-item" data-view="compete"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10l-3-3M17 17H7l3 3"/></svg>
+            <span>价格竞争</span>
+            <span class="badge" id="badge-compete" hidden>0</span></button>
+            <button class="nav-item" data-view="promo"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>
+            <span>推广活动</span>
+            <span class="badge" id="badge-promo" hidden>0</span></button>
+          </div>
+        </div>
+        <div class="nav-section nav-group" data-group="service">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="service"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg><span class="ng-label">客服售后</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">客服售后</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="cs"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span>客服评价</span>
-            <span class="badge" id="badgeCs">0</span>
-          </button>
-          <button class="nav-item" data-view="inbox">
-            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            <span class="badge" id="badgeCs">0</span></button>
+            <div class="nav-leaves" data-leaves-of="cs"><button class="nav-leaf" type="button" data-leaf-view="cs" data-leaf-filter="reviews">评价</button><button class="nav-leaf" type="button" data-leaf-view="cs" data-leaf-filter="qa">问答</button><button class="nav-leaf" type="button" data-leaf-view="cs" data-leaf-filter="templates">回复模板</button></div>
+            <button class="nav-item" data-view="inbox"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
             <span>客服收件箱</span>
-            <span class="badge" id="badge-inbox" hidden>0</span>
-          </button>
+            <span class="badge" id="badge-inbox" hidden>0</span></button>
+            <button class="nav-item" data-view="returns"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span>退货异常</span>
+            <span class="badge" id="badgeReturns">0</span></button>
+            <div class="nav-leaves" data-leaves-of="returns"><button class="nav-leaf" type="button" data-leaf-view="returns" data-leaf-filter="open">待处理</button><button class="nav-leaf" type="button" data-leaf-view="returns" data-leaf-filter="investigating">调查中</button><button class="nav-leaf" type="button" data-leaf-view="returns" data-leaf-filter="approved">已同意</button></div>
+          </div>
+        </div>
+        <div class="nav-section nav-group" data-group="money">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="money"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6Z"/><path d="M9 12l2 2 4-4"/></svg><span class="ng-label">财务风控</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">财务风控</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="profit"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>利润定价</span></button>
+            <button class="nav-item" data-view="finance"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+            <span>财务对账</span>
+            <span class="badge" id="badge-finance" hidden>0</span></button>
+            <button class="nav-item" data-view="health"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>店铺健康</span>
+            <span class="badge" id="badge-health" hidden>0</span></button>
+          </div>
+        </div>
+        <div class="nav-section nav-group" data-group="system">
+          <button class="nav-group-head" type="button" aria-expanded="false" data-group-toggle="system"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg><span class="ng-label">自动化与集成</span><span class="ng-badge" hidden></span><svg class="ng-chev" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg></button>
+          <div class="nav-section-title sr-only">自动化与集成</div>
+          <div class="nav-group-items">
+            <button class="nav-item" data-view="agents"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+            <span>自动化 Agent</span>
+            <span class="badge" id="badgeAgents">0</span></button>
+            <button class="nav-item" data-view="connect"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+            <span>数据连接</span></button>
+            <button class="nav-item" data-view="platform"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v4M16 3v4M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>
+            <span>平台集成</span></button>
+            <button class="nav-item" data-view="capability"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            <span>能力矩阵</span></button>
+          </div>
         </div>
       </nav>
       <div class="sidebar-footer">
-        <button class="btn-wizard-entry" id="btnOpenWizard" type="button">开店引导</button>
-        <div class="plan">
-          <div class="plan-dot"></div>
-          <div>
-            <div style="color:#e2e8f0;font-weight:500">专业版 · 经营中台</div>
-            <div id="planQuota">本地数据层 · 可离线</div>
-          </div>
-        </div>
+        <button class="nav-util" id="btnOpenWizard" type="button"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg><span>开店引导</span></button>
+        <button class="nav-util" id="btnPinNav" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg><span id="pinNavLabel">固定侧栏</span></button>
+        <span id="planQuota" hidden></span>
       </div>
     </aside>
 
     <div class="main">
       <header class="topbar">
-        <h1 class="topbar-title" id="pageTitle">经营总览</h1>
+        <div class="topbar-heading">
+          <div class="crumb" id="pageCrumb">工作台</div>
+          <h1 class="topbar-title" id="pageTitle">经营总览</h1>
+        </div>
+        <button class="cmdk-trigger" id="btnCmdk" type="button" aria-label="搜索功能或输入指令"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>搜索功能或输入指令</span><kbd>Ctrl K</kbd></button>
         <div class="topbar-spacer"></div>
 
         <div class="demo-switcher" id="demoSwitcher">
@@ -203,54 +172,27 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notif-dot" id="notifDot" style="display:none"></span>
         </button>
-        <button class="btn btn-sm btn-ghost" id="btnReset" title="重置当前场景数据">重置</button>
+        <button class="topbar-btn" id="btnReset" type="button" title="重置当前场景数据" aria-label="重置当前场景数据"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
         <div class="avatar" id="avatarBtn" title="当前角色" role="img" aria-label="当前角色头像">张</div>
       </header>
 
       <main class="content">
         <!-- 1. Dashboard -->
         <section class="view active" id="view-dashboard">
-          <div class="compliance-strip" id="complianceStrip">
-            <span class="cs-item"><i class="mark mark-info" aria-hidden="true"></i><b>必填俄语属性</b>：Бренд / Страна / Состав</span>
-            <span class="cs-item"><i class="mark mark-danger" aria-hidden="true"></i><b>禁售</b>：医疗器械、成人用品、部分电池类</span>
-            <span class="cs-item"><i class="mark mark-warn" aria-hidden="true"></i><b>rFBS 备货时效</b>：通常 24–72h，超时降权</span>
-            <button class="btn btn-sm btn-ghost" id="btnDashWizard">开店引导</button>
+          <div class="hero" id="dashHero">
+            <div class="hero-main">
+              <div class="hero-kicker" id="heroDate"></div>
+              <h2 class="hero-title" id="heroTitle">今日运营平稳</h2>
+              <div class="hero-meta"><span>Agent 今日已处理 <b id="agentTodayCount">0</b> 项</span><span id="agentOnHint"></span></div>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-ghost" data-nav="copilot">AI 指令台</button>
+              <button class="btn btn-primary btn-lg" id="btnRunAllAgentsDash" type="button">一键跑全部 Agent</button>
+            </div>
           </div>
           <div class="wizard-progress-card" id="wizardProgressCard" style="display:none"></div>
-          <div class="competitor-panel" id="compPanel">
-            <button class="collapse-btn" type="button" aria-controls="compPanel" onclick="document.getElementById('compPanel').classList.toggle('collapsed')">收起/展开</button>
-            <h3>经营闭环（状态真实写入）</h3>
-            <ul>
-              <li><b>开店 Wizard</b> → 绑定店铺 / rFBS / 物流 / 导入商品</li>
-              <li><b>选品「认领」</b> → 刊登草稿；<b>利润定价</b> 测算跟卖/活动价</li>
-              <li><b>发布 → 同步订单 → 审单/面单/发货</b>；客服差评 + 退货异常进待办</li>
-              <li><b>多店切换</b>真实分区数据；<b>角色</b>控制可见操作；<b>经营周报</b>导出</li>
-              <li><b>自动化 Agent</b>：选品/刊登/履约/采购/物流/客服/差评升级/退货/补货/周报 · 一键跑全部</li>
-            </ul>
-          </div>
-                    <div class="agent-today-strip" id="agentTodayStrip">
-            <div class="ats-left">
-              <span class="ats-icon" aria-hidden="true"><span class="ui-mark tone-accent"></span></span>
-              <span><b>Agent 今日已处理</b> <span id="agentTodayCount">0</span> 项</span>
-              <span class="hint" id="agentOnHint"></span>
-            </div>
-            <div class="ats-right">
-              <button class="btn btn-sm btn-ghost" data-nav="agents">打开 Agent Hub</button>
-              <button class="btn btn-sm btn-accent" id="btnRunAllAgentsDash" type="button">一键跑全部 Agent</button>
-            </div>
-          </div>
           <div class="kpi-grid" id="kpiGrid"></div>
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div class="card-title">近 7 日订单趋势</div>
-                <div class="card-extra"><span class="tag tag-blue" id="chartShopTag">—</span></div>
-              </div>
-              <div class="card-body">
-                <div class="chart-legend" aria-hidden="true"><span><i class="lg lg-orders"></i>订单量</span><span><i class="lg lg-peak"></i>峰值日</span><span>柱下数字为当日单量</span></div>
-                <div class="chart-bars" id="orderChart" role="img" aria-label="近 7 日订单趋势"></div>
-              </div>
-            </div>
+          <div class="grid-2 dash-split">
             <div class="card">
               <div class="card-header">
                 <div class="card-title">今日待办</div>
@@ -260,10 +202,20 @@
                 <ul class="mini-list" id="todoList"></ul>
               </div>
             </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">近 7 日订单趋势</div>
+                <div class="card-extra"><span class="tag tag-blue" id="chartShopTag">—</span></div>
+              </div>
+              <div class="card-body">
+                <div class="chart-legend" aria-hidden="true"><span><i class="lg lg-orders"></i>订单量</span><span><i class="lg lg-peak"></i>峰值日</span></div>
+                <div class="chart-bars" id="orderChart" role="img" aria-label="近 7 日订单趋势"></div>
+              </div>
+            </div>
           </div>
           <div class="card">
             <div class="card-header">
-              <div class="card-title">热销 TOP · 今日（当前店铺）</div>
+              <div class="card-title">今日热销 TOP 5</div>
               <div class="card-extra"><button class="btn btn-sm btn-ghost" data-nav="selection">查看选品 →</button></div>
             </div>
             <div class="card-body" style="padding:0">
@@ -618,5 +570,6 @@
   <script src="js/nlu.js"></script>
   <script src="js/app.js"></script>
   <script src="js/ai-ops.js"></script>
+  <script src="js/ux.js"></script>
 </body>
 </html>

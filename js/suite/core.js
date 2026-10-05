@@ -50,7 +50,7 @@ window.OFS = (function () {
   function card(title, body, extra, opts) {
     opts = opts || {};
     return `<div class="card${opts.cls ? ' ' + opts.cls : ''}">
-      <div class="card-header"><div class="card-title">${title}</div>${extra ? `<div class="card-extra">${extra}</div>` : ''}</div>
+      <div class="card-header"><div class="card-title">${String(title).replace(/\s*[（(]R\d+(?:[\s·\/、,，]+R?\d+)*[)）]/g, '')}</div>${extra ? `<div class="card-extra">${extra}</div>` : ''}</div>
       <div class="card-body"${opts.flush ? ' style="padding:0"' : ''}>${body}</div></div>`;
   }
   function table(head, rows, empty) {

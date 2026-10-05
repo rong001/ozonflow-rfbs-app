@@ -99,7 +99,9 @@
       nav.setAttribute('aria-current', 'page');
     }
     document.getElementById('pageTitle').textContent = TITLES[view] || (window.OFS && OFS.title(view)) || view;
+    if (window.OFUX) window.OFUX.beforeRender(view, opts);
     renderAll();
+    if (window.OFUX) window.OFUX.onNavigate(view, opts);
   }
   window.navigate = navigate;
 
@@ -200,20 +202,34 @@
       ops: '选品刊登履约',
       warehouse: '仓配发货退货',
       cs: '评价问答退货',
+      finance: '对账结算利润',
     })[id] || '';
   }
+
+  function shopName() { const sh = Store.currentShop(); return sh ? sh.name : Store.get().meta.shopName; }
 
   /* ---------- Dashboard ---------- */
   function renderDashboard() {
     const s = Store.get();
     const k = Store.kpi();
-    document.getElementById('kpiGrid').innerHTML = `
-      <div class="kpi-card blue"><div class="kpi-label">今日订单</div><div class="kpi-value">${k.todayOrders}</div><div class="kpi-sub up">${s.meta.shopName}</div></div>
-      <div class="kpi-card orange"><div class="kpi-label">待发货</div><div class="kpi-value">${k.pendingShip}</div><div class="kpi-sub neutral">含待采购 ${k.purchaseCount}</div></div>
-      <div class="kpi-card red"><div class="kpi-label">超时风险</div><div class="kpi-value">${k.risk}</div><div class="kpi-sub down">距截单 &lt; 6h</div></div>
-      <div class="kpi-card green"><div class="kpi-label">预估毛利 (₽)</div><div class="kpi-value">${(k.gross / 1000).toFixed(1)}K</div><div class="kpi-sub up">含退货拨备</div></div>
-      <div class="kpi-card purple"><div class="kpi-label">差评/退货</div><div class="kpi-value">${k.badReviews + k.openReturns}</div><div class="kpi-sub down">待回 ${k.badReviews} · 异常 ${k.openReturns}</div></div>
-    `;
+    const ap = (Store.badges().approvals || 0);
+    const kc = (tone, label, value, sub, nav, filter) => `<div class="kpi-card ${tone}" data-nav="${nav}"${filter ? ` data-nav-filter="${filter}"` : ''} role="link" tabindex="0"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${sub}</div></div>`;
+    document.getElementById('kpiGrid').innerHTML =
+      kc('blue', '今日订单', k.todayOrders, shopName(), 'orders') +
+      kc('orange', '待发货', k.pendingShip, '含待采购 ' + k.purchaseCount, 'orders', 'ship') +
+      kc('red' + (k.risk ? ' is-alert' : ''), '超时风险', k.risk, '距截单 &lt; 6h', 'orders', 'risk') +
+      kc('green', '预估毛利 ₽', (k.gross / 1000).toFixed(1) + 'K', '已扣退货拨备', 'profit') +
+      kc('purple', '差评 / 退货', k.badReviews + k.openReturns, '差评 ' + k.badReviews + ' · 退货 ' + k.openReturns, 'cs');
+    const heroBits = [];
+    if (k.risk) heroBits.push(`<em class="t-danger">${k.risk}</em> 单临近超时`);
+    if (ap) heroBits.push(`<em>${ap}</em> 项待审批`);
+    if (k.pendingShip && heroBits.length < 2) heroBits.push(`<em>${k.pendingShip}</em> 单待发货`);
+    if (k.badReviews && heroBits.length < 2) heroBits.push(`<em>${k.badReviews}</em> 条差评待回`);
+    const ht = document.getElementById('heroTitle');
+    if (ht) ht.innerHTML = heroBits.length ? '今天先处理 ' + heroBits.join('，') : '今日运营平稳，待办已清空';
+    const hd = document.getElementById('heroDate');
+    if (hd) { const d = new Date(); hd.textContent = (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 周' + '日一二三四五六'[d.getDay()] + ' · ' + (shopName()); }
+
 
     document.getElementById('chartShopTag').textContent = s.meta.shopName;
     const vals = s.trend;
@@ -277,7 +293,7 @@
     const countEl = document.getElementById('agentTodayCount');
     if (countEl) countEl.textContent = as.todayTotal;
     const onHint = document.getElementById('agentOnHint');
-    if (onHint) onHint.textContent = '· ' + as.onCount + '/' + as.agents.length + ' 已启用';
+    if (onHint) onHint.textContent = as.onCount + '/' + as.agents.length + ' 个已启用';
 
   }
 
@@ -932,7 +948,7 @@
       <div class="ahb-stat"><b>${as.onCount}</b><span>启用中</span></div>
       <div class="ahb-stat"><b>${as.todayTotal}</b><span>今日处理</span></div>
       <div class="ahb-stat"><b>${as.agents.length}</b><span>专业 Agent</span></div>
-      <div class="ahb-copy">运营建议：点「一键跑全部 Agent」执行选品→刊登→履约→采购→物流→客服→退货→补货→周报级联。</div>
+
     `;
 
     document.getElementById('agentGrid').innerHTML = as.agents.map(a => {
@@ -956,7 +972,7 @@
           <span class="tag ${a.todayCount ? 'tag-green' : 'tag-gray'}">今日 ${a.todayCount || 0}</span>
         </div>
         <div class="agent-actions">
-          <button class="btn btn-sm btn-primary" data-run-agent="${a.id}">运行</button>
+          <button class="btn btn-sm btn-secondary" data-run-agent="${a.id}">运行</button>
           <button class="btn btn-sm btn-ghost" data-nav="${agentNavTarget(a.id)}">查看模块 →</button>
         </div>
         <ul class="agent-mini-log">
@@ -1040,7 +1056,8 @@
     btn.addEventListener('click', () => navigate(btn.dataset.view));
   });
 
-  on('[data-nav]', 'click', (e, t) => navigate(t.dataset.nav));
+  on('[data-nav]', 'click', (e, t) => navigate(t.dataset.nav, t.dataset.navFilter ? { filter: t.dataset.navFilter } : undefined));
+  on('[data-nav][role="link"]', 'keydown', (e, t) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(t.dataset.nav, t.dataset.navFilter ? { filter: t.dataset.navFilter } : undefined); } });
   on('[data-todo-nav]', 'click', (e, t) => {
     navigate(t.dataset.todoNav, { filter: t.dataset.todoFilter || null });
   });
@@ -1138,7 +1155,7 @@
     Store.wizardReopen();
     openWizard(0);
   });
-  document.getElementById('btnDashWizard').addEventListener('click', () => openWizard());
+  const _dw = document.getElementById('btnDashWizard'); if (_dw) _dw.addEventListener('click', () => openWizard());
   document.getElementById('wizardClose').addEventListener('click', closeWizard);
   document.getElementById('wizardOverlay').addEventListener('click', e => {
     if (e.target.id === 'wizardOverlay') closeWizard();
