@@ -35,6 +35,10 @@
             <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             <span>能力矩阵</span>
           </button>
+          <button class="nav-item" data-view="platform">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v4M16 3v4M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>
+            <span>平台集成</span>
+          </button>
         </div>
         <div class="nav-section">
           <div class="nav-section-title">经营</div>
@@ -58,6 +62,41 @@
           <button class="nav-item" data-view="weekly">
             <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
             <span>经营周报</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">增长</div>
+          <button class="nav-item" data-view="market">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l3-5 3 3 5-7"/><circle cx="18" cy="6" r="1.5"/></svg>
+            <span>市场选品</span>
+          </button>
+          <button class="nav-item" data-view="compete">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h10l-3-3M17 17H7l3 3"/></svg>
+            <span>价格竞争</span>
+            <span class="badge" id="badge-compete" hidden>0</span>
+          </button>
+          <button class="nav-item" data-view="content">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+            <span>内容合规</span>
+            <span class="badge" id="badge-content" hidden>0</span>
+          </button>
+          <button class="nav-item" data-view="promo">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>
+            <span>推广活动</span>
+            <span class="badge" id="badge-promo" hidden>0</span>
+          </button>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">风控财务</div>
+          <button class="nav-item" data-view="health">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span>店铺健康</span>
+            <span class="badge" id="badge-health" hidden>0</span>
+          </button>
+          <button class="nav-item" data-view="finance">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+            <span>财务对账</span>
+            <span class="badge" id="badge-finance" hidden>0</span>
           </button>
         </div>
         <div class="nav-section">
@@ -85,6 +124,15 @@
             <span>退货异常</span>
             <span class="badge" id="badgeReturns">0</span>
           </button>
+          <button class="nav-item" data-view="sla">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>
+            <span>时效物流</span>
+            <span class="badge" id="badge-sla" hidden>0</span>
+          </button>
+          <button class="nav-item" data-view="supply">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>
+            <span>供应链库存</span>
+          </button>
         </div>
         <div class="nav-section">
           <div class="nav-section-title">服务</div>
@@ -92,6 +140,11 @@
             <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span>客服评价</span>
             <span class="badge" id="badgeCs">0</span>
+          </button>
+          <button class="nav-item" data-view="inbox">
+            <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            <span>客服收件箱</span>
+            <span class="badge" id="badge-inbox" hidden>0</span>
           </button>
         </div>
       </nav>
@@ -497,6 +550,16 @@
         <section class="view" id="view-copilot"><div id="copilotRoot" class="ops-stack"></div></section>
         <section class="view" id="view-approvals"><div id="approvalsRoot" class="ops-stack"></div></section>
         <section class="view" id="view-capability"><div id="capabilityRoot" class="ops-stack"></div></section>
+        <section class="view" id="view-market"><div id="ofs-market" class="ops-stack"></div></section>
+        <section class="view" id="view-compete"><div id="ofs-compete" class="ops-stack"></div></section>
+        <section class="view" id="view-content"><div id="ofs-content" class="ops-stack"></div></section>
+        <section class="view" id="view-promo"><div id="ofs-promo" class="ops-stack"></div></section>
+        <section class="view" id="view-health"><div id="ofs-health" class="ops-stack"></div></section>
+        <section class="view" id="view-finance"><div id="ofs-finance" class="ops-stack"></div></section>
+        <section class="view" id="view-supply"><div id="ofs-supply" class="ops-stack"></div></section>
+        <section class="view" id="view-sla"><div id="ofs-sla" class="ops-stack"></div></section>
+        <section class="view" id="view-inbox"><div id="ofs-inbox" class="ops-stack"></div></section>
+        <section class="view" id="view-platform"><div id="ofs-platform" class="ops-stack"></div></section>
       </main>
     </div>
   </div>
@@ -533,6 +596,12 @@
   <script src="js/store.js"></script>
   <script src="js/requirements-data.js"></script>
   <script src="js/adapters/ozon-seller-api.js"></script>
+  <script src="js/suite/core.js"></script>
+  <script src="js/suite/risk-finance.js"></script>
+  <script src="js/suite/growth.js"></script>
+  <script src="js/suite/content.js"></script>
+  <script src="js/suite/ops.js"></script>
+  <script src="js/suite/service.js"></script>
   <script src="js/app.js"></script>
   <script src="js/ai-ops.js"></script>
 </body>

@@ -1211,3 +1211,30 @@ h1.topbar-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 
 .ui-mark.tone-danger + .ml-text .ml-title { color: inherit; }
 @media (max-width: 720px) { .cp-input-row { flex-direction: column; } }
 @media (prefers-reduced-motion: reduce) { .cp-chip, .cap-cell { transition: none; } }
+
+/* ===================== 经营套件（js/suite/*） ===================== */
+.ofs-note { margin: var(--space-lg) 0 0; padding: var(--space-md) var(--space-lg); font-size: 12.5px; line-height: 1.6; color: var(--text-muted); background: var(--color-muted); border-left: 3px solid var(--color-secondary); border-radius: 6px; }
+.card-body .ofs-note:first-child { margin-top: 0; }
+.ofs-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xl); align-items: start; }
+.ofs-grid-2 > .card { margin: 0; min-width: 0; }
+@media (max-width: 1100px) { .ofs-grid-2 { grid-template-columns: 1fr; } }
+.ofs-spark { display: flex; align-items: flex-end; gap: 10px; height: 120px; padding: var(--space-md) 0 var(--space-xl); }
+.ofs-spark-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+.ofs-spark-col > div { width: 100%; max-width: 36px; min-height: 3px; background: var(--color-success); border-radius: 4px 4px 0 0; }
+.ofs-spark-col > div.o { background: var(--color-accent); }
+.ofs-spark-col > div.r { background: var(--color-destructive); }
+.ofs-spark-col > span { position: absolute; bottom: -18px; font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.ofs-mini-input { height: 32px; padding: 0 10px; font: inherit; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; min-width: 0; }
+input.ofs-mini-input[type="number"] { width: 88px; font-variant-numeric: tabular-nums; }
+.ofs-mini-input:focus-visible, .ofs-check input:focus-visible, .ofs-brief:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.ofs-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-md); }
+.ofs-check { display: flex; align-items: flex-start; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border: 1px solid var(--border-light); border-radius: 8px; font-size: 13px; cursor: pointer; background: var(--surface); }
+.ofs-check:hover { border-color: var(--color-secondary); }
+.ofs-check input { margin-top: 2px; accent-color: var(--color-primary); width: 16px; height: 16px; }
+.ofs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-lg) var(--space-xl); }
+.ofs-field { display: flex; flex-direction: column; gap: var(--space-sm); font-size: 12px; color: var(--text-muted); }
+.ofs-field > span { font-weight: 500; }
+.ofs-cell { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ofs-brief { width: 100%; min-height: 180px; padding: var(--space-lg); font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); background: var(--color-muted); border: 1px solid var(--border); border-radius: 8px; resize: vertical; }
+[id^="ofs-"] .data-table td .hint { display: inline-block; max-width: 360px; white-space: normal; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { [id^="ofs-"] *, [id^="ofs-"] *::before, [id^="ofs-"] *::after { transition: none !important; animation: none !important; } }

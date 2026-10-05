@@ -10,6 +10,8 @@ window.OzonFlowOps = (function () {
     dashboard: '经营总览', selection: '智能选品', listing: '刊登上架', orders: '订单履约', rules: '自动化规则',
     logistics: '物流与库存', profit: '利润定价', cs: '客服评价', returns: '退货异常', weekly: '经营周报',
     agents: '自动化 Agent', approvals: '审批中心', copilot: 'AI 指令台', capability: '能力矩阵',
+    market: '市场选品', compete: '价格竞争', content: '内容合规', promo: '推广活动', health: '店铺健康',
+    finance: '财务对账', supply: '供应链库存', sla: '时效物流', inbox: '客服收件箱', platform: '平台集成',
   };
 
   /* ================= AI 指令台 ================= */
@@ -28,6 +30,13 @@ window.OzonFlowOps = (function () {
     '生成本周周报',
     '切换到深圳配件馆',
     '打开审批中心',
+    '暂停所有亏损广告',
+    '检查证书到期和风险词',
+    '对一下本店回款差异',
+    '看看店铺健康和错误指数',
+    '回传所有运单号',
+    '回复买家消息',
+    '生成今日简报',
   ];
 
   const forShop = arr => Store.forShop(arr || []);
@@ -44,6 +53,44 @@ window.OzonFlowOps = (function () {
     const t = String(text || '').trim();
     if (!t) return null;
     const s = Store.get();
+
+    // 0. 经营套件指令（店铺健康 / 广告 / 证书 / 对账 / 运单回传 / 简报 / 买家消息）
+    const F = window.OFS;
+    if (F) {
+      const navTo = (v, msg) => () => { window.navigate(v); return { ok: true, msg: msg || ('已打开' + VIEW_TITLES[v]) }; };
+      const openPage = Object.keys(VIEW_TITLES).find(v => Store.SUITE_VIEWS.includes(v) && t.includes(VIEW_TITLES[v]));
+      if (openPage && /打开|去|进入|看看|跳到/.test(t)) {
+        return { intent: 'nav', label: '打开「' + VIEW_TITLES[openPage] + '」', risk: 'none', readOnly: true, head: [], rows: [], exec: navTo(openPage) };
+      }
+      if (/(暂停|关掉|停掉).*(亏损|亏钱).*广告|广告.*(亏损|亏钱)/.test(t)) {
+        const rows = F.shop(F.ext().promo.ads).filter(a => { const p = F.S().products.find(x => x.sku === a.sku); return p && a.on && F.profitOf(p).profit * a.orders - a.spend < 0; })
+          .map(a => { const p = F.S().products.find(x => x.sku === a.sku); return [p.name, a.type, a.spend + '₽', Math.round(F.profitOf(p).profit * a.orders - a.spend) + '₽']; });
+        return { intent: 'adPause', label: '亏损广告送审暂停 · ' + rows.length + ' 个', risk: 'mid', head: ['商品', '广告类型', '花费', '扣广告后净利'], rows, exec: () => F.invoke('adPauseLoss') };
+      }
+      if (/证书|EAC|合规|风险词|禁售/.test(t)) {
+        const c = F.contentSummary();
+        return { intent: 'content', label: '内容合规检查：证书预警 ' + c.cert + ' · 风险词 ' + c.banned + ' · 低分卡片 ' + c.low, risk: 'none', readOnly: true, head: ['项目', '数量'], rows: [['证书 60 天内到期或缺失', c.cert], ['命中风险词', c.banned], ['内容分 < 60', c.low]], exec: navTo('content') };
+      }
+      if (/对账|回款|结算|少结|差异/.test(t)) {
+        const fs = F.financeSummary();
+        return { intent: 'finance', label: '逐单对账：差异 ' + fs.diffs + ' 笔，漏损约 ' + Math.round(fs.leak) + '₽', risk: 'low', head: ['项目', '值'], rows: [['差异订单', fs.diffs], ['利润漏损', Math.round(fs.leak) + '₽']], exec: () => { const r = F.invoke('finCheckAll'); window.navigate('finance'); return r; } };
+      }
+      if (/店铺健康|错误指数|罚款|封店|风险分/.test(t)) {
+        const h = F.healthOf(Store.currentShop().id);
+        return { intent: 'health', label: '店铺健康：错误指数 ' + h.m.errIndex.toFixed(1) + '%（' + h.tier.label + '）· 风险分 ' + h.risk, risk: 'none', readOnly: true, head: ['指标', '值'], rows: [['卖家原因取消率', h.m.cancelRate.toFixed(1) + '%'], ['逾期发货率', h.m.lateRate.toFixed(1) + '%'], ['错误指数', h.m.errIndex.toFixed(1) + '%'], ['临期订单', h.liveRisk]], exec: navTo('health') };
+      }
+      if (/回传|运单号.*(同步|回写)|同步.*运单/.test(t)) {
+        const n = F.slaSummary().unsynced;
+        return { intent: 'sla', label: '回传运单号 · 待回传 ' + n + ' 单', risk: 'low', head: ['待回传'], rows: [[n]], exec: () => F.invoke('slaSyncAll') };
+      }
+      if (/简报|日报/.test(t)) {
+        return { intent: 'brief', label: '生成今日经营简报', risk: 'none', readOnly: true, head: ['简报'], rows: F.brief().split('\n').map(l => [l]), exec: navTo('platform') };
+      }
+      if (/买家消息|聊天|收件箱|买家咨询/.test(t)) {
+        const open = F.shop(F.ext().inbox.chats).filter(c => !c.replied);
+        return { intent: 'inbox', label: '按建议回复买家会话 · ' + open.length + ' 个', risk: 'low', head: ['会话', '买家', '消息'], rows: open.map(c => [c.id, c.buyer, c.text]), exec: () => F.invoke('ibReplyAll') };
+      }
+    }
 
     // 1. 按毛利调价
     if (/(提价|涨价|调价|降价)/.test(t) && /毛利|利润|净利/.test(t)) {

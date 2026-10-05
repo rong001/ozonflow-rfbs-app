@@ -5,12 +5,32 @@
  * 端点以 https://docs.ozon.ru/api/seller/ 为准；note 标「需核验」的在接入时逐个确认版本号。
  */
 window.OzonFlowAdapter = (function () {
-  const config = {
+  const LS = 'ozonflow_adapter_v1';
+  const config = Object.assign({
     mode: 'offline',            // offline | proxy
     proxyBase: '',              // 例：https://your-backend.example.com/ozon
     clientId: '',               // 由后端保存，前端只显示是否已配置
     apiKeyConfigured: false,
-  };
+  }, (function () { try { return JSON.parse(localStorage.getItem(LS) || '{}'); } catch (e) { return {}; } })());
+
+  function configure(patch) {
+    Object.assign(config, patch || {});
+    if (patch && ('mode' in patch || 'proxyBase' in patch) && !('apiKeyConfigured' in patch)) config.apiKeyConfigured = false;
+    try { localStorage.setItem(LS, JSON.stringify(config)); } catch (e) { /* ignore */ }
+    return config;
+  }
+
+  /* 探活：后端代理 GET {proxyBase}/__health 返回 { ok, credentials } */
+  async function ping() {
+    if (!config.proxyBase) return { ok: false, msg: '未填写代理地址' };
+    try {
+      const res = await fetch(config.proxyBase.replace(/\/$/, '') + '/__health');
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) return { ok: false, status: res.status, msg: 'HTTP ' + res.status };
+      if (!j.credentials) return { ok: false, msg: '代理在线，但服务器上没配置 OZON_CLIENT_ID / OZON_API_KEY' };
+      return { ok: true, msg: '代理在线，凭证已配置' };
+    } catch (e) { return { ok: false, msg: '无法访问代理（' + e.message + '）' }; }
+  }
 
   const ENDPOINTS = [
     { group: '订单履约', action: 'syncOrders', method: 'POST', path: '/v3/posting/fbs/unfulfilled/list', desc: '拉取未完成 rFBS/FBS 订单', note: '' },
@@ -59,5 +79,5 @@ window.OzonFlowAdapter = (function () {
     return { ok: res.ok, status: res.status, data: await res.json().catch(() => null), endpoint: ep.path };
   }
 
-  return { config, ENDPOINTS, status, endpointFor, call };
+  return { config, configure, ping, ENDPOINTS, status, endpointFor, call };
 })();

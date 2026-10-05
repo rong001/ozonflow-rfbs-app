@@ -12,14 +12,17 @@ window.OzonFlowStore = (function () {
     ops: { id: 'ops', label: '运营', short: '运营' },
     warehouse: { id: 'warehouse', label: '仓管', short: '仓管' },
     cs: { id: 'cs', label: '客服', short: '客服' },
+    finance: { id: 'finance', label: '财务', short: '财务' },
   };
 
   /* 角色可见导航与可执行动作 */
+  const SUITE_VIEWS = ['market', 'compete', 'content', 'promo', 'health', 'finance', 'supply', 'sla', 'inbox', 'platform'];
   const ROLE_VIEWS = {
-    boss: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'],
-    ops: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents'],
-    warehouse: ['dashboard', 'copilot', 'orders', 'logistics', 'returns', 'agents'],
-    cs: ['dashboard', 'copilot', 'orders', 'cs', 'returns', 'agents'],
+    boss: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'].concat(SUITE_VIEWS),
+    ops: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents', 'market', 'compete', 'content', 'promo', 'health', 'supply', 'sla', 'inbox', 'platform'],
+    warehouse: ['dashboard', 'copilot', 'orders', 'logistics', 'returns', 'agents', 'supply', 'sla'],
+    cs: ['dashboard', 'copilot', 'orders', 'cs', 'returns', 'agents', 'inbox'],
+    finance: ['dashboard', 'copilot', 'approvals', 'capability', 'profit', 'weekly', 'finance', 'promo', 'compete', 'health', 'platform'],
   };
 
   const ROLE_ACTIONS = {
@@ -27,6 +30,7 @@ window.OzonFlowStore = (function () {
     ops: ['claim', 'publish', 'audit', 'waybill', 'ship', 'rules', 'profit', 'reply', 'return', 'wizard', 'sync', 'agents'],
     warehouse: ['waybill', 'ship', 'purchase', 'restock', 'sync', 'return', 'agents'],
     cs: ['reply', 'return', 'audit_view', 'agents'],
+    finance: ['profit', 'return', 'sync', 'agents', 'finance'],
   };
 
   let state = null;
@@ -238,10 +242,12 @@ window.OzonFlowStore = (function () {
     const ship = Math.max(80, (weight / 1000) * shipPerKg + 45);
     const fee = sellPrice * s.paymentFee;
     const retProv = sellPrice * (s.returnProvision || 0);
-    const profit = sellPrice - costRUB - commission - ship - fee - retProv;
+    const pack = (s.packCny || 0) * s.fx;
+    const ad = sellPrice * (s.adShare || 0);
+    const profit = sellPrice - costRUB - commission - ship - fee - retProv - pack - ad;
     const margin = sellPrice > 0 ? (profit / sellPrice * 100) : 0;
     return {
-      sellPrice, costRUB, commission, ship, fee, retProv, profit, margin,
+      sellPrice, costRUB, commission, ship, fee, retProv, pack, ad, profit, margin,
       fx: s.fx, commissionRate: rate, shipCnyPerKg: s.shipCnyPerKg,
       returnProvisionRate: s.returnProvision || 0,
       scenario: scenario || 'normal',
@@ -986,6 +992,8 @@ window.OzonFlowStore = (function () {
     },
   };
 
+  function registerApprovalAction(kind, fn) { APPROVAL_ACTIONS[kind] = fn; }
+
   function approve(id, silent) {
     ensureOps();
     const a = state.approvals.find(x => x.id === id);
@@ -1631,6 +1639,7 @@ window.OzonFlowStore = (function () {
     replyReview, answerQa, advanceReturn, weeklyReport,
     toggleAgent, runAgent, runAllAgents, runEnabledAgentsTick, agentsSummary,
     APPROVAL_RULES, audit, proposeApproval, approve, reject, approveAll, pendingApprovals, routePriceChange,
+    registerApprovalAction, SUITE_VIEWS, nowLabel,
     emit,
   };
 })();

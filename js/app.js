@@ -42,6 +42,7 @@
     const icon = type === 'success' ? '✓' : type === 'info' ? 'ℹ' : '•';
     t.innerHTML = '<span>' + icon + '</span><span>' + msg + '</span>';
     box.appendChild(t);
+    while (box.children.length > 4) box.firstElementChild.remove();
     setTimeout(() => {
       t.style.opacity = '0';
       t.style.transform = 'translateX(20px)';
@@ -78,7 +79,7 @@
   function navigate(view, opts) {
     opts = opts || {};
     if (!Store.canView(view)) {
-      showToast('info', '当前角色「' + Store.roleLabel() + '」无权访问「' + (TITLES[view] || view) + '」');
+      showToast('info', '当前角色「' + Store.roleLabel() + '」无权访问「' + (TITLES[view] || (window.OFS && OFS.title(view)) || view) + '」');
       return;
     }
     currentView = view;
@@ -97,7 +98,7 @@
       nav.classList.add('active');
       nav.setAttribute('aria-current', 'page');
     }
-    document.getElementById('pageTitle').textContent = TITLES[view] || view;
+    document.getElementById('pageTitle').textContent = TITLES[view] || (window.OFS && OFS.title(view)) || view;
     renderAll();
   }
   window.navigate = navigate;
@@ -149,6 +150,10 @@
       const v = btn.dataset.view;
       btn.style.display = Store.canView(v) ? '' : 'none';
     });
+    document.querySelectorAll('.nav-section').forEach(sec => {
+      const any = [...sec.querySelectorAll('.nav-item[data-view]')].some(b => b.style.display !== 'none');
+      sec.style.display = any ? '' : 'none';
+    });
 
     const ago = s.syncAgoMin;
     document.getElementById('syncText').textContent =
@@ -165,6 +170,17 @@
     setBadge('badgeApprovals', badges.approvals || 0);
     const asTop = Store.agentsSummary();
     setBadge('badgeAgents', asTop.onCount);
+    if (window.OFS) {
+      try { OFS.ext(); } catch (e) { /* ignore */ }
+      const F = window.OFS, safe = fn => { try { return fn() || 0; } catch (e) { return 0; } };
+      setBadge('badge-health', safe(() => { const h = F.healthOf(Store.currentShop().id); return h.tier.fine > 0 || h.risk >= 60 ? '!' : 0; }));
+      setBadge('badge-finance', safe(() => F.financeSummary().diffs));
+      setBadge('badge-promo', safe(() => F.adsSummary()));
+      setBadge('badge-content', safe(() => { const c = F.contentSummary(); return c.cert + c.banned; }));
+      setBadge('badge-compete', safe(() => F.products().filter(p => F.priceIndex(p).color === 'red').length));
+      setBadge('badge-sla', safe(() => F.slaSummary().unsynced));
+      setBadge('badge-inbox', safe(() => F.shop(F.ext().inbox.chats).filter(c => !c.replied).length));
+    }
 
     const av = document.getElementById('avatarBtn');
     av.textContent = Store.roleLabel().slice(0, 1);
@@ -1006,6 +1022,7 @@
     if (currentView === 'weekly') renderWeekly();
     if (currentView === 'agents') renderAgents();
     if (window.OzonFlowOps) window.OzonFlowOps.render(currentView);
+    if (window.OFS) window.OFS.render(currentView);
     if (openOrderId) openOrderDrawer(openOrderId);
   }
 
