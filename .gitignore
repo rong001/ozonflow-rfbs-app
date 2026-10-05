@@ -1,0 +1,4 @@
+verify-*.png
+*.png.bak
+.DS_Store
+node_modules/
