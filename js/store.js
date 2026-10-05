@@ -16,10 +16,10 @@ window.OzonFlowStore = (function () {
 
   /* 角色可见导航与可执行动作 */
   const ROLE_VIEWS = {
-    boss: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'],
-    ops: ['dashboard', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents'],
-    warehouse: ['dashboard', 'orders', 'logistics', 'returns', 'agents'],
-    cs: ['dashboard', 'orders', 'cs', 'returns', 'agents'],
+    boss: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'],
+    ops: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents'],
+    warehouse: ['dashboard', 'copilot', 'orders', 'logistics', 'returns', 'agents'],
+    cs: ['dashboard', 'copilot', 'orders', 'cs', 'returns', 'agents'],
   };
 
   const ROLE_ACTIONS = {
@@ -139,7 +139,7 @@ window.OzonFlowStore = (function () {
     return state;
   }
 
-  function get() { return state; }
+  function get() { if (state && (!state.approvals || !state.auditLog || !state.opsSeeded)) ensureOps(); return state; }
 
   function subscribe(fn) {
     listeners.add(fn);
@@ -300,6 +300,8 @@ window.OzonFlowStore = (function () {
   function todos() {
     const k = kpi();
     const list = [];
+    const apn = pendingApprovals().length;
+    if (apn > 0) list.push({ id: 'approval', icon: '', bg: '', title: apn + ' 项高风险动作待审批', sub: '改价 / 大额退款 / 大额采购 / 取消订单', btn: '去审批', view: 'approvals', filter: null, cls: 'btn-danger' });
     if (k.risk > 0) list.push({ id: 'timeout', icon: '⚠️', bg: 'var(--danger-bg)', title: k.risk + ' 笔超时备货', sub: '距截单 < 6h · rFBS 时效风险', btn: '去处理', view: 'orders', filter: 'risk', cls: 'btn-danger' });
     if (k.auditCount > 0) list.push({ id: 'audit', icon: '📋', bg: 'var(--warning-bg)', title: k.auditCount + ' 笔待审单', sub: '一键审单或手动审核', btn: '去审单', view: 'orders', filter: 'audit', cls: 'btn-secondary' });
     if (k.purchaseCount > 0 || k.lowStock > 0) list.push({ id: 'purchase', icon: '🛒', bg: 'var(--purple-bg)', title: (k.purchaseCount || k.lowStock) + ' 项缺货待采', sub: '待采购订单 / 低库存 SKU', btn: '去采购', view: k.purchaseCount ? 'orders' : 'logistics', filter: k.purchaseCount ? 'purchase' : null, cls: 'btn-ghost' });
@@ -827,17 +829,29 @@ window.OzonFlowStore = (function () {
     rejected: '已拒绝', refunded: '已退款', closed: '已关闭',
   };
 
-  function advanceReturn(returnId, nextStatus) {
-    if (!canDo('return') && state.role !== 'boss') return { ok: false, msg: '当前角色无权处理退货' };
+  function advanceReturn(returnId, nextStatus, opts) {
+    opts = opts || {};
+    if (!opts.approved && !canDo('return') && state.role !== 'boss') return { ok: false, msg: '当前角色无权处理退货' };
     const r = state.returns.find(x => x.id === returnId);
     if (!r) return { ok: false, msg: '退货单不存在' };
     const allowed = RETURN_FLOW[r.status] || [];
     if (!allowed.includes(nextStatus)) {
       return { ok: false, msg: '不可从「' + RETURN_LABELS[r.status] + '」转到「' + RETURN_LABELS[nextStatus] + '」' };
     }
+    if (nextStatus === 'refunded' && !opts.approved && (r.amount || 0) >= APPROVAL_RULES.refundRub) {
+      const q = proposeApproval({
+        type: '退款', action: 'refund', key: 'refund:' + r.id, payload: { returnId: r.id }, shopId: r.shopId,
+        title: r.id + ' 退款 ' + r.amount + '₽', target: r.product || r.sku, before: RETURN_LABELS[r.status],
+        after: '退款 ' + r.amount + '₽', reason: (r.reason || '') + ' · 金额 ≥ ' + APPROVAL_RULES.refundRub + '₽ 需审批',
+        agent: opts.agent || roleLabel(), risk: r.amount >= 3000 ? 'high' : 'mid',
+      });
+      emit('approvalQueued');
+      return { ok: false, queued: true, msg: '退款 ' + r.amount + '₽ 已提交审批中心' };
+    }
     r.status = nextStatus;
     r.timeline = r.timeline || [];
     r.timeline.push({ t: nowLabel(), text: '状态 → ' + RETURN_LABELS[nextStatus], done: true });
+    audit(opts.agent || roleLabel(), '退货状态 → ' + RETURN_LABELS[nextStatus], r.id, '成功');
     emit('return');
     return { ok: true, msg: r.id + ' → ' + RETURN_LABELS[nextStatus] };
   }
@@ -893,7 +907,184 @@ window.OzonFlowStore = (function () {
       cs: forShop(state.reviews).filter(r => r.rating <= 3 && !r.replied).length
         + forShop(state.qa).filter(q => !q.answered).length,
       returns: forShop(state.returns).filter(r => r.status === 'open' || r.status === 'investigating').length,
+      approvals: pendingApprovals().length,
     };
+  }
+
+  /* ---------- 人在环审批 + 操作审计 ---------- */
+  const APPROVAL_RULES = { priceChangePct: 10, refundRub: 2000, poCny: 1000, poBatch: 20 };
+
+  function ensureOps() {
+    if (!state) return;
+    if (!Array.isArray(state.approvals)) state.approvals = [];
+    if (!Array.isArray(state.auditLog)) state.auditLog = [];
+    if (!state.opsSeeded) {
+      state.opsSeeded = true;
+      seedOpsForScenario();
+    }
+  }
+
+  function audit(actor, action, target, result) {
+    if (!Array.isArray(state.auditLog)) state.auditLog = [];
+    state.auditLog.unshift({
+      id: 'AU-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      t: nowLabel(), actor: actor || roleLabel(), action: action, target: target || '—',
+      result: result || '成功', shopId: shopId(),
+    });
+    if (state.auditLog.length > 300) state.auditLog.length = 300;
+  }
+
+  function proposeApproval(p) {
+    ensureOps();
+    const key = p.key || (p.action + ':' + JSON.stringify(p.payload || {}));
+    const dup = state.approvals.find(a => a.key === key && a.status === 'pending');
+    if (dup) return { ok: true, queued: true, dup: true, id: dup.id };
+    const item = {
+      id: 'AP-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      key: key, status: 'pending', created: nowLabel(),
+      shopId: p.shopId || shopId(),
+      type: p.type, title: p.title, target: p.target, before: p.before, after: p.after,
+      reason: p.reason || '', agent: p.agent || '人工', risk: p.risk || 'mid',
+      action: p.action, payload: p.payload || {},
+    };
+    state.approvals.unshift(item);
+    audit(item.agent, '提交审批 · ' + item.type, item.target, '待审批');
+    return { ok: true, queued: true, id: item.id };
+  }
+
+  const APPROVAL_ACTIONS = {
+    setPrice(pl) {
+      const list = pl.kind === 'listing' ? state.listings : state.products;
+      const obj = list.find(x => x.id === pl.id || x.sku === pl.id);
+      if (!obj) return { ok: false, msg: '对象不存在' };
+      obj.price = pl.price;
+      obj.flagged = false;
+      obj.suggestedPrice = null;
+      const p = calcProfit({ price: obj.price, costCNY: obj.cost, weight: obj.weight });
+      obj.margin = Math.round(p.margin * 10) / 10;
+      return { ok: true, msg: '「' + obj.name + '」改价 → ' + pl.price + '₽' };
+    },
+    refund(pl) {
+      return advanceReturn(pl.returnId, 'refunded', { approved: true });
+    },
+    purchasePO(pl) {
+      const o = state.orders.find(x => x.id === pl.orderId);
+      if (!o) return { ok: false, msg: '订单不存在' };
+      o.poNumber = pl.po;
+      o.purchaseStatus = 'ordered';
+      pushTL(o, '审批通过 · 1688 下单 ' + pl.po + '（¥' + pl.amount + '）');
+      return markPurchased(o.id);
+    },
+    cancelOrder(pl) {
+      const o = state.orders.find(x => x.id === pl.orderId);
+      if (!o) return { ok: false, msg: '订单不存在' };
+      o.status = 'cancelled';
+      o.statusLabel = '已取消';
+      o.risk = false;
+      pushTL(o, '审批通过 · 卖家取消（' + (pl.reason || '缺货') + '）');
+      return { ok: true, msg: o.id + ' 已取消' };
+    },
+  };
+
+  function approve(id, silent) {
+    ensureOps();
+    const a = state.approvals.find(x => x.id === id);
+    if (!a || a.status !== 'pending') return { ok: false, msg: '审批项不存在或已处理' };
+    if (state.role !== 'boss') return { ok: false, msg: '仅老板角色可审批' };
+    const fn = APPROVAL_ACTIONS[a.action];
+    const r = fn ? fn(a.payload) : { ok: false, msg: '未知动作' };
+    a.status = r.ok ? 'approved' : 'failed';
+    a.decidedAt = nowLabel();
+    audit(roleLabel(), '审批通过 · ' + a.type, a.target, r.ok ? '已执行' : ('失败：' + (r.msg || '')));
+    if (!silent) emit('approve');
+    return { ok: r.ok, msg: r.ok ? '已通过并执行：' + a.title : (r.msg || '执行失败') };
+  }
+
+  function reject(id, note) {
+    ensureOps();
+    const a = state.approvals.find(x => x.id === id);
+    if (!a || a.status !== 'pending') return { ok: false, msg: '审批项不存在或已处理' };
+    if (state.role !== 'boss') return { ok: false, msg: '仅老板角色可审批' };
+    a.status = 'rejected';
+    a.decidedAt = nowLabel();
+    a.note = note || '';
+    audit(roleLabel(), '驳回 · ' + a.type, a.target, '已驳回');
+    emit('reject');
+    return { ok: true, msg: '已驳回：' + a.title };
+  }
+
+  function approveAll() {
+    ensureOps();
+    if (state.role !== 'boss') return { ok: false, msg: '仅老板角色可审批' };
+    const ids = forShop(state.approvals).filter(a => a.status === 'pending').map(a => a.id);
+    let n = 0;
+    ids.forEach(id => { if (approve(id, true).ok) n++; });
+    emit('approveAll');
+    return { ok: true, count: n, msg: '批量通过 ' + n + ' 项' };
+  }
+
+  function pendingApprovals() {
+    ensureOps();
+    return forShop(state.approvals).filter(a => a.status === 'pending');
+  }
+
+  /* 改价：小幅直接执行，大幅（> 阈值）进审批 */
+  function routePriceChange(obj, kind, newPrice, agentName, reason) {
+    if (!newPrice || !obj.price || newPrice === obj.price) return { ok: false };
+    const pct = Math.abs(newPrice - obj.price) / obj.price * 100;
+    if (pct > APPROVAL_RULES.priceChangePct) {
+      return proposeApproval({
+        type: '改价', action: 'setPrice', key: 'price:' + kind + ':' + obj.id,
+        payload: { kind: kind, id: obj.id, price: newPrice }, shopId: obj.shopId,
+        title: '「' + obj.name + '」' + (newPrice > obj.price ? '提价' : '降价') + ' ' + pct.toFixed(0) + '%',
+        target: obj.name, before: obj.price + '₽', after: newPrice + '₽',
+        reason: reason, agent: agentName, risk: pct > 25 ? 'high' : 'mid',
+      });
+    }
+    const r = APPROVAL_ACTIONS.setPrice({ kind: kind, id: obj.id, price: newPrice });
+    audit(agentName, '自动改价（≤' + APPROVAL_RULES.priceChangePct + '%）', obj.name, obj.price + '₽');
+    return Object.assign({ applied: true }, r);
+  }
+
+  function seedOpsForScenario() {
+    const id = state.meta && state.meta.id;
+    if (id === 'yiwu') return;
+    const prods = (state.products || []).slice(0, 6);
+    prods.slice(0, 2).forEach((pr, i) => {
+      const np = Math.round(pr.price * (i === 0 ? 1.18 : 1.32) / 10) * 10;
+      const pct = (np - pr.price) / pr.price * 100;
+      state.approvals.push({
+        id: 'AP-seed-' + i, key: 'price:product:' + pr.id, status: 'pending', created: '今天 08:4' + i,
+        shopId: pr.shopId, type: '改价', title: '「' + pr.name + '」提价 ' + pct.toFixed(0) + '%',
+        target: pr.name, before: pr.price + '₽', after: np + '₽',
+        reason: '汇率与类目佣金上调后净利跌破守门线', agent: i ? '汇率佣金重算 Agent' : '利润守门 Agent',
+        risk: pct > 25 ? 'high' : 'mid', action: 'setPrice', payload: { kind: 'product', id: pr.id, price: np },
+      });
+    });
+    const ret = (state.returns || []).find(r => ['approved', 'investigating'].includes(r.status) && r.amount);
+    if (ret) {
+      ret.status = 'approved';
+      state.approvals.push({
+        id: 'AP-seed-r', key: 'refund:' + ret.id, status: 'pending', created: '今天 09:12', shopId: ret.shopId,
+        type: '退款', title: ret.id + ' 退款 ' + ret.amount + '₽', target: ret.product || ret.sku,
+        before: '已通过', after: '退款 ' + ret.amount + '₽', reason: ret.reason || '买家申请退货',
+        agent: '退货理赔 Agent', risk: ret.amount >= 3000 ? 'high' : 'mid',
+        action: 'refund', payload: { returnId: ret.id },
+      });
+    }
+    const late = (state.orders || []).find(o => o.risk && o.status === 'purchase');
+    if (late) {
+      state.approvals.push({
+        id: 'AP-seed-c', key: 'cancel:' + late.id, status: 'pending', created: '今天 09:30', shopId: late.shopId,
+        type: '取消订单', title: late.id + ' 缺货取消', target: late.name, before: '待采购',
+        after: '卖家取消', reason: '1688 货源断货且距截单 < 6h，取消会计入取消率', agent: '超时抢救 Agent',
+        risk: 'high', action: 'cancelOrder', payload: { orderId: late.id, reason: '货源断货' },
+      });
+    }
+    state.auditLog.push(
+      { id: 'AU-seed-1', t: '今天 08:00', actor: '系统', action: '订单同步', target: 'Ozon Seller API', result: '成功', shopId: state.currentShopId },
+      { id: 'AU-seed-2', t: '今天 08:05', actor: '运营', action: '批量发布', target: '刊登草稿', result: '成功', shopId: state.currentShopId }
+    );
   }
 
   /* ---------- Automation Agents ---------- */
@@ -1073,7 +1264,8 @@ window.OzonFlowStore = (function () {
         pr.flagged = true;
         pr.suggestedPrice = sug;
         n++;
-        msgs.push('跟卖风险「' + pr.name + '」建议价 ' + sug + '₽');
+        const rp = routePriceChange(pr, 'product', sug, '利润守门 Agent', '毛利 ' + p.margin.toFixed(1) + '% < 守门线 ' + minM + '%');
+        msgs.push('跟卖风险「' + pr.name + '」建议价 ' + sug + '₽' + (rp.queued ? ' → 待审批' : rp.applied ? ' → 已自动调价' : ''));
       }
     });
     if (!n) msgs.push('全部 SKU 毛利 ≥ ' + minM + '%');
@@ -1128,10 +1320,13 @@ window.OzonFlowStore = (function () {
         next = 'closed';
       }
       if (next) {
-        const res = advanceReturn(r.id, next);
+        const res = advanceReturn(r.id, next, { agent: '退货理赔 Agent' });
         if (res.ok) {
           n++;
           msgs.push(r.id + ' → ' + (RETURN_LABELS[next] || next));
+        } else if (res.queued) {
+          n++;
+          msgs.push(r.id + ' 大额退款 → 已提交审批');
         }
       }
     });
@@ -1178,6 +1373,20 @@ window.OzonFlowStore = (function () {
     const msgs = [];
     forShop(state.orders).filter(o => o.status === 'purchase').forEach(o => {
       const po = '1688-PO-' + String(Date.now()).slice(-6) + '-' + Math.floor(Math.random() * 90 + 10);
+      const batch = (agent.config && agent.config.batch) || APPROVAL_RULES.poBatch;
+      const poAmt = Math.round((o.cost || 0) * batch);
+      if (poAmt >= APPROVAL_RULES.poCny) {
+        proposeApproval({
+          type: '大额采购', action: 'purchasePO', key: 'po:' + o.id, payload: { orderId: o.id, po: po, amount: poAmt },
+          shopId: o.shopId, title: '1688 采购 ' + o.name + ' × ' + batch, target: o.id,
+          before: '待采购', after: '¥' + poAmt + '（' + batch + ' 件）',
+          reason: '采购额 ≥ ¥' + APPROVAL_RULES.poCny + ' 需审批', agent: '1688采购跟单 Agent',
+          risk: poAmt >= APPROVAL_RULES.poCny * 2 ? 'high' : 'mid',
+        });
+        n++;
+        msgs.push(o.id + ' · 采购额 ¥' + poAmt + ' → 已提交审批');
+        return;
+      }
       o.poNumber = po;
       o.purchaseStatus = 'ordered';
       pushTL(o, '1688 采购跟单 · 下单 ' + po);
@@ -1253,7 +1462,8 @@ window.OzonFlowStore = (function () {
         pr.flagged = true;
         pr.suggestedPrice = suggestedPriceForMargin(pr.price, pr.cost, pr.weight, warn);
         n++;
-        msgs.push('净利偏低「' + pr.name + '」' + pr.margin + '% → 建议 ' + pr.suggestedPrice + '₽');
+        const rp = routePriceChange(pr, 'product', pr.suggestedPrice, '汇率佣金重算 Agent', '汇率 ' + fxNew + ' 重算后净利 ' + pr.margin + '%');
+        msgs.push('净利偏低「' + pr.name + '」' + pr.margin + '% → 建议 ' + (pr.suggestedPrice || '') + '₽' + (rp.queued ? ' · 待审批' : rp.applied ? ' · 已自动调价' : ''));
       } else if (prev != null && Math.abs(prev - pr.margin) >= 0.5) {
         n++;
         msgs.push('重算「' + pr.name + '」毛利 ' + prev + '% → ' + pr.margin + '%');
@@ -1353,6 +1563,7 @@ window.OzonFlowStore = (function () {
     if (!runner) return { ok: false, msg: '未实现的 Agent' };
     // manual run-now always allowed even if off
     const result = runner(a);
+    audit(a.name, '运行 Agent', a.name, (result && result.msg) || '完成');
     emit('runAgent');
     return result;
   }
@@ -1419,5 +1630,7 @@ window.OzonFlowStore = (function () {
     applyRulesToOrder,
     replyReview, answerQa, advanceReturn, weeklyReport,
     toggleAgent, runAgent, runAllAgents, runEnabledAgentsTick, agentsSummary,
+    APPROVAL_RULES, audit, proposeApproval, approve, reject, approveAll, pendingApprovals, routePriceChange,
+    emit,
   };
 })();

@@ -1174,3 +1174,40 @@ h1.topbar-title { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 
   .kpi-grid, .kpi-grid#weeklyKpi { grid-template-columns: 1fr !important; }
   .filter-bar { gap: 8px; }
 }
+
+/* ---------- AI 中枢：指令台 / 审批中心 / 能力矩阵 ---------- */
+.ops-stack { display: flex; flex-direction: column; gap: 12px; }
+.ops-stack > .card { margin: 0; }
+.cp-label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text); }
+.cp-input-row { display: flex; gap: 8px; }
+.cp-input {
+  flex: 1; min-height: 44px; padding: 0 14px; font-size: 15px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text);
+}
+.cp-input:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 1px; border-color: var(--color-ring); }
+.cp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cp-chip {
+  min-height: 32px; padding: 4px 12px; font-size: 13px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--color-muted); color: var(--text);
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.cp-chip:hover { background: var(--color-info-bg); border-color: var(--color-secondary); }
+.cp-chip:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.cp-plan-line { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; flex-wrap: wrap; }
+.cp-plan-line .hint { min-width: 64px; }
+.cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.cap-cell {
+  text-align: left; cursor: pointer; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.cap-cell:hover { border-color: var(--color-secondary); }
+.cap-cell.active { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary) inset; }
+.cap-cell:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.cap-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.cap-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.cap-cell .progress { margin: 0; }
+#view-capability .card-header, #view-approvals .card-header { flex-wrap: wrap; gap: 8px; }
+.ui-mark.tone-danger + .ml-text .ml-title { color: inherit; }
+@media (max-width: 720px) { .cp-input-row { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .cp-chip, .cap-cell { transition: none; } }

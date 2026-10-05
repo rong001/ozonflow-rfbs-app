@@ -18,6 +18,9 @@
     returns: '退货异常',
     weekly: '经营周报',
     agents: '自动化 Agent',
+    copilot: 'AI 指令台',
+    approvals: '审批中心',
+    capability: '能力矩阵',
   };
 
   let currentView = 'dashboard';
@@ -59,7 +62,7 @@
 
   const TONE_BY_TODO = {
     timeout: 'danger', audit: 'warn', purchase: 'accent', review: 'warn',
-    returns: 'info', track: 'info', escalate: 'danger', fund: 'accent', listing: 'info'
+    returns: 'info', track: 'info', escalate: 'danger', fund: 'accent', listing: 'info', approval: 'danger'
   };
   const TONE_BY_AGENT = {
     selection_radar: 'info', listing_publish: 'info', order_fulfill: 'ok',
@@ -159,6 +162,7 @@
     setBadge('badgeOrders', badges.orders);
     setBadge('badgeCs', badges.cs);
     setBadge('badgeReturns', badges.returns);
+    setBadge('badgeApprovals', badges.approvals || 0);
     const asTop = Store.agentsSummary();
     setBadge('badgeAgents', asTop.onCount);
 
@@ -1001,6 +1005,7 @@
     if (currentView === 'returns') renderReturns();
     if (currentView === 'weekly') renderWeekly();
     if (currentView === 'agents') renderAgents();
+    if (window.OzonFlowOps) window.OzonFlowOps.render(currentView);
     if (openOrderId) openOrderDrawer(openOrderId);
   }
 
