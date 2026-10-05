@@ -50,7 +50,31 @@ python3 -m http.server 8080
 - **店铺切换**：订单 / 刊登 / 库存 / 评价 / 退货均带 `shopId`，列表与徽章按当前店过滤。
 - **角色**（顶栏切换）：老板 / 运营 / 仓管 / 客服 / 财务 — 控制可见导航与可执行动作。
 
-## 接真实店铺
+## 免 Api-Key 接入真实店铺（推荐）
+
+没有 Ozon Client-Id / Api-Key 也能用真实数据，全部在卖家自己的浏览器里完成：
+
+1. **安装连接器插件**：下载 [ozonflow-connector.zip](https://rong001.github.io/ozonflow-rfbs-app/ozonflow-connector.zip) 并解压 → Chrome/Edge 打开 `chrome://extensions` → 打开“开发者模式” → “加载已解压的扩展程序”，选解压出来的 `ozonflow-connector` 文件夹。
+2. **正常登录 Ozon 卖家后台**（seller.ozon.ru），打开订单、财务、商品页面；插件旁路读取后台自己加载的数据，右下角显示已捕获数量。不保存密码、不额外发请求。
+3. 打开 OzonFlow **「数据连接」**，点“从插件同步”：订单并入订单履约（状态、发货截止时间、临期标红），结算按订单号并入财务对账。
+
+不装插件也可以：在后台导出订单 / 财务报表（CSV 或 XLSX），拖进「数据连接 → 报表导入」，按俄文表头自动识别。
+
+| 能力 | 实现方式 | 需求 |
+|---|---|---|
+| 卖家后台订单 / 结算 / 商品 | 插件读取已登录后台的页面数据，或导入后台报表 | R60 R40 |
+| Ozon / WB 同款价格 | 插件在卖家浏览器里调用前台搜索，最低价写入价格指数 | R06 |
+| 物流轨迹 | 菜鸟国际公开查询接口（经插件跨域） | R31 R33 |
+| 以图搜货 | 1688 拍立淘 / Яндекс / Google Lens 跳转 | R08 |
+| 白底主图 / 短视频 / 富内容 | 「素材工坊」浏览器本地处理，900×1200 JPG、MP4、Rich-контент JSON | R12 R13 |
+| 简报推送 | 企业微信 / 钉钉 / 飞书群机器人、Telegram、Webhook、桌面通知 | R48 |
+| 口语指令 | 规则引擎 + 浏览器内语义模型 bge-small-zh（transformers.js），无需大模型 Key | R55 |
+| AI 助手接入 | `node server/mcp-ozonflow.js --state ozonflow-state.json`（MCP stdio，写操作只进审批） | R59 |
+| API 变更监控 | 插件每周比对 Ozon 文档端点清单并提醒 | R61 |
+
+边界：卖家必须自己登录一次（不绕过 Ozon 登录）；发货、回传运单号等写操作仍需在后台手动或配 Api-Key 走 `server/ozon-proxy.js`。
+
+## 接真实店铺（有 Api-Key 时）
 
 ```bash
 OZON_CLIENT_ID=xxx OZON_API_KEY=yyy ALLOW_ORIGIN=https://rong001.github.io PORT=8787 node server/ozon-proxy.js

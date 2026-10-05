@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "OzonFlow 连接器",
+  "version": "1.0.0",
+  "description": "免 Api-Key：在你已登录的 Ozon 卖家后台捕获订单/结算/商品，采集 Ozon/WB 公开价格、菜鸟轨迹，并推送经营简报到企业微信/钉钉/飞书/Telegram。",
+  "permissions": ["storage", "alarms", "notifications"],
+  "host_permissions": [
+    "https://seller.ozon.ru/*",
+    "https://www.ozon.ru/*",
+    "https://docs.ozon.ru/*",
+    "https://www.wildberries.ru/*",
+    "https://search.wb.ru/*",
+    "https://global.cainiao.com/*",
+    "https://qyapi.weixin.qq.com/*",
+    "https://oapi.dingtalk.com/*",
+    "https://open.feishu.cn/*",
+    "https://api.telegram.org/*"
+  ],
+  "background": { "service_worker": "sw.js" },
+  "content_scripts": [
+    { "matches": ["https://seller.ozon.ru/*"], "js": ["capture-main.js"], "world": "MAIN", "run_at": "document_start" },
+    { "matches": ["https://seller.ozon.ru/*"], "js": ["capture-relay.js"], "run_at": "document_start" },
+    { "matches": ["https://www.ozon.ru/*", "https://www.wildberries.ru/*"], "js": ["normalize.js", "market.js"], "run_at": "document_idle" },
+    { "matches": ["https://rong001.github.io/ozonflow-rfbs-app/*", "http://localhost/*", "http://127.0.0.1/*"], "js": ["bridge.js"], "run_at": "document_start" }
+  ],
+  "action": { "default_title": "OzonFlow 连接器", "default_popup": "popup.html", "default_icon": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" } },
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
+}

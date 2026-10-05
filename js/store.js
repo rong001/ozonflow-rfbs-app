@@ -16,13 +16,13 @@ window.OzonFlowStore = (function () {
   };
 
   /* 角色可见导航与可执行动作 */
-  const SUITE_VIEWS = ['market', 'compete', 'content', 'promo', 'health', 'finance', 'supply', 'sla', 'inbox', 'platform'];
+  const SUITE_VIEWS = ['market', 'compete', 'content', 'promo', 'health', 'finance', 'supply', 'sla', 'inbox', 'platform', 'connect', 'studio'];
   const ROLE_VIEWS = {
     boss: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'returns', 'weekly', 'agents'].concat(SUITE_VIEWS),
-    ops: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents', 'market', 'compete', 'content', 'promo', 'health', 'supply', 'sla', 'inbox', 'platform'],
-    warehouse: ['dashboard', 'copilot', 'orders', 'logistics', 'returns', 'agents', 'supply', 'sla'],
+    ops: ['dashboard', 'copilot', 'approvals', 'capability', 'selection', 'listing', 'orders', 'rules', 'logistics', 'profit', 'cs', 'weekly', 'agents', 'market', 'compete', 'content', 'promo', 'health', 'supply', 'sla', 'inbox', 'platform', 'connect', 'studio'],
+    warehouse: ['dashboard', 'copilot', 'orders', 'logistics', 'returns', 'agents', 'supply', 'sla', 'connect'],
     cs: ['dashboard', 'copilot', 'orders', 'cs', 'returns', 'agents', 'inbox'],
-    finance: ['dashboard', 'copilot', 'approvals', 'capability', 'profit', 'weekly', 'finance', 'promo', 'compete', 'health', 'platform'],
+    finance: ['dashboard', 'copilot', 'approvals', 'capability', 'profit', 'weekly', 'finance', 'promo', 'compete', 'health', 'platform', 'connect'],
   };
 
   const ROLE_ACTIONS = {

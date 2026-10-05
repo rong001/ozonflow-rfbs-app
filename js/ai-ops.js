@@ -11,13 +11,14 @@ window.OzonFlowOps = (function () {
     logistics: '物流与库存', profit: '利润定价', cs: '客服评价', returns: '退货异常', weekly: '经营周报',
     agents: '自动化 Agent', approvals: '审批中心', copilot: 'AI 指令台', capability: '能力矩阵',
     market: '市场选品', compete: '价格竞争', content: '内容合规', promo: '推广活动', health: '店铺健康',
-    finance: '财务对账', supply: '供应链库存', sla: '时效物流', inbox: '客服收件箱', platform: '平台集成',
+    finance: '财务对账', supply: '供应链库存', sla: '时效物流', inbox: '客服收件箱', platform: '平台集成', connect: '数据连接', studio: '素材工坊',
   };
 
   /* ================= AI 指令台 ================= */
   let plan = null;
   let history = [];
   let lastInput = '';
+  let nluNote = '';
 
   const EXAMPLES = [
     '把毛利低于20%的商品提价8%',
@@ -37,6 +38,11 @@ window.OzonFlowOps = (function () {
     '回传所有运单号',
     '回复买家消息',
     '生成今日简报',
+    '同步店铺数据',
+    '采集同款价格',
+    '查物流轨迹',
+    '推送简报到群',
+    '库存快没了怎么办',
   ];
 
   const forShop = arr => Store.forShop(arr || []);
@@ -61,6 +67,26 @@ window.OzonFlowOps = (function () {
       const openPage = Object.keys(VIEW_TITLES).find(v => Store.SUITE_VIEWS.includes(v) && t.includes(VIEW_TITLES[v]));
       if (openPage && /打开|去|进入|看看|跳到/.test(t)) {
         return { intent: 'nav', label: '打开「' + VIEW_TITLES[openPage] + '」', risk: 'none', readOnly: true, head: [], rows: [], exec: navTo(openPage) };
+      }
+      // 免 Key 数据连接（插件 / 报表 / 公开数据）
+      if (/同步店铺|插件同步|同步.*(后台|插件)|拉取.*(后台|订单)|导入.*订单|连接店铺/.test(t)) {
+        const ok = !!(F.Ext && F.Ext.ver);
+        return { intent: 'connect', label: ok ? '从浏览器插件同步 Ozon 卖家后台的订单与结算' : '打开数据连接：安装插件或导入报表', risk: 'low', head: ['方式', '状态'], rows: [['浏览器插件', ok ? '已连接' : '未安装'], ['报表导入', '可用']], exec: () => { window.navigate('connect'); if (ok) F.invoke('cnPull'); return { ok: true, msg: ok ? '正在从插件同步' : '已打开数据连接' }; } };
+      }
+      if (/(采集|抓取|看看|查).*(同款|竞品|对手).*(价|钱)|比价|同款.*价格/.test(t)) {
+        const ps = F.products();
+        return { intent: 'prices', label: '采集 Ozon / WB 同款公开价格 · ' + ps.length + ' 个商品', risk: 'none', readOnly: true, head: ['商品', '搜索词'], rows: ps.map(p => [p.name, p.ru || p.name]), exec: () => { window.navigate('connect'); F.invoke('cnPrices'); return { ok: true, msg: '已开始采集' }; } };
+      }
+      if (/查.*(物流|快递).*(轨迹|到哪)|包裹到哪|运单跟踪|快递查询|^查物流/.test(t)) {
+        const os = F.orders().filter(o => o.status === 'shipped' && o.track);
+        return { intent: 'track', label: '菜鸟公开接口查询物流轨迹 · ' + os.length + ' 个运单', risk: 'none', readOnly: true, head: ['订单', '运单号'], rows: os.slice(0, 12).map(o => [o.id, o.track]), exec: () => { window.navigate('connect'); F.invoke('cnTrack'); return { ok: true, msg: '正在查询轨迹' }; } };
+      }
+      if (/推送|发到|发送到|通知/.test(t) && /群|企业微信|企微|钉钉|飞书|telegram|简报/i.test(t)) {
+        const hs = (F.ext().connect || { push: { hooks: [] } }).push.hooks;
+        return { intent: 'push', label: '推送今日简报到 ' + (hs.length ? hs.map(h => h.name).join('、') : '桌面通知（还没配置群机器人）'), risk: 'low', head: ['简报'], rows: F.brief().split('\n').map(l => [l]), exec: () => { F.connect.pushBrief(true); return { ok: true, msg: '简报已推送' }; } };
+      }
+      if (/白底|主图|商品视频|富内容|素材/.test(t)) {
+        return { intent: 'nav', label: '打开「素材工坊」', risk: 'none', readOnly: true, head: [], rows: [], exec: navTo('studio') };
       }
       if (/(暂停|关掉|停掉).*(亏损|亏钱).*广告|广告.*(亏损|亏钱)/.test(t)) {
         const rows = F.shop(F.ext().promo.ads).filter(a => { const p = F.S().products.find(x => x.sku === a.sku); return p && a.on && F.profitOf(p).profit * a.orders - a.spend < 0; })
@@ -220,14 +246,14 @@ window.OzonFlowOps = (function () {
     const p = plan;
     let planHtml = '';
     if (p && p.intent === 'unknown') {
-      planHtml = `<div class="card"><div class="card-body"><b>没听懂「${esc(lastInput)}」</b><div class="hint" style="margin-top:6px">可以试试下面这些说法：</div>
+      planHtml = `<div class="card"><div class="card-body"><b>没听懂「${esc(lastInput)}」</b>${nluNote ? `<div class="hint cp-nlu" style="margin-top:6px">${esc(nluNote)}</div>` : ''}<div class="hint" style="margin-top:6px">可以试试下面这些说法：</div>
         <div class="cp-chips" style="margin-top:8px">${EXAMPLES.slice(0, 6).map(x => `<button class="cp-chip" data-cp-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div></div></div>`;
     } else if (p) {
       const rk = RISK[p.risk] || RISK.low;
       planHtml = `<div class="card">
         <div class="card-header"><div class="card-title">执行计划</div><div class="card-extra"><span class="tag ${rk[0]}">${rk[1]}</span></div></div>
         <div class="card-body">
-          <div class="cp-plan-line"><span class="hint">识别意图</span><b>${esc(p.label)}</b></div>
+          <div class="cp-plan-line"><span class="hint">识别意图</span><b>${esc(p.label)}</b></div>${nluNote ? `<div class="hint cp-nlu">${esc(nluNote)}</div>` : ''}
           <div class="cp-plan-line"><span class="hint">影响对象</span><b>${p.rows.length} 项</b>${p.risk === 'high' ? '<span class="hint">· 超阈值的动作会进入审批中心，由老板确认后执行</span>' : ''}</div>
           ${p.head && p.head.length ? `<div class="table-wrap" style="margin-top:10px;max-height:300px;overflow:auto"><table class="data-table"><thead><tr>${p.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
           <tbody>${p.rows.length ? p.rows.slice(0, 40).map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${p.head.length}" class="hint" style="text-align:center;padding:16px">当前店铺没有匹配对象</td></tr>`}</tbody></table></div>` : ''}
@@ -246,7 +272,7 @@ window.OzonFlowOps = (function () {
             <button class="btn btn-accent" id="cpRun">解析指令</button>
           </div>
           <div class="cp-chips">${EXAMPLES.map(x => `<button class="cp-chip" data-cp-ex="${esc(x)}">${esc(x)}</button>`).join('')}</div>
-          <div class="hint" style="margin-top:8px">先预览影响范围，确认后才执行；改价超 ${Store.APPROVAL_RULES.priceChangePct}%、退款 ≥ ${Store.APPROVAL_RULES.refundRub}₽、采购 ≥ ¥${Store.APPROVAL_RULES.poCny}、取消订单都进审批中心。当前解析为本地规则引擎，可接入大模型。</div>
+          <div class="hint" style="margin-top:8px">先预览影响范围，确认后才执行；改价超 ${Store.APPROVAL_RULES.priceChangePct}%、退款 ≥ ${Store.APPROVAL_RULES.refundRub}₽、采购 ≥ ¥${Store.APPROVAL_RULES.poCny}、取消订单都进审批中心。解析顺序：规则引擎 → 本地语义模型（浏览器内运行，无需大模型 Key，数据不出本机）。</div>
         </div>
       </div>
       ${planHtml}
@@ -259,6 +285,22 @@ window.OzonFlowOps = (function () {
   function runParse(text) {
     lastInput = text;
     plan = parse(text);
+    nluNote = '';
+    const NLU = window.OzonFlowNLU;
+    if (plan && plan.intent === 'unknown' && NLU) {
+      const q = NLU.quick(text);
+      if (q && !q.weak) { const p2 = parse(q.text); if (p2 && p2.intent !== 'unknown') { plan = p2; nluNote = '语义理解（' + q.method + '）：「' + text + '」→「' + q.text + '」'; } }
+      if (plan.intent === 'unknown') {
+        nluNote = NLU.status.state === 'ready' ? '正在用本地语义模型理解…' : (NLU.status.msg || '正在加载本地语义模型（首次约 24MB，之后秒开）');
+        NLU.deep(text).then(m => {
+          if (lastInput !== text) return;
+          const p3 = m && parse(m.text);
+          if (p3 && p3.intent !== 'unknown') { plan = p3; nluNote = '语义理解（' + m.method + '，相似度 ' + m.score.toFixed(2) + '）：「' + text + '」→「' + m.text + '」'; }
+          else nluNote = '本地语义模型也没找到对应的操作，可以换个说法或点下面的例子';
+          renderCopilot();
+        }).catch(e => { if (lastInput === text) { nluNote = '语义模型暂不可用（' + e.message + '），已用规则引擎'; renderCopilot(); } });
+      }
+    }
     renderCopilot();
     const inp = document.getElementById('cpInput');
     if (inp) inp.focus();

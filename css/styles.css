@@ -1238,3 +1238,13 @@ input.ofs-mini-input[type="number"] { width: 88px; font-variant-numeric: tabular
 .ofs-brief { width: 100%; min-height: 180px; padding: var(--space-lg); font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); background: var(--color-muted); border: 1px solid var(--border); border-radius: 8px; resize: vertical; }
 [id^="ofs-"] .data-table td .hint { display: inline-block; max-width: 360px; white-space: normal; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) { [id^="ofs-"] *, [id^="ofs-"] *::before, [id^="ofs-"] *::after { transition: none !important; animation: none !important; } }
+
+/* 数据连接 / 素材工坊 / 语义理解 */
+.ofs-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary, #475569); }
+.ofs-steps a { color: var(--primary, #005bff); }
+.ofs-code { background: #0f172a; color: #e2e8f0; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 12px 14px; border-radius: 8px; overflow: auto; max-height: 300px; margin: 10px 0; white-space: pre; }
+.ofs-studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px; }
+.ofs-studio-item { margin: 0; border: 1px solid var(--border, #e5e7eb); border-radius: 10px; overflow: hidden; background: #fff; }
+.ofs-studio-item img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
+.ofs-studio-item figcaption { padding: 10px; display: grid; gap: 6px; font-size: 12px; }
+.cp-nlu { margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--primary, #005bff); background: rgba(0, 91, 255, .06); border-radius: 4px; }

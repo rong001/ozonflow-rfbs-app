@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
+body{width:300px;margin:0;font:13px/1.5 system-ui,"PingFang SC",sans-serif;color:#0F172A}
+header{background:#0B1B3A;color:#fff;padding:12px 14px;font-weight:600}
+main{padding:12px 14px}.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #E7EEF7}
+.row b{font-variant-numeric:tabular-nums}a.btn,button{display:block;width:100%;margin-top:10px;padding:8px;border:0;border-radius:6px;background:#1E40AF;color:#fff;font:inherit;text-align:center;text-decoration:none;cursor:pointer}
+button.ghost{background:#E9EEF6;color:#0F172A}.hint{color:#475569;font-size:12px;margin-top:8px}
+</style></head><body><header>OzonFlow 连接器</header><main>
+<div class="row"><span>已捕获订单</span><b id="o">0</b></div>
+<div class="row"><span>已捕获结算</span><b id="f">0</b></div>
+<div class="row"><span>已捕获商品</span><b id="p">0</b></div>
+<div class="row"><span>最近捕获</span><b id="t">—</b></div>
+<a class="btn" href="https://seller.ozon.ru/app/postings/fbs" target="_blank">打开 Ozon 卖家后台</a>
+<a class="btn" href="https://rong001.github.io/ozonflow-rfbs-app/#connect" target="_blank">打开 OzonFlow 同步</a>
+<button class="ghost" id="clear">清空已捕获数据</button>
+<p class="hint">在卖家后台正常浏览订单、财务和商品页面即可自动捕获，不需要 Api-Key，数据只保存在你自己的浏览器里。</p>
+</main><script src="popup.js"></script></body></html>
