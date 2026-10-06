@@ -143,8 +143,42 @@
   });
   F.on('slaHoli', (d, el) => { F.ext().supply.holidays = el.value.split(/[,，\s]+/).filter(x => /^\d{2}-\d{2}$/.test(x)); return { ok: true, msg: '休息日已更新' }; });
   F.on('slaDow', (d, el) => { F.ext().supply.restDow = [...el.value].map(ch => '日一二三四五六'.indexOf(ch)).filter(i => i >= 0); return { ok: true, msg: '每周休息日已更新' }; });
-  F.on('slaSync', d => { F.ext().sla.sync[d.id] = true; const ep = window.OzonFlowAdapter && OzonFlowAdapter.endpointFor('setTracking'); F.act('审单履约 Agent', '回传运单号', d.id, ep ? ep.path : '已回传'); return { ok: true, msg: d.id + ' 运单号已回传' }; });
-  F.on('slaSyncAll', () => { let n = 0; F.orders().filter(o => o.status === 'shipped').forEach(o => { if (!F.ext().sla.sync[o.id]) { F.ext().sla.sync[o.id] = true; n++; } }); F.act('审单履约 Agent', '批量回传运单号', n + ' 单', '完成'); return { ok: true, msg: '已回传 ' + n + ' 单' }; });
+  F.on('slaSync', d => {
+    const Fulfill = window.OzonFlowFulfill;
+    const ep = window.OzonFlowAdapter && OzonFlowAdapter.endpointFor('setTracking');
+    if (!Fulfill) {
+      F.ext().sla.sync[d.id] = true;
+      F.act('审单履约 Agent', '回传运单号', d.id, ep ? ep.path : '已回传');
+      return { ok: true, msg: d.id + ' 运单号已回传' };
+    }
+    F.toast('info', '正在回传运单号…');
+    Fulfill.setTracking(d.id).then(r => {
+      if (r.ok) {
+        F.ext().sla.sync[d.id] = true;
+        F.act('审单履约 Agent', '回传运单号', d.id, (r.mode || '') + (ep ? ' · ' + ep.path : ''));
+      }
+      F.toast(r.ok ? 'success' : 'info', r.msg || (r.ok ? '已回传' : '未回传'));
+      F.render('sla');
+    }).catch(e => F.toast('info', e.message));
+  });
+  F.on('slaSyncAll', async () => {
+    const Fulfill = window.OzonFlowFulfill;
+    const list = F.orders().filter(o => o.status === 'shipped' && !F.ext().sla.sync[o.id]);
+    if (!Fulfill) {
+      let n = 0; list.forEach(o => { F.ext().sla.sync[o.id] = true; n++; });
+      F.act('审单履约 Agent', '批量回传运单号', n + ' 单', '完成');
+      return { ok: true, msg: '已回传 ' + n + ' 单' };
+    }
+    F.toast('info', '批量回传 × ' + list.length + '…');
+    let n = 0;
+    for (const o of list) {
+      const r = await Fulfill.setTracking(o.id);
+      if (r.ok) { F.ext().sla.sync[o.id] = true; n++; }
+    }
+    F.act('审单履约 Agent', '批量回传运单号', n + '/' + list.length, '按履约写路径');
+    F.toast(n ? 'success' : 'info', '已回传 ' + n + '/' + list.length + '（未成功的不会假装已回传）');
+    F.render('sla');
+  });
   F.on('slaChan', d => Store.assignLogistics(d.id, d.c));
   F.on('slaCustoms', d => { const s = F.S(), o = s.orders.find(x => x.id === d.id), c = F.ext().sla.customs[d.id]; c.hs = c.hs || '8518300000'; c.en = true; c.declared = Math.round(o.amount / s.settings.fx * 0.8); F.act('报关校验 Agent', '修正报关资料', d.id, 'HS ' + c.hs + ' · 申报 ¥' + c.declared); return { ok: true, msg: d.id + ' 报关资料已修正' }; });
   F.on('imlDecide', d => { F.ext().sla.iml[d.id] = d.d; F.act('退货理赔 Agent', 'IML 退货处置', d.id, d.d); return { ok: true, msg: d.id + ' → ' + d.d }; });

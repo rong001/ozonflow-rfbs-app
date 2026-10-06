@@ -1,12 +1,14 @@
 {
   "manifest_version": 3,
   "name": "OzonFlow 连接器",
-  "version": "1.0.0",
-  "description": "免 Api-Key：在你已登录的 Ozon 卖家后台捕获订单/结算/商品，采集 Ozon/WB 公开价格、菜鸟轨迹，并推送经营简报到企业微信/钉钉/飞书/Telegram。",
+  "version": "1.1.0",
+  "description": "免 Api-Key：在已登录的 Ozon 卖家后台捕获订单/结算/商品，辅助发货/回传运单/面单，采集公开价格与轨迹，并推送经营简报。",
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "tabs",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://seller.ozon.ru/*",
@@ -18,7 +20,9 @@
     "https://qyapi.weixin.qq.com/*",
     "https://oapi.dingtalk.com/*",
     "https://open.feishu.cn/*",
-    "https://api.telegram.org/*"
+    "https://api.telegram.org/*",
+    "http://127.0.0.1:8787/*",
+    "http://localhost:8787/*"
   ],
   "background": {
     "service_worker": "sw.js"
@@ -39,7 +43,8 @@
         "https://seller.ozon.ru/*"
       ],
       "js": [
-        "capture-relay.js"
+        "capture-relay.js",
+        "seller-write.js"
       ],
       "run_at": "document_start"
     },

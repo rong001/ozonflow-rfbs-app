@@ -162,7 +162,7 @@
         <label class="ofs-field" style="margin-top:10px"><span>导入 AI 助手提交的改价建议（ozonflow-pending.json，全部进审批中心）</span><input type="file" accept=".json" class="ofs-mini-input" style="height:auto;padding:6px" data-ofs-change="cnPending"></label>
         ${info.docs ? `<p class="hint" style="margin-top:8px">文档快照 ${esc(String(info.docs.checked).slice(0, 16).replace('T', ' '))} · 端点 ${info.docs.paths.length} 个 ${info.docs.changed ? tag('有变化：新增 ' + info.docs.added.length + ' / 移除 ' + info.docs.removed.length, 'red') : tag('无变化', 'green')}</p>` : ''}` +
         note('插件每周自动对比一次 Ozon Seller API 文档里的端点清单，发现新增或下线就桌面提醒（R61）。')) + `</div>` +
-      card('⑧ 自建部署后端（可选）', `<p class="hint">若用 Docker / <span class="mono">npm start</span> 启动了本仓库后端，可在「平台集成 → 自建部署」填写 API 基址与部署令牌，把经营状态同步到服务器；连接器在本页同步时也会尝试向 <span class="mono">/api/connector/ingest</span> 推送捕获数据。详见 <span class="mono">DEPLOY.md</span>。</p>` + note('无 Api-Key 也能完整跑通读链路（订单/结算/商品/比价/轨迹）；发货、回传运单号等写操作仍需在卖家后台手动，或配置 Api-Key 后走服务器代理。')) +
+      card('⑧ 自建部署后端（可选）', `<p class="hint">若用 Docker / <span class="mono">npm start</span> 启动了本仓库后端，可在「平台集成 → 自建部署」填写 API 基址与部署令牌，把经营状态同步到服务器；连接器在本页同步时也会尝试向 <span class="mono">/api/connector/ingest</span> 推送捕获数据。详见 <span class="mono">DEPLOY.md</span>。</p>` + note('无 Api-Key：读链路走连接器；发货 / 回传运单 / 面单由连接器在已登录的卖家后台执行（启发式点击，失败则打开对应订单 + 预填剪贴板 + 步骤提示，不会假装已发货）。有 Key 后同一按钮改走 <span class="mono">/api/ozon/ship|tracking|waybill</span>。')) +
       card('同步记录', table(['时间', '动作', '结果'], c.syncLog.map(l => [esc(l.t), esc(l.what), esc(l.n)]), '还没有同步记录'), '', { flush: true });
     },
   });

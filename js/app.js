@@ -464,7 +464,7 @@
         <td><b>${o.amount.toLocaleString('ru-RU')}</b></td>
         <td>${o.logistics === '—' ? '<span class="hint">未分配</span>' : o.logistics}</td>
         <td>${(o.auto || []).map(a => `<span class="tag tag-green" style="margin:1px">${a}</span>`).join(' ') || '<span class="hint">—</span>'}</td>
-        <td><span class="tag ${tag}">${o.statusLabel}</span></td>
+        <td><span class="tag ${tag}">${o.statusLabel}</span>${o.fulfillStatus === 'pending_platform' ? ' <span class="tag tag-orange" title="' + String(o.fulfillNote || '').replace(/"/g, '') + '">待平台确认</span>' : ''}</td>
         <td>${isRisk ? `<span class="tag tag-red">${eta}</span>` : `<span class="hint">${eta}</span>`}</td>
         <td class="row-ops">${ops || '<span class="hint">—</span>'}</td>
       </tr>`;
@@ -1307,13 +1307,34 @@
   });
   on('[data-waybill]', 'click', (e, t) => {
     e.stopPropagation();
-    const r = Store.applyWaybill(t.dataset.waybill);
-    showToast(r.ok ? 'success' : 'info', r.msg);
+    const id = t.dataset.waybill;
+    const Fulfill = window.OzonFlowFulfill;
+    if (!Fulfill) {
+      const r = Store.applyWaybill(id);
+      showToast(r.ok ? 'success' : 'info', r.msg);
+      return;
+    }
+    showToast('info', '正在提交面单/取号…');
+    Fulfill.applyWaybill(id).then(r => {
+      showToast(r.ok ? 'success' : 'info', r.msg || (r.ok ? '完成' : '未完成'));
+      if (window.renderOrders) try { /* refresh via store emit */ } catch (_) {}
+      Store.emit && Store.emit('waybill');
+    }).catch(err => showToast('info', err.message || String(err)));
   });
   on('[data-ship]', 'click', (e, t) => {
     e.stopPropagation();
-    const r = Store.shipOrder(t.dataset.ship);
-    showToast(r.ok ? 'success' : 'info', r.msg);
+    const id = t.dataset.ship;
+    const Fulfill = window.OzonFlowFulfill;
+    if (!Fulfill) {
+      const r = Store.shipOrder(id);
+      showToast(r.ok ? 'success' : 'info', r.msg);
+      return;
+    }
+    showToast('info', '正在提交发货（有 Key 走 API，否则走连接器/卖家后台）…');
+    Fulfill.ship(id).then(r => {
+      showToast(r.ok ? 'success' : 'info', r.msg || (r.ok ? '完成' : '未完成'));
+      Store.emit && Store.emit('ship');
+    }).catch(err => showToast('info', err.message || String(err)));
   });
   on('[data-assign]', 'click', (e, t) => {
     e.stopPropagation();
@@ -1328,9 +1349,25 @@
     const r = Store.runAutoAudit();
     showToast(r.ok ? 'success' : 'info', r.msg);
   });
-  document.getElementById('btnBatchWaybill').addEventListener('click', () => {
-    const r = Store.applyWaybillBatch();
-    showToast(r.count ? 'success' : 'info', r.msg);
+  document.getElementById('btnBatchWaybill').addEventListener('click', async () => {
+    const Fulfill = window.OzonFlowFulfill;
+    if (!Fulfill) {
+      const r = Store.applyWaybillBatch();
+      showToast(r.count ? 'success' : 'info', r.msg);
+      return;
+    }
+    const targets = Store.forShop(Store.get().orders).filter(o =>
+      (o.status === 'ship' || o.status === 'purchase') && !o.track
+    );
+    if (!targets.length) { showToast('info', '没有待取号订单'); return; }
+    showToast('info', '批量面单 × ' + targets.length + '（按履约写路径逐单）…');
+    let n = 0;
+    for (const o of targets) {
+      const r = await Fulfill.applyWaybill(o.id);
+      if (r.ok) n++;
+    }
+    showToast(n ? 'success' : 'info', '批量面单完成 ' + n + '/' + targets.length + '（未成功的不会假装已取号）');
+    Store.emit && Store.emit('waybill');
   });
 
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);

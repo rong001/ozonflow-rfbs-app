@@ -1,4 +1,4 @@
-/* OzonFlow 连接器 · 后台：保存捕获数据、跨域采集公开数据、推送、定时任务 */
+/* OzonFlow 连接器 · 后台：保存捕获数据、跨域采集公开数据、推送、定时任务、卖家后台写辅助 */
 importScripts('normalize.js');
 const N = self.OzonFlowNormalize;
 const get = k => new Promise(r => chrome.storage.local.get(k, v => r(v[k])));
@@ -101,11 +101,77 @@ chrome.alarms.onAlarm.addListener(async a => {
   if (a.name === 'docs') { try { await checkDocs(); } catch (e) { /* ignore */ } }
 });
 
+function postingUrl(payload) {
+  const pn = encodeURIComponent(String((payload && (payload.postingNumber || payload.id)) || '').trim());
+  if (!pn) return 'https://seller.ozon.ru/app/postings/fbs';
+  return 'https://seller.ozon.ru/app/postings/fbs?postingNumber=' + pn;
+}
+
+function sendToTab(tabId, payload) {
+  return new Promise(resolve => {
+    chrome.tabs.sendMessage(tabId, { type: 'sellerWrite', payload }, r => {
+      const err = chrome.runtime.lastError;
+      if (err) resolve({ ok: false, mode: 'failed', error: err.message });
+      else resolve(r || { ok: false, mode: 'failed', error: 'empty reply' });
+    });
+  });
+}
+
+async function waitTabComplete(tabId, ms) {
+  const deadline = Date.now() + (ms || 15000);
+  while (Date.now() < deadline) {
+    const tab = await chrome.tabs.get(tabId).catch(() => null);
+    if (tab && tab.status === 'complete') return tab;
+    await sleep(300);
+  }
+  return chrome.tabs.get(tabId).catch(() => null);
+}
+
+async function ensureSellerTab(payload) {
+  const url = postingUrl(payload);
+  const tabs = await chrome.tabs.query({ url: 'https://seller.ozon.ru/*' });
+  let tab = tabs.find(t => t.active) || tabs[0];
+  if (!tab) {
+    tab = await chrome.tabs.create({ url, active: true });
+  } else {
+    await chrome.tabs.update(tab.id, { url, active: true });
+  }
+  await waitTabComplete(tab.id, 18000);
+  await sleep(800);
+  return tab;
+}
+
+async function doWrite(m) {
+  const payload = (m && m.payload) || {};
+  const op = payload.op;
+  if (!op || !/^(ship|setTracking|applyWaybill)$/.test(op)) {
+    return { ok: false, mode: 'failed', error: 'op 必须是 ship / setTracking / applyWaybill' };
+  }
+  let tab;
+  try {
+    tab = await ensureSellerTab(payload);
+  } catch (e) {
+    return { ok: false, mode: 'assisted', error: e.message, url: postingUrl(payload), steps: ['请先登录 seller.ozon.ru', '打开对应 FBS 订单后重试'] };
+  }
+  let result = await sendToTab(tab.id, payload);
+  // content script 可能尚未注入：稍等重试一次
+  if (result && result.mode === 'failed' && /Receiving end|Could not establish/i.test(result.error || '')) {
+    await sleep(1200);
+    result = await sendToTab(tab.id, payload);
+  }
+  if (!result.url) result.url = postingUrl(payload);
+  // 记到插件本地写日志
+  const logs = (await get('writeLogs')) || [];
+  logs.unshift({ t: new Date().toISOString(), op, postingNumber: payload.postingNumber || payload.id, mode: result.mode, ok: !!result.ok, detail: result.detail || result.error || '' });
+  await set('writeLogs', logs.slice(0, 40));
+  return result;
+}
+
 const HANDLERS = {
   capture: m => onCapture(m),
   counts: async () => ({ counts: counts(await get('captured')) }),
-  ping: async () => { const st = await get('captured'); return { version: chrome.runtime.getManifest().version, counts: counts(st), last: st && st.last, gated: !!(st && st.gated), docs: await get('docs') || null, observed: Object.keys((await get('observed')) || {}).length }; },
-  pull: async () => ({ captured: (await get('captured')) || null, observed: (await get('observed')) || {} }),
+  ping: async () => { const st = await get('captured'); return { version: chrome.runtime.getManifest().version, counts: counts(st), last: st && st.last, gated: !!(st && st.gated), docs: await get('docs') || null, observed: Object.keys((await get('observed')) || {}).length, writeLogs: ((await get('writeLogs')) || []).slice(0, 5) }; },
+  pull: async () => ({ captured: (await get('captured')) || null, observed: (await get('observed')) || {}, writeLogs: (await get('writeLogs')) || [] }),
   clear: async () => { await set('captured', null); return { ok: true }; },
   observe: async m => { const o = (await get('observed')) || {}; o[m.item.url] = Object.assign(m.item, { t: new Date().toISOString() }); const keys = Object.keys(o); if (keys.length > 300) delete o[keys[0]]; await set('observed', o); return { ok: true }; },
   prices: async m => ({ rows: await marketPrices(m.payload.queries) }),
@@ -114,6 +180,10 @@ const HANDLERS = {
   notify: async m => { notify(m.payload.title || 'OzonFlow', m.payload.message || ''); return { ok: true }; },
   pushConfig: async m => { await set('push', m.payload); await schedule(); return { ok: true }; },
   docs: async () => ({ docs: await checkDocs() }),
+  write: m => doWrite(m),
+  ship: m => doWrite({ payload: Object.assign({}, m.payload || {}, { op: 'ship' }) }),
+  setTracking: m => doWrite({ payload: Object.assign({}, m.payload || {}, { op: 'setTracking' }) }),
+  applyWaybill: m => doWrite({ payload: Object.assign({}, m.payload || {}, { op: 'applyWaybill' }) }),
 };
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   const fn = HANDLERS[msg && msg.type];

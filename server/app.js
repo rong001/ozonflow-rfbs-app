@@ -15,7 +15,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
 
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 const ROOT = path.resolve(__dirname, '..');
 const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
@@ -468,6 +468,13 @@ async function handleApi(req, res, pathname) {
       if (id) { prev.products[id] = Object.assign({}, prev.products[id] || {}, p); nP++; }
     });
     prev.log = [{ t: now, o: nO, f: nF, p: nP, src: payload.source || 'connector' }].concat(prev.log || []).slice(0, 50);
+    if (payload.writeLog && typeof payload.writeLog === 'object') {
+      prev.writeLogs = [Object.assign({ t: now }, payload.writeLog)].concat(prev.writeLogs || []).slice(0, 100);
+      prev.log = [{ t: now, o: 0, f: 0, p: 0, src: 'write:' + (payload.writeLog.type || payload.writeLog.op || 'op'), mode: payload.writeLog.mode || '' }].concat(prev.log).slice(0, 50);
+    }
+    if (Array.isArray(payload.writeLogs)) {
+      prev.writeLogs = payload.writeLogs.concat(prev.writeLogs || []).slice(0, 100);
+    }
     prev.updatedAt = now;
     atomicWrite(PATHS.ingest, JSON.stringify(prev));
     // also merge into state.json orders if state exists and payload.mergeState

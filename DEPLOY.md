@@ -49,8 +49,9 @@ localStorage.setItem('ozonflow_deploy_token', '你的令牌');
 2. Chrome/Edge 加载已解压扩展；登录 seller.ozon.ru，打开订单/财务/商品页。
 3. 回到 OzonFlow「数据连接」→「从插件同步」。
 4. 若页面跑在自建后端且配置了 API 基址，插件桥会尝试把捕获数据 POST 到 `/api/connector/ingest`。
+5. **写操作（无 Key）**：在「订单履约」点发货 / 面单，或在「时效物流」回传运单号时，前端若探测到 health.credentials=false，会通过连接器向卖家后台下发 `ship` / `setTracking` / `applyWaybill`。扩展在已登录的订单页尝试启发式填写/点击；失败则打开对应订单、预填剪贴板并弹出步骤提示。**不会在平台未确认时把订单标为已发货。** 写结果可经 bridge 记入 `/api/connector/ingest`（`writeLog`）。
 
-扩展 `content_scripts` 已包含 `http://localhost:8787/*` 与 GitHub Pages。其他自建域名请在 `extension/manifest.json` 的 bridge matches 中追加后重新打包加载。
+扩展 `content_scripts` 已包含 `http://localhost:8787/*` 与 GitHub Pages。其他自建域名请在 `extension/manifest.json` 的 bridge matches 中追加后重新打包加载。需要 `tabs` + `clipboardWrite` 权限（manifest 1.1.0+）。
 
 ## 接 Api-Key（写操作）
 
@@ -109,5 +110,30 @@ localStorage.setItem('ozonflow_deploy_token', '你的令牌');
 ## 边界
 
 - **不索要、不在仓库提交真实 Api-Key。**
-- 无 Key：读链路（订单/结算/商品/比价/轨迹/状态同步）可上线；发货等写操作需卖家后台手动。
+- 无 Key：读链路（订单/结算/商品/比价/轨迹/状态同步）可上线；写操作走连接器卖家后台辅助（启发式，DOM 变更可能导致降级为「打开后台 + 剪贴板 + 步骤」），**禁止静默本地假成功**。
 - 有 Key：同一部署启用代理写操作，密钥永不回传完整值。
+- Docker：优先 `docker compose up -d --build`；本机无 Docker 时用 `npm start`（见下文依赖说明）。
+
+
+## Docker 依赖
+
+需要本机已安装 **Docker Engine + Compose 插件**（或兼容的 Podman）。
+
+```bash
+# Debian/Ubuntu 示例
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose   # 或带 compose 插件的 Docker Desktop / docker-compose-plugin
+sudo systemctl enable --now docker
+# 当前用户加入 docker 组后重新登录
+sudo usermod -aG docker "$USER"
+```
+
+装不了或不想用容器时：
+
+```bash
+cp .env.example .env   # 可选
+npm start              # node server/app.js，端口 8787
+curl -s http://127.0.0.1:8787/api/health
+```
+
+静态前端也可继续用 GitHub Pages；只需把「自建部署」API 基址指到这台 Node 服务，并设好 `ALLOW_ORIGIN`。

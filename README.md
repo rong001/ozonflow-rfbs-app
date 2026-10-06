@@ -28,7 +28,7 @@ npm start
 # 或：bash scripts/deploy.sh   # Docker Compose
 ```
 
-- 无 Api-Key：连接器免密钥路径 + 状态同步即可经营。
+- 无 Api-Key：连接器免密钥读路径 + 卖家后台写辅助（发货/运单/面单；失败则打开后台+剪贴板+步骤，不假装已发货）+ 状态同步。
 - 有 Api-Key：同一服务开启发货/运单/面单代理写操作。
 
 详见 **[DEPLOY.md](./DEPLOY.md)**（Docker、环境变量、反向代理 HTTPS、API 列表与排障）。
@@ -88,7 +88,7 @@ npm start
 | AI 助手接入 | `node server/mcp-ozonflow.js --state ozonflow-state.json`（MCP stdio，写操作只进审批） | R59 |
 | API 变更监控 | 插件每周比对 Ozon 文档端点清单并提醒 | R61 |
 
-边界：卖家必须自己登录一次（不绕过 Ozon 登录）；发货、回传运单号等写操作仍需在后台手动或配 Api-Key 走 `server/ozon-proxy.js`。
+边界：卖家必须自己登录一次（不绕过 Ozon 登录）。无 Key 时发货/回传运单/面单由连接器在卖家后台辅助执行（启发式 DOM，失败降级为打开对应订单 + 预填剪贴板 + 步骤提示，订单不会被静默标为已发货）；有 Key 走 `server/app.js` 的 `/api/ozon/*`（或精简代理 `server/ozon-proxy.js`）。
 
 ## 接真实店铺（有 Api-Key 时）
 

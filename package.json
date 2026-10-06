@@ -1,6 +1,6 @@
 {
   "name": "ozonflow-rfbs-app",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "OzonFlow rFBS 跨境直发中台 — 静态前端 + 零依赖 Node 后端",
   "private": true,
   "engines": {
