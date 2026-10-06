@@ -466,9 +466,9 @@
         <td>${(o.auto || []).map(a => `<span class="tag tag-green" style="margin:1px">${a}</span>`).join(' ') || '<span class="hint">—</span>'}</td>
         <td><span class="tag ${tag}">${o.statusLabel}</span></td>
         <td>${isRisk ? `<span class="tag tag-red">${eta}</span>` : `<span class="hint">${eta}</span>`}</td>
-        <td onclick="event.stopPropagation()">${ops || '<span class="hint">—</span>'}</td>
+        <td class="row-ops">${ops || '<span class="hint">—</span>'}</td>
       </tr>`;
-    }).join('') || '<tr><td colspan="9" class="hint" style="padding:24px;text-align:center">本店暂无订单 — 点击「同步订单」模拟出单</td></tr>';
+    }).join('') || '<tr><td colspan="9" class="hint" style="padding:24px;text-align:center">本店暂无订单 — 点击「同步订单」拉取新订单</td></tr>';
   }
 
   function openOrderDrawer(id) {
@@ -1068,6 +1068,8 @@
   const roleSw = document.getElementById('roleSwitcher');
 
   demoSw.addEventListener('click', e => {
+    // 下拉选项的点击交给 document 上的委托处理（否则在此被拦截，选项无法生效）
+    if (e.target.closest('[data-demo],[data-action],[data-shop-id],[data-role]')) return;
     e.stopPropagation();
     demoSw.classList.toggle('open');
     shopSw.classList.remove('open');
@@ -1100,6 +1102,8 @@
 
   // Shop switcher — REAL partition
   shopSw.addEventListener('click', e => {
+    // 下拉选项的点击交给 document 上的委托处理（否则在此被拦截，选项无法生效）
+    if (e.target.closest('[data-demo],[data-action],[data-shop-id],[data-role]')) return;
     e.stopPropagation();
     shopSw.classList.toggle('open');
     demoSw.classList.remove('open');
@@ -1115,6 +1119,8 @@
 
   // Role switcher
   roleSw.addEventListener('click', e => {
+    // 下拉选项的点击交给 document 上的委托处理（否则在此被拦截，选项无法生效）
+    if (e.target.closest('[data-demo],[data-action],[data-shop-id],[data-role]')) return;
     e.stopPropagation();
     roleSw.classList.toggle('open');
     demoSw.classList.remove('open');
@@ -1287,7 +1293,8 @@
     renderOrders();
   });
   document.getElementById('orderSearch').addEventListener('input', () => renderOrders());
-  on('[data-open]', 'click', (e, t) => openOrderDrawer(t.dataset.open));
+  // 操作列里的按钮由各自的委托处理；点击操作列不打开详情抽屉
+  on('[data-open]', 'click', (e, t) => { if (e.target.closest('.row-ops, button, a, input')) return; openOrderDrawer(t.dataset.open); });
   on('[data-audit]', 'click', (e, t) => {
     e.stopPropagation();
     const r = Store.auditOrder(t.dataset.audit);

@@ -85,3 +85,15 @@ a { text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .view.entering > *, .view.entering .ops-stack > *, .view.entering .kpi-grid > * { animation: none !important; }
 }
+
+/* 使用手册入口（侧栏底部 + 顶栏帮助图标） */
+a.nav-util, a.topbar-btn { text-decoration: none; }
+a.topbar-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+/* 手机端：筛选签与表格单元不折行，横向滑动 */
+@media (max-width: 768px) {
+  .filter-tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+  .filter-tab { white-space: nowrap; flex-shrink: 0; }
+  .data-table th, .data-table td { white-space: nowrap; }
+}
+@media (max-width: 480px) { .topbar-heading { display: none; } }

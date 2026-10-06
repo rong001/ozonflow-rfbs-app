@@ -1,0 +1,3903 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OzonFlow 使用手册 · 操作手册 / 页面说明书 / PRD</title>
+<style>
+:root{--bg:#f7f5f1;--surface:#fffefb;--border:#ebe6dd;--border-light:#f2eee7;--ink:#1f1d24;--muted:#6f6a75;--accent:#4a5cf5;--ink-accent:#4a46d6;--soft:#eff0fe;--shadow:0 1px 2px rgba(60,45,20,.04),0 8px 24px -12px rgba(60,45,20,.12)}
+*{box-sizing:border-box}
+html{scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.75 "Inter","Noto Sans CJK SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+a{color:var(--ink-accent);text-underline-offset:3px}
+.top{position:sticky;top:0;z-index:20;height:60px;display:flex;align-items:center;gap:16px;padding:0 24px;background:rgba(255,254,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;text-decoration:none;color:var(--ink)}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:11px;line-height:1.2}
+.tabs{display:flex;gap:6px;margin-left:12px}
+.tab{display:flex;flex-direction:column;padding:6px 14px;border-radius:10px;text-decoration:none;color:var(--ink);line-height:1.35;border:1px solid transparent}
+.tab b{font-size:13.5px}.tab span{font-size:11px;color:var(--muted)}
+.tab:hover{background:var(--border-light)}
+.tab.on{background:var(--soft);border-color:#dcdffd}.tab.on b{color:var(--ink-accent)}
+.sp{flex:1}
+.dl{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);text-decoration:none;font-size:12.5px;white-space:nowrap}
+.btn:hover{border-color:#cfc8bb}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.wrap{max-width:1360px;margin:0 auto;padding:24px}
+.doc{display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;align-items:start}
+.doc[hidden]{display:none}
+.toc{position:sticky;top:84px;max-height:calc(100vh - 108px);overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 10px 14px 14px;font-size:12.5px;box-shadow:var(--shadow)}
+.toc-h{font-weight:700;color:var(--ink-accent);margin:0 0 8px 4px}
+.toc ul{list-style:none;margin:0;padding:0}.toc ul ul{padding-left:12px}
+.toc li a{display:block;padding:3px 6px;border-radius:6px;color:var(--ink);text-decoration:none;line-height:1.45}
+.toc>ul>li>a{font-weight:600;margin-top:4px}
+.toc ul ul a{color:var(--muted);font-weight:400}
+.toc a:hover{background:var(--border-light)}.toc a.cur{background:var(--soft);color:var(--ink-accent)}
+.content{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 44px;box-shadow:var(--shadow);min-width:0}
+.content h1{font-size:24px;color:var(--ink);margin:40px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.content section:first-child>h1,.content>h1:first-child{margin-top:0}
+.content h2{font-size:18px;margin:32px 0 10px;padding-left:10px;border-left:3px solid var(--accent)}
+.content h3{font-size:15.5px;margin:22px 0 8px;color:var(--ink-accent)}
+.content h4{font-size:14.5px;margin:18px 0 6px}
+.content table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px;display:block;overflow-x:auto}
+.content th{background:var(--bg);text-align:left;font-weight:600}
+.content th,.content td{border:1px solid var(--border);padding:7px 10px;vertical-align:top}
+.content code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;background:var(--soft);color:var(--ink-accent);padding:1px 5px;border-radius:5px}
+.content pre{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;overflow:auto}
+.content pre code{background:none;color:var(--ink)}
+.content blockquote{margin:12px 0;padding:10px 14px;background:var(--soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0}
+.content blockquote p{margin:4px 0}
+.content figure{margin:14px 0 18px;text-align:center}
+.content img{max-width:100%;height:auto;border:1px solid var(--border);border-radius:10px;cursor:zoom-in;background:#fff}
+.content img.mmd{border:0;cursor:default;max-height:760px}
+.content td img{max-height:200px}
+.content figcaption{font-size:12.5px;color:var(--muted);margin-top:6px}
+.content hr{border:0;border-top:1px dashed var(--border);margin:28px 0}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(31,29,36,.78);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:32px;cursor:zoom-out}
+.lb.on{display:flex}.lb img{max-width:min(1440px,100%);border-radius:10px;background:#fff}
+.totop{position:fixed;right:20px;bottom:20px;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;font-size:16px;color:var(--ink-accent)}
+@media (max-width:1000px){.doc{grid-template-columns:1fr}.toc{position:static;max-height:280px}.tabs .tab span{display:none}.dl .btn:not(.pri){display:none}}
+@media (max-width:640px){.top{height:auto;flex-wrap:wrap;padding:8px 12px;gap:8px}.tabs{margin-left:0;order:3;width:100%;overflow-x:auto}.wrap{padding:12px}.content{padding:20px 16px}.brand small{display:none}}
+@media print{.top,.toc,.totop{display:none}.doc{display:block}.content{border:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../../index.html"><span class="logo">OF</span><span>OzonFlow 使用手册<small>Ozon rFBS 跨境直发经营操作系统</small></span></a>
+  <nav class="tabs"><a class="tab" href="#manual" data-k="manual"><b>操作手册</b><span>按真实业务流程逐步操作</span></a>
+<a class="tab" href="#pages" data-k="pages"><b>页面说明书</b><span>26 个页面逐页说明</span></a>
+<a class="tab" href="#prd" data-k="prd"><b>PRD</b><span>产品需求文档</span></a></nav>
+  <div class="sp"></div>
+  <div class="dl"><a class="btn" id="dlPdf" href="操作手册.pdf" download>下载 PDF</a><a class="btn" id="dlDocx" href="操作手册.docx" download>下载 Word</a><a class="btn pri" href="../../index.html">返回系统</a></div>
+</header>
+<main class="wrap"><article class="doc" id="doc-manual" hidden><aside class="toc"><div class="toc-h">操作手册</div><ul>
+<li><a href="#manual-操作手册" id="manual-toc-操作手册">操作手册</a>
+<ul>
+<li><a href="#manual-阅读前须知"
+id="manual-toc-阅读前须知">阅读前须知</a></li>
+</ul></li>
+<li><a href="#manual-第一部分-开始使用"
+id="manual-toc-第一部分-开始使用">第一部分 开始使用</a>
+<ul>
+<li><a href="#manual-新手开店引导向导"
+id="manual-toc-新手开店引导向导">1.1 新手开店引导（向导）</a></li>
+<li><a href="#manual-选择经营场景业务数据集"
+id="manual-toc-选择经营场景业务数据集">1.2
+选择经营场景（业务数据集）</a></li>
+<li><a href="#manual-切换店铺" id="manual-toc-切换店铺">1.3
+切换店铺</a></li>
+<li><a href="#manual-切换角色" id="manual-toc-切换角色">1.4
+切换角色</a></li>
+<li><a href="#manual-安装并连接-ozonflow-连接器扩展免密钥接入真实店铺"
+id="manual-toc-安装并连接-ozonflow-连接器扩展免密钥接入真实店铺">1.5
+安装并连接 OzonFlow 连接器扩展（免密钥接入真实店铺）</a></li>
+<li><a href="#manual-侧栏三级菜单与使用手册入口"
+id="manual-toc-侧栏三级菜单与使用手册入口">1.6
+侧栏、三级菜单与使用手册入口</a></li>
+</ul></li>
+<li><a href="#manual-第二部分-每日开工"
+id="manual-toc-第二部分-每日开工">第二部分 每日开工</a>
+<ul>
+<li><a href="#manual-看经营总览" id="manual-toc-看经营总览">2.1
+看经营总览</a></li>
+<li><a href="#manual-处理今日待办" id="manual-toc-处理今日待办">2.2
+处理今日待办</a></li>
+</ul></li>
+<li><a href="#manual-第三部分-订单履约审核-采购-面单-发货-运单号回传"
+id="manual-toc-第三部分-订单履约审核-采购-面单-发货-运单号回传">第三部分
+订单履约（审核 → 采购 → 面单 → 发货 → 运单号回传）</a>
+<ul>
+<li><a href="#manual-同步订单" id="manual-toc-同步订单">3.1
+同步订单</a></li>
+<li><a href="#manual-审核订单" id="manual-toc-审核订单">3.2
+审核订单</a></li>
+<li><a href="#manual-采购缺货订单" id="manual-toc-采购缺货订单">3.3
+采购（缺货订单）</a></li>
+<li><a href="#manual-申请面单" id="manual-toc-申请面单">3.4
+申请面单</a></li>
+<li><a href="#manual-查看订单详情与发货"
+id="manual-toc-查看订单详情与发货">3.5 查看订单详情与发货</a></li>
+<li><a href="#manual-上传回传运单号" id="manual-toc-上传回传运单号">3.6
+上传（回传）运单号</a></li>
+<li><a href="#manual-超时风险处理" id="manual-toc-超时风险处理">3.7
+超时风险处理</a></li>
+</ul></li>
+<li><a href="#manual-第四部分-商品上架与定价利润"
+id="manual-toc-第四部分-商品上架与定价利润">第四部分
+商品上架与定价利润</a>
+<ul>
+<li><a href="#manual-选品与利润测算" id="manual-toc-选品与利润测算">4.1
+选品与利润测算</a></li>
+<li><a href="#manual-利润定价三情景" id="manual-toc-利润定价三情景">4.2
+利润定价（三情景）</a></li>
+<li><a href="#manual-刊登上架" id="manual-toc-刊登上架">4.3
+刊登上架</a></li>
+<li><a href="#manual-市场选品与换供" id="manual-toc-市场选品与换供">4.4
+市场选品与换供</a></li>
+<li><a href="#manual-素材工坊生成商品短视频"
+id="manual-toc-素材工坊生成商品短视频">4.5
+素材工坊：生成商品短视频</a></li>
+</ul></li>
+<li><a href="#manual-第五部分-库存补货"
+id="manual-toc-第五部分-库存补货">第五部分 库存补货</a></li>
+<li><a href="#manual-第六部分-客服差评与退货"
+id="manual-toc-第六部分-客服差评与退货">第六部分 客服、差评与退货</a>
+<ul>
+<li><a href="#manual-回复评价与问答" id="manual-toc-回复评价与问答">6.1
+回复评价与问答</a></li>
+<li><a href="#manual-差评预警升级" id="manual-toc-差评预警升级">6.2
+差评预警升级</a></li>
+<li><a href="#manual-退货处理" id="manual-toc-退货处理">6.3
+退货处理</a></li>
+</ul></li>
+<li><a href="#manual-第七部分-财务对账"
+id="manual-toc-第七部分-财务对账">第七部分 财务对账</a></li>
+<li><a href="#manual-第八部分-推广与价格竞争"
+id="manual-toc-第八部分-推广与价格竞争">第八部分 推广与价格竞争</a>
+<ul>
+<li><a href="#manual-价格竞争" id="manual-toc-价格竞争">8.1
+价格竞争</a></li>
+<li><a href="#manual-推广活动" id="manual-toc-推广活动">8.2
+推广活动</a></li>
+</ul></li>
+<li><a href="#manual-第九部分-合规"
+id="manual-toc-第九部分-合规">第九部分 合规</a></li>
+<li><a href="#manual-第十部分-自动化-agent-中枢"
+id="manual-toc-第十部分-自动化-agent-中枢">第十部分 自动化 Agent
+中枢</a></li>
+<li><a href="#manual-第十一部分-审批流程"
+id="manual-toc-第十一部分-审批流程">第十一部分 审批流程</a></li>
+<li><a href="#manual-第十二部分-周报"
+id="manual-toc-第十二部分-周报">第十二部分 周报</a></li>
+<li><a href="#manual-第十三部分-命令面板与-ai-指令台"
+id="manual-toc-第十三部分-命令面板与-ai-指令台">第十三部分 命令面板与 AI
+指令台</a>
+<ul>
+<li><a href="#manual-命令面板" id="manual-toc-命令面板">13.1
+命令面板</a></li>
+<li><a href="#manual-ai-指令台" id="manual-toc-ai-指令台">13.2 AI
+指令台</a></li>
+</ul></li>
+<li><a href="#manual-第十四部分-平台集成为接入-api-key-做准备"
+id="manual-toc-第十四部分-平台集成为接入-api-key-做准备">第十四部分
+平台集成（为接入 Api-Key 做准备）</a></li>
+<li><a href="#manual-第十五部分-手机端使用"
+id="manual-toc-第十五部分-手机端使用">第十五部分 手机端使用</a></li>
+<li><a href="#manual-常见问题"
+id="manual-toc-常见问题">常见问题</a></li>
+</ul>
+</aside><div class="content"><section id="manual-操作手册" class="level1">
+<h1>操作手册</h1>
+<blockquote>
+<p>本手册面向使用 OzonFlow 做 Ozon 平台
+rFBS（卖家自发货）跨境直发的中国卖家团队：老板、运营、仓管（仓库）、客服、财务。按一天的真实工作顺序组织：先完成开始使用的准备，再按「每日开工
+→ 订单履约 → 商品与定价 → 库存 → 客服售后 → 财务 → 推广与价格 → 合规 →
+自动化 → 审批 → 周报」逐章操作。</p>
+<p>每个流程都写明
+<strong>目的、适用角色、前置条件</strong>，再给出编号步骤。每一步配一张真实截图：<strong>红框</strong>
+标出要点击的位置，紧跟一张点击后的结果图（含右上角的提示消息）。</p>
+</blockquote>
+<section id="manual-阅读前须知" class="level2">
+<h2>阅读前须知</h2>
+<p><strong>线上地址</strong>：<a
+href="https://rong001.github.io/ozonflow-rfbs-app/"
+class="uri">https://rong001.github.io/ozonflow-rfbs-app/</a>（打开即用，数据保存在当前浏览器的本地存储里，换浏览器或清缓存后需重新导入）。</p>
+<p><strong>当前接入模式：免密钥模式。</strong> 目前没有 Ozon Seller API
+的 Client-Id / Api-Key，系统通过两种方式获取真实店铺数据：</p>
+<ol type="1">
+<li><strong>OzonFlow 连接器浏览器扩展</strong>：在你已登录的 Ozon
+卖家后台（seller.ozon.ru）页面里，读取后台自己加载的订单、结算、商品数据；不保存密码、不额外发请求。</li>
+<li><strong>报表导入</strong>：把卖家后台导出的订单 / 财务 CSV、XLSX
+文件拖进「数据连接」页。</li>
+</ol>
+<p><strong>需要人工完成的写操作（重要）</strong>：在拿到 Api-Key 并部署
+<code>server/ozon-proxy.js</code> 代理之前，下列动作在 OzonFlow 里点击后
+<strong>只更新 OzonFlow 内的状态与记录，不会写回 Ozon
+平台</strong>，必须由人在 Ozon 卖家后台同步完成：</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>OzonFlow 里的动作</th>
+<th>还需在 Ozon 卖家后台手动完成</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>申请面单（生成运单号）</td>
+<td>在物流商系统 / Ozon 后台实际下单取号、打印面单</td>
+</tr>
+<tr class="even">
+<td>发货 / 确认发货</td>
+<td>在 Ozon 后台把订单标记为已发货（备货完成）</td>
+</tr>
+<tr class="odd">
+<td>回传运单号</td>
+<td>在 Ozon 后台订单详情里填写运单号</td>
+</tr>
+<tr class="even">
+<td>改价、报名活动、暂停广告</td>
+<td>在 Ozon 后台价格 / 促销 / 广告页面操作</td>
+</tr>
+<tr class="odd">
+<td>发布商品、库存同步</td>
+<td>在 Ozon 后台商品页上架、修改库存</td>
+</tr>
+<tr class="even">
+<td>回复评价 / 问答 / 买家聊天</td>
+<td>在 Ozon 后台对应页面发送（另需 Premium Plus 订阅才能走接口）</td>
+</tr>
+<tr class="odd">
+<td>同意退款、取消订单</td>
+<td>在 Ozon 后台退货 / 订单页处理</td>
+</tr>
+</tbody>
+</table>
+<p>下文凡涉及以上动作的步骤，都会用「⚠ 人工完成」标出。</p>
+<p><strong>界面速览</strong>：左侧是可展开的图标侧栏（6 个分组：工作台 /
+订单履约 / 商品增长 / 客服售后 / 财务风控 /
+自动化与集成）；顶栏依次是页面标题、命令面板入口、经营场景、店铺、角色、同步状态、通知铃铛、使用手册（?）、重置当前场景、头像。</p>
+<figure>
+<img loading="lazy" src="img/p-dashboard.png" alt="经营总览全貌" />
+<figcaption aria-hidden="true">经营总览全貌</figcaption>
+</figure>
+<hr />
+</section>
+</section>
+<section id="manual-第一部分-开始使用" class="level1">
+<h1>第一部分 开始使用</h1>
+<section id="manual-新手开店引导向导" class="level2">
+<h2>1.1 新手开店引导（向导）</h2>
+<ul>
+<li><strong>目的</strong>：第一次使用时 4 步完成冷启动：绑定店铺 → 选择
+rFBS → 设置默认物流 → 导入首批商品。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>前置条件</strong>：已在 Ozon Seller Center 开通 rFBS /
+跨境直发权限。</li>
+</ul>
+<p><strong>步骤</strong></p>
+<ol type="1">
+<li><p>打开系统后进入「小白冷启动」经营场景时，向导自动弹出，停在第 1
+步「绑定店铺」。顶部 4 个圆点显示进度。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-01-auto-open.png" alt="向导自动弹出" />
+<figcaption aria-hidden="true">向导自动弹出</figcaption>
+</figure></li>
+<li><p>在「店铺名称」填写你的 Ozon 店铺名。<strong>免密钥模式下
+Client-Id 和 Api-Key 可以留空</strong>（系统只在本地记录，不直连 Ozon
+API）；以后拿到密钥请填到服务器代理里，而不是这里。点右下角
+<strong>「绑定并继续」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-02-fill.png" alt="填写店铺名称" />
+<figcaption aria-hidden="true">填写店铺名称</figcaption>
+</figure></li>
+<li><p>右上角提示「店铺已绑定」，进入第 2
+步「选择履约模式」。默认选中「rFBS · 跨境直发」（FBO/FBS
+当前账号未开通，不可选）。点 <strong>「确认 rFBS」</strong>。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-03-rfbs.png" alt="选择 rFBS" />
+<figcaption aria-hidden="true">选择 rFBS</figcaption>
+</figure>
+<blockquote>
+<p>注意：rFBS 备货时效通常 24–72
+小时，超时会影响搜索排名与店铺健康。</p>
+</blockquote></li>
+<li><p>第 3 步「设置默认物流渠道」：点击一张渠道卡片（云途 / 燕文 / OGL
+等，卡片上显示时效与每公斤单价）使其高亮，再点
+<strong>「保存物流」</strong>。规则引擎会优先用这个渠道匹配轻小件。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-04-logistics.png" alt="选择默认物流" />
+<figcaption aria-hidden="true">选择默认物流</figcaption>
+</figure></li>
+<li><p>第 4 步「导入首批经营商品」：预览将要加入刊登草稿的 3 个爆款，点
+<strong>「导入并完成」</strong>。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-05-import.png" alt="导入商品" />
+<figcaption aria-hidden="true">导入商品</figcaption>
+</figure>
+<blockquote>
+<p>注意：刊登前请补齐必填俄语属性：Бренд / Страна производитель /
+Состав。</p>
+</blockquote></li>
+<li><p>向导关闭并自动跳转到「刊登上架」，导入的商品出现在草稿列表中，可以继续映射、发布（见
+3.3）。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-06-done.png" alt="引导完成" />
+<figcaption aria-hidden="true">引导完成</figcaption>
+</figure></li>
+<li><p>回到「经营总览」，顶部开店进度卡显示 4 项全部完成。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-07-dash.png" alt="开店进度" />
+<figcaption aria-hidden="true">开店进度</figcaption>
+</figure></li>
+<li><p>任何时候都可以从侧栏底部
+<strong>「开店引导」</strong>（红框）重新打开向导；顶栏「经营场景」下拉里也有「打开开店引导」。</p>
+<figure>
+<img loading="lazy" src="img/s-wizard-08-reopen.png" alt="重新打开向导" />
+<figcaption aria-hidden="true">重新打开向导</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-选择经营场景业务数据集" class="level2">
+<h2>1.2 选择经营场景（业务数据集）</h2>
+<ul>
+<li><strong>目的</strong>：系统内置三套业务数据集，分别对应三种经营阶段，可随时切换查看。</li>
+<li><strong>适用角色</strong>：所有角色。</li>
+<li><strong>前置条件</strong>：无。</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>经营场景</th>
+<th>适合</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>小白冷启动</td>
+<td>刚开店</td>
+<td>开店向导、少量 SKU、选品→刊登→出单完整闭环</td>
+</tr>
+<tr class="even">
+<td>旺季履约突击</td>
+<td>出单高峰</td>
+<td>爆款多、出单快、差评待回；9 个 Agent 默认启用</td>
+</tr>
+<tr class="odd">
+<td>多店公司化</td>
+<td>多店铺团队</td>
+<td>三店真实分区、角色权限、周报与老板视角</td>
+</tr>
+</tbody>
+</table>
+<ol type="1">
+<li><p>点击顶栏
+<strong>「经营场景」</strong>（红框），下拉列出三套场景，以及「重置当前场景数据」「打开开店引导」两个操作。</p>
+<figure>
+<img loading="lazy" src="img/s-scene-01-dropdown.png" alt="经营场景下拉" />
+<figcaption aria-hidden="true">经营场景下拉</figcaption>
+</figure></li>
+<li><p>点「多店公司化」，右上角提示「已切换经营场景」，顶栏场景名、店铺和所有页面数据随之刷新。</p>
+<figure>
+<img loading="lazy" src="img/s-scene-02-switched.png" alt="切换完成" />
+<figcaption aria-hidden="true">切换完成</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>注意：切换场景会重新载入该场景的数据集，当前场景里做过的改动不会带过去。顶栏右侧的「↻」按钮可「重置当前场景数据」，清除本场景改动。</p>
+</blockquote>
+</section>
+<section id="manual-切换店铺" class="level2">
+<h2>1.3 切换店铺</h2>
+<ul>
+<li><strong>目的</strong>：多店卖家在不同店铺间切换，订单、刊登、库存、评价、退货都按当前店铺过滤（真实分区）。</li>
+<li><strong>适用角色</strong>：所有角色。</li>
+<li><strong>前置条件</strong>：场景中有多家店铺（如「多店公司化」）。</li>
+</ul>
+<ol type="1">
+<li><p>点击顶栏店铺名（带国旗，红框）。下拉列出所有店铺，每家显示「rFBS
+· N 单 · N 差评」。</p>
+<figure>
+<img loading="lazy" src="img/s-shop-01-dropdown.png" alt="店铺下拉" />
+<figcaption aria-hidden="true">店铺下拉</figcaption>
+</figure></li>
+<li><p>点选另一家店铺，右上角提示「已切换至『店铺名』」，经营总览的
+KPI、待办、趋势图都换成该店数据。</p>
+<figure>
+<img loading="lazy" src="img/s-shop-02-switched.png" alt="切换店铺" />
+<figcaption aria-hidden="true">切换店铺</figcaption>
+</figure></li>
+<li><p>进入「订单履约」，列表只显示该店订单。</p>
+<figure>
+<img loading="lazy" src="img/s-shop-03-orders.png" alt="该店订单" />
+<figcaption aria-hidden="true">该店订单</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-切换角色" class="level2">
+<h2>1.4 切换角色</h2>
+<ul>
+<li><strong>目的</strong>：不同岗位只看到自己需要的页面、只能执行自己权限内的动作。</li>
+<li><strong>适用角色</strong>：所有人（一般由老板为团队成员说明各自角色）。</li>
+<li><strong>前置条件</strong>：无。</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th>角色</th>
+<th>下拉提示</th>
+<th>可见页面数</th>
+<th>主要职责</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>老板</td>
+<td>全权限 · 看周报</td>
+<td>26</td>
+<td>全部页面与动作；唯一可审批</td>
+</tr>
+<tr class="even">
+<td>运营</td>
+<td>选品刊登履约</td>
+<td>24</td>
+<td>选品、刊登、定价、审单、客服、推广</td>
+</tr>
+<tr class="odd">
+<td>仓管</td>
+<td>仓配发货退货</td>
+<td>9</td>
+<td>采购完成、面单、发货、补货、退货</td>
+</tr>
+<tr class="even">
+<td>客服</td>
+<td>评价问答退货</td>
+<td>7</td>
+<td>评价、问答、买家聊天、退货</td>
+</tr>
+<tr class="odd">
+<td>财务</td>
+<td>对账结算利润</td>
+<td>12</td>
+<td>利润定价、财务对账、店铺健康、推广与价格</td>
+</tr>
+</tbody>
+</table>
+<ol type="1">
+<li><p>点击顶栏 <strong>「角色」</strong>（红框），下拉列出 5
+个角色及职责提示。</p>
+<figure>
+<img loading="lazy" src="img/s-role-01-dropdown.png" alt="角色下拉" />
+<figcaption aria-hidden="true">角色下拉</figcaption>
+</figure></li>
+<li><p>选「仓管」，右上角提示「当前角色：仓管」，头像变为「仓」。把鼠标移到侧栏上可以看到只剩仓管可见的分组与页面。</p>
+<figure>
+<img loading="lazy" src="img/s-role-02-warehouse-nav.png" alt="仓管侧栏" />
+<figcaption aria-hidden="true">仓管侧栏</figcaption>
+</figure></li>
+<li><p>仓管尝试打开无权页面（例如通过命令面板去「财务对账」）时，系统提示「当前角色『仓管』无权访问『财务对账』」，页面不会切换。</p>
+<figure>
+<img loading="lazy" src="img/s-role-03-denied.png" alt="无权访问提示" />
+<figcaption aria-hidden="true">无权访问提示</figcaption>
+</figure></li>
+<li><p>「财务」角色的侧栏：利润定价、财务对账、店铺健康，以及推广活动、价格竞争、平台集成、数据连接等。</p>
+<figure>
+<img loading="lazy" src="img/s-role-04-finance-nav.png" alt="财务侧栏" />
+<figcaption aria-hidden="true">财务侧栏</figcaption>
+</figure></li>
+<li><p>「客服」角色的侧栏：客服评价、客服收件箱、退货异常，以及订单（只读）等。</p>
+<figure>
+<img loading="lazy" src="img/s-role-05-cs-nav.png" alt="客服侧栏" />
+<figcaption aria-hidden="true">客服侧栏</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>注意：角色控制的是「看得到什么、能点什么」。审批中心的「通过 /
+驳回」只有老板能操作（见第十一部分）。</p>
+</blockquote>
+</section>
+<section id="manual-安装并连接-ozonflow-连接器扩展免密钥接入真实店铺"
+class="level2">
+<h2>1.5 安装并连接 OzonFlow 连接器扩展（免密钥接入真实店铺）</h2>
+<ul>
+<li><strong>目的</strong>：没有 Api-Key 也能把 Ozon
+卖家后台的真实订单、结算、商品数据带进 OzonFlow。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、财务（谁登录卖家后台，谁装扩展）。</li>
+<li><strong>前置条件</strong>：使用 Chrome 或 Edge 浏览器；有 Ozon
+卖家后台登录账号。</li>
+</ul>
+<ol type="1">
+<li><p>进入侧栏「自动化与集成 →
+数据连接」。未安装扩展时，第一张指标卡显示「浏览器插件 ·
+未安装」（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-01-not-installed.png" alt="未安装状态" />
+<figcaption aria-hidden="true">未安装状态</figcaption>
+</figure></li>
+<li><p>在「① Ozon 卖家后台直连」卡片里点 <strong>「OzonFlow
+连接器插件」</strong> 链接（红框）下载
+<code>ozonflow-connector.zip</code>，解压得到
+<code>ozonflow-connector</code> 文件夹。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-02-download.png" alt="下载扩展" />
+<figcaption aria-hidden="true">下载扩展</figcaption>
+</figure></li>
+<li><p>在浏览器地址栏打开 <code>chrome://extensions</code>（Edge 为
+<code>edge://extensions</code>），打开右上角
+<strong>「开发者模式」</strong>（红框），再点左上角
+<strong>「加载未打包的扩展程序」</strong>（旧版浏览器显示为「加载已解压的扩展程序」，红框），选择解压出的文件夹。列表中出现「OzonFlow
+连接器 1.0.0」即安装成功。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-03-chrome-extensions.png"
+alt="chrome://extensions" />
+<figcaption aria-hidden="true">chrome://extensions</figcaption>
+</figure></li>
+<li><p>点击浏览器工具栏里的 OzonFlow 连接器图标，弹窗显示已捕获的订单 /
+结算 / 商品数量，以及「打开 Ozon 卖家后台」「打开 OzonFlow
+同步」「清空已捕获数据」三个按钮。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-04-popup.png" alt="扩展弹窗" />
+<figcaption aria-hidden="true">扩展弹窗</figcaption>
+</figure></li>
+<li><p>回到 OzonFlow「数据连接」页（刷新一次），第一张卡变为
+<strong>「已连接 v1.0.0」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-05-connected.png" alt="已连接" />
+<figcaption aria-hidden="true">已连接</figcaption>
+</figure></li>
+<li><p>⚠ 人工完成：在同一浏览器里正常登录 Ozon 卖家后台，依次打开
+<strong>订单、财务（结算 / 交易）、商品列表</strong>
+页面，扩展会在后台页面右下角显示已捕获数量（系统不会、也不能绕过 Ozon
+登录）。</p></li>
+<li><p>回到「数据连接」，点
+<strong>「从插件同步」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ext-06-pull-a.png" alt="从插件同步" />
+<figcaption aria-hidden="true">从插件同步</figcaption>
+</figure>
+<p>结果：已捕获数据时，订单并入「订单履约」（含状态、发货截止时间、临期标红），结算按订单号并入「财务对账」，并提示同步数量。<strong>还没有在卖家后台捕获到数据时</strong>，会提示「插件还没有捕获数据：请先在
+Ozon 卖家后台打开订单或财务页面」，如下图：</p>
+<figure>
+<img loading="lazy" src="img/s-ext-06-pull-b.png" alt="同步结果提示" />
+<figcaption aria-hidden="true">同步结果提示</figcaption>
+</figure></li>
+<li><p>点 <strong>「刷新插件状态」</strong>
+可重新读取扩展的捕获计数，提示「插件状态已刷新」。</p>
+<p><img loading="lazy" src="img/s-ext-07-ping-a.png" alt="刷新插件状态" /> <img
+src="img/s-ext-07-ping-b.png" alt="刷新结果" /></p></li>
+</ol>
+<section id="manual-不装扩展报表导入" class="level3">
+<h3>1.5.1 不装扩展：报表导入</h3>
+<ol type="1">
+<li><p>在 Ozon 卖家后台「订单 → 导出」或「财务 → 报告」下载 CSV /
+Excel。在「② 报表导入」卡片点
+<strong>「选择文件」</strong>（红框），选择下载的文件。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-01-input.png" alt="选择报表" />
+<figcaption aria-hidden="true">选择报表</figcaption>
+</figure></li>
+<li><p>系统按俄文表头（Номер отправления、Статус、Дата отгрузки
+等）识别为「订单」报表，导入记录显示时间、文件名、类型、识别行数和结果，右上角提示导入结果。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-02-orders.png" alt="订单报表导入" />
+<figcaption aria-hidden="true">订单报表导入</figcaption>
+</figure></li>
+<li><p>再导入财务报表（表头含 ID операции、Тип
+начисления），识别为「结算」，并入财务对账。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-03-finance.png" alt="财务报表导入" />
+<figcaption aria-hidden="true">财务报表导入</figcaption>
+</figure></li>
+<li><p>打开「订单履约」，导入的订单出现在列表顶部（订单号为 Ozon
+发货单号，剩余时效按「Дата отгрузки」计算）。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-04-merged.png" alt="并入订单履约" />
+<figcaption aria-hidden="true">并入订单履约</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-物流轨迹与数据导出" class="level3">
+<h3>1.5.2 物流轨迹与数据导出</h3>
+<ol type="1">
+<li><p>「④ 物流轨迹公开查询」卡片点
+<strong>「刷新全部轨迹」</strong>，经扩展调用菜鸟国际公开查询接口（无需
+Key）。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-05-track-a.png" alt="刷新轨迹" />
+<figcaption aria-hidden="true">刷新轨迹</figcaption>
+</figure>
+<p>完成后提示「已查询 N 个运单，M
+个有轨迹」；查不到轨迹的单号显示「暂无轨迹」，可点单号打开菜鸟查询页人工核对。</p>
+<figure>
+<img loading="lazy" src="img/s-imp-05-track-b.png" alt="轨迹结果" />
+<figcaption aria-hidden="true">轨迹结果</figcaption>
+</figure></li>
+<li><p>「⑦ 给 AI Agent 用」卡片点 <strong>「导出经营数据
+JSON」</strong>，浏览器下载 <code>ozonflow-state.json</code>，交给
+<code>node server/mcp-ozonflow.js --state ./ozonflow-state.json</code>
+后，AI
+助手即可查询订单、利润、健康分与对账差异（写操作只生成待审批建议）。</p>
+<p><img loading="lazy" src="img/s-imp-06-export-a.png" alt="导出数据" /> <img
+src="img/s-imp-06-export-b.png" alt="导出完成" /></p></li>
+</ol>
+</section>
+</section>
+<section id="manual-侧栏三级菜单与使用手册入口" class="level2">
+<h2>1.6 侧栏、三级菜单与使用手册入口</h2>
+<ol type="1">
+<li><p>默认是收起的图标侧栏，每个分组图标右上角的红色数字是组内待办合计。</p>
+<figure>
+<img loading="lazy" src="img/s-nav-01-rail.png" alt="图标侧栏" />
+<figcaption aria-hidden="true">图标侧栏</figcaption>
+</figure></li>
+<li><p>鼠标移到侧栏上自动展开，显示 6 个分组及页面名；点分组标题可折叠 /
+展开。</p>
+<figure>
+<img loading="lazy" src="img/s-nav-02-hover.png" alt="侧栏展开" />
+<figcaption aria-hidden="true">侧栏展开</figcaption>
+</figure></li>
+<li><p>进入「订单履约」「客服评价」「退货异常」时，下方出现三级菜单（如
+待审核 / 待采购 / 待发货 / 超时风险），点击直接带筛选进入。</p>
+<figure>
+<img loading="lazy" src="img/s-nav-03-leaves.png" alt="三级菜单" />
+<figcaption aria-hidden="true">三级菜单</figcaption>
+</figure></li>
+<li><p>点侧栏底部
+<strong>「固定侧栏」</strong>，侧栏常驻展开；再点「取消固定」恢复悬停展开。</p>
+<figure>
+<img loading="lazy" src="img/s-nav-04-pinned.png" alt="固定侧栏" />
+<figcaption aria-hidden="true">固定侧栏</figcaption>
+</figure></li>
+<li><p>侧栏底部 <strong>「使用手册」</strong> 和顶栏
+<strong>「?」</strong> 图标都会在新标签页打开本手册的网页版。</p>
+<figure>
+<img loading="lazy" src="img/s-nav-05-manual.png" alt="使用手册入口" />
+<figcaption aria-hidden="true">使用手册入口</figcaption>
+</figure></li>
+</ol>
+<hr />
+</section>
+</section>
+<section id="manual-第二部分-每日开工" class="level1">
+<h1>第二部分 每日开工</h1>
+<section id="manual-看经营总览" class="level2">
+<h2>2.1 看经营总览</h2>
+<ul>
+<li><strong>目的</strong>：开工 1 分钟了解今天最要紧的事。</li>
+<li><strong>适用角色</strong>：所有角色（内容按角色与当前店铺显示）。</li>
+<li><strong>前置条件</strong>：已选定店铺。</li>
+</ul>
+<ol type="1">
+<li><p>顶部焦点区一句话给出今日重点（例如「今天先处理 3 单临近超时，4
+项待审批」），下方显示 Agent 今日已处理数量、已启用 Agent 数，右侧是「AI
+指令台」与「一键跑全部 Agent」。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-01-hero.png" alt="今日焦点" />
+<figcaption aria-hidden="true">今日焦点</figcaption>
+</figure></li>
+<li><p>KPI 卡（红框）：今日订单、待发货（含待采购）、超时风险（距截单
+&lt; 6h）、预估毛利（已扣退货拨备）、差评 / 退货。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-02-kpi.png" alt="KPI 卡" />
+<figcaption aria-hidden="true">KPI 卡</figcaption>
+</figure></li>
+<li><p>「今日待办」（红框）按风险排序：高风险审批、超时备货、待审单、缺货待采、差评待回、退货异常、物流轨迹异常、1★
+待升级、资金异常、刊登待处理。每项右侧按钮直达对应页面与筛选。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-03-todo.png" alt="今日待办" />
+<figcaption aria-hidden="true">今日待办</figcaption>
+</figure></li>
+<li><p>点顶栏 <strong>铃铛</strong>，弹出紧急事项汇总（超时 / 差评待回 /
+退货异常）。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-04-bell.png" alt="铃铛提示" />
+<figcaption aria-hidden="true">铃铛提示</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-处理今日待办" class="level2">
+<h2>2.2 处理今日待办</h2>
+<ol type="1">
+<li><p>在待办里点「N 笔超时备货」右侧的
+<strong>「去处理」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-05-todo-risk-a.png" alt="去处理" />
+<figcaption aria-hidden="true">去处理</figcaption>
+</figure></li>
+<li><p>直达「订单履约 · 超时风险」，只显示距截单 &lt; 6
+小时的订单，按第三部分处理。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-05-todo-risk-b.png" alt="超时风险筛选" />
+<figcaption aria-hidden="true">超时风险筛选</figcaption>
+</figure></li>
+<li><p>回到总览，点「N 项高风险动作待审批」右侧的
+<strong>「去审批」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-06-todo-approval-a.png" alt="去审批" />
+<figcaption aria-hidden="true">去审批</figcaption>
+</figure></li>
+<li><p>直达审批中心待审批列表（处理方法见第十一部分）。</p>
+<figure>
+<img loading="lazy" src="img/s-daily-06-todo-approval-b.png" alt="审批中心" />
+<figcaption aria-hidden="true">审批中心</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>建议的每日顺序：超时风险 → 待审批 → 待审单 / 待采购 → 差评 → 退货 →
+物流异常 → 刊登。</p>
+</blockquote>
+<hr />
+</section>
+</section>
+<section id="manual-第三部分-订单履约审核-采购-面单-发货-运单号回传"
+class="level1">
+<h1>第三部分 订单履约（审核 → 采购 → 面单 → 发货 → 运单号回传）</h1>
+<ul>
+<li><strong>目的</strong>：把 Ozon
+新订单在截单前发出，避免逾期发货率超标。</li>
+<li><strong>适用角色</strong>：运营（审单、面单、发货）、仓管（采购完成、面单、发货）、老板；客服只读。</li>
+<li><strong>前置条件</strong>：订单已通过扩展同步、报表导入或「同步订单」进入系统；物流渠道已连接。</li>
+</ul>
+<p>订单状态流转：<strong>待审核 → （待采购）→ 待发货 →
+已发货</strong>；剩余时效 ≤ 6
+小时且未发货的订单自动标为「超时风险」。</p>
+<section id="manual-同步订单" class="level2">
+<h2>3.1 同步订单</h2>
+<ol type="1">
+<li><p>进入「订单履约」，点 <strong>「同步订单」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-01-sync-a.png" alt="同步订单" />
+<figcaption aria-hidden="true">同步订单</figcaption>
+</figure></li>
+<li><p>右上角提示「已同步 N
+笔新订单」，新订单以「待审核」状态出现在列表顶部，等待审单。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-01-sync-b.png" alt="同步完成" />
+<figcaption aria-hidden="true">同步完成</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>说明：免密钥模式下，真实店铺订单以扩展同步或报表导入为准（见
+1.5）。「同步订单」按钮在当前经营场景的业务数据集中，按本店在售商品生成新订单并扣减库存，适合团队熟悉流程；接入
+Api-Key 后改为调用 <code>/v3/posting/fbs/unfulfilled/list</code>
+拉取真实订单。</p>
+</blockquote>
+</section>
+<section id="manual-审核订单" class="level2">
+<h2>3.2 审核订单</h2>
+<ol type="1">
+<li><p>点筛选签 <strong>「待审核」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-02-tab-audit-a.png" alt="待审核签" />
+<figcaption aria-hidden="true">待审核签</figcaption>
+</figure></li>
+<li><p>只显示待审核订单，每行操作列有「审单」。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-02-tab-audit-b.png" alt="待审核列表" />
+<figcaption aria-hidden="true">待审核列表</figcaption>
+</figure></li>
+<li><p>核对金额、买家留言后点某一行的
+<strong>「审单」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-03-audit-one-a.png" alt="单笔审单" />
+<figcaption aria-hidden="true">单笔审单</figcaption>
+</figure></li>
+<li><p>提示「已通过审单
+订单号」，订单按规则匹配物流并转入「待发货」（库存不足会转「待采购」）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-03-audit-one-b.png" alt="审单结果" />
+<figcaption aria-hidden="true">审单结果</figcaption>
+</figure></li>
+<li><p>剩余订单点 <strong>「一键审单」</strong>（红框）批量处理。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-04-auto-audit-a.png" alt="一键审单" />
+<figcaption aria-hidden="true">一键审单</figcaption>
+</figure></li>
+<li><p>提示「自动审单完成 · 处理 N 笔订单」，待审核清零。规则：金额 &lt;
+5000₽ 且无买家留言自动通过；不满足的留给人工。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-04-auto-audit-b.png" alt="一键审单结果" />
+<figcaption aria-hidden="true">一键审单结果</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-采购缺货订单" class="level2">
+<h2>3.3 采购（缺货订单）</h2>
+<ol type="1">
+<li><p>点筛选签 <strong>「待采购」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-05-tab-purchase-a.png" alt="待采购签" />
+<figcaption aria-hidden="true">待采购签</figcaption>
+</figure></li>
+<li><p>列表为本地仓库存不足的订单。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-05-tab-purchase-b.png" alt="待采购列表" />
+<figcaption aria-hidden="true">待采购列表</figcaption>
+</figure></li>
+<li><p>⚠ 人工完成：在 1688 下单采购（1688 开放平台未接入前，下单需在
+1688 完成）。到货后回到这里点
+<strong>「采购完成」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-06-purchased-a.png" alt="采购完成" />
+<figcaption aria-hidden="true">采购完成</figcaption>
+</figure></li>
+<li><p>提示「已标记采购完成」，订单转「待发货」，本地库存与在售库存同步
++5。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-06-purchased-b.png" alt="采购完成结果" />
+<figcaption aria-hidden="true">采购完成结果</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>单笔采购金额 ≥ ¥1000 的补货会进入审批中心。</p>
+</blockquote>
+</section>
+<section id="manual-申请面单" class="level2">
+<h2>3.4 申请面单</h2>
+<ol type="1">
+<li><p>点筛选签 <strong>「待发货」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-07-tab-ship-a.png" alt="待发货签" />
+<figcaption aria-hidden="true">待发货签</figcaption>
+</figure></li>
+<li><p>未取号的订单显示「面单」，已取号的显示「发货」。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-07-tab-ship-b.png" alt="待发货列表" />
+<figcaption aria-hidden="true">待发货列表</figcaption>
+</figure></li>
+<li><p>点 <strong>「面单」</strong>（红框）为订单申请运单号。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-08-waybill-a.png" alt="申请面单" />
+<figcaption aria-hidden="true">申请面单</figcaption>
+</figure></li>
+<li><p>提示「运单号
+YT…CN」，自动化列新增「已取号」，按钮变为「发货」。未分配物流的订单会先按重量自动匹配（≤500g
+云途、&gt;500g 燕文）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-08-waybill-b.png" alt="面单结果" />
+<figcaption aria-hidden="true">面单结果</figcaption>
+</figure>
+<p>⚠ 人工完成：免密钥模式下运单号由 OzonFlow
+生成并记录，用于内部跟踪；<strong>实际面单请在物流商系统或 Ozon
+后台下单打印</strong>，并以物流商返回的真实单号为准。</p></li>
+<li><p>点
+<strong>「批量申请面单」</strong>（红框）一次处理全部未取号订单。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-09-batch-waybill-a.png" alt="批量面单" />
+<figcaption aria-hidden="true">批量面单</figcaption>
+</figure></li>
+<li><p>提示「已批量申请面单 × N」。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-09-batch-waybill-b.png" alt="批量面单结果" />
+<figcaption aria-hidden="true">批量面单结果</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-查看订单详情与发货" class="level2">
+<h2>3.5 查看订单详情与发货</h2>
+<ol type="1">
+<li><p>点击订单行任意位置（操作列以外，红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-10-drawer-a.png" alt="点击订单行" />
+<figcaption aria-hidden="true">点击订单行</figcaption>
+</figure></li>
+<li><p>右侧打开订单详情抽屉：商品信息、买家、收货城市、订单金额、采购成本、预估毛利与毛利率、物流渠道、运单号、剩余时效、自动化轨迹（每一步时间与内容）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-10-drawer-b.png" alt="订单详情" />
+<figcaption aria-hidden="true">订单详情</figcaption>
+</figure></li>
+<li><p>抽屉底部「快捷操作」按订单状态显示 手动审单 / 匹配物流 / 采购完成
+/ 申请面单 / 确认发货。打包完成后点
+<strong>「确认发货」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-11-drawer-ship.png" alt="确认发货" />
+<figcaption aria-hidden="true">确认发货</figcaption>
+</figure></li>
+<li><p>提示「订单号 已发货 ·
+运单号」，状态变为已发货，轨迹记录「提交平台发货」。按 Esc 或点 ×
+关闭抽屉。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-12-drawer-shipped.png" alt="发货完成" />
+<figcaption aria-hidden="true">发货完成</figcaption>
+</figure></li>
+<li><p>也可以直接在列表操作列点 <strong>「发货」</strong>（红框）。</p>
+<p><img loading="lazy" src="img/s-ord-13-ship-a.png" alt="列表发货" /> <img
+src="img/s-ord-13-ship-b.png" alt="列表发货结果" /></p>
+<p>⚠ 人工完成：免密钥模式下「发货」只更新 OzonFlow 状态。<strong>请在
+Ozon 卖家后台把该订单标记为已发货</strong>；接入 Api-Key 后会通过
+<code>/v4/posting/fbs/ship</code> 自动提交。</p></li>
+<li><p>点 <strong>「已发货」</strong> 签查看已发出订单及运单号。</p>
+<p><img loading="lazy" src="img/s-ord-14-tab-shipped-a.png" alt="已发货签" /> <img
+src="img/s-ord-14-tab-shipped-b.png" alt="已发货列表" /></p></li>
+<li><p>搜索框输入订单号 / 买家 / SKU 即时过滤。</p>
+<figure>
+<img loading="lazy" src="img/s-ord-15-search.png" alt="搜索订单" />
+<figcaption aria-hidden="true">搜索订单</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-上传回传运单号" class="level2">
+<h2>3.6 上传（回传）运单号</h2>
+<ul>
+<li><strong>目的</strong>：已发货订单必须把运单号回传给 Ozon，否则 Ozon
+后台没有轨迹，会计入渠道 / 运单错误率。</li>
+<li><strong>适用角色</strong>：运营、仓管、老板。</li>
+<li><strong>前置条件</strong>：订单已发货且有运单号。</li>
+</ul>
+<ol type="1">
+<li><p>打开「订单履约 → 时效物流」，找到「rFBS
+状态与运单号回传」卡片。「Ozon 状态」为「未回传」的行有
+<strong>「回传运单号」</strong> 按钮（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-trk-01-sla.png" alt="运单号回传卡片" />
+<figcaption aria-hidden="true">运单号回传卡片</figcaption>
+</figure></li>
+<li><p>⚠ 人工完成：先在 Ozon
+卖家后台订单详情中填写该运单号并保存；再回到 OzonFlow
+点「回传运单号」，提示「运单号已回传」，状态更新为已回传，方便团队对账跟踪。</p>
+<figure>
+<img loading="lazy" src="img/s-trk-02-synced.png" alt="回传结果" />
+<figcaption aria-hidden="true">回传结果</figcaption>
+</figure></li>
+<li><p>多单时点 <strong>「全部回传」</strong>（红框），提示「已回传 N
+单」。</p>
+<p><img loading="lazy" src="img/s-trk-03-all-a.png" alt="全部回传" /> <img
+src="img/s-trk-03-all-b.png" alt="全部回传结果" /></p></li>
+</ol>
+<blockquote>
+<p>接入 Api-Key 后，这一步走
+<code>/v2/fbs/posting/tracking-number/set</code>
+自动回传，无需再到后台手填。</p>
+</blockquote>
+</section>
+<section id="manual-超时风险处理" class="level2">
+<h2>3.7 超时风险处理</h2>
+<ul>
+<li><strong>目的</strong>：抢救距截单不足 6
+小时的订单，控制逾期发货率（Ozon 阈值 ≤10%，7 天窗口）。</li>
+<li><strong>适用角色</strong>：运营、仓管、老板。</li>
+<li><strong>前置条件</strong>：存在超时风险订单。</li>
+</ul>
+<ol type="1">
+<li><p>「订单履约 · 超时风险」（红框）：剩余时效标红。逐单按 3.4–3.5
+申请面单并发货。</p>
+<figure>
+<img loading="lazy" src="img/s-risk-01-list.png" alt="超时风险列表" />
+<figcaption aria-hidden="true">超时风险列表</figcaption>
+</figure></li>
+<li><p>批量抢救：打开「财务风控 → 店铺健康」，点
+<strong>「一键抢救临期订单」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-risk-02-rescue-a.png" alt="一键抢救" />
+<figcaption aria-hidden="true">一键抢救</figcaption>
+</figure></li>
+<li><p>超时抢救 Agent 执行「审单 → 面单 →
+发货」，缺货的标记采购或送审取消，提示「超时抢救 · 处理 N 笔」。</p>
+<figure>
+<img loading="lazy" src="img/s-risk-02-rescue-b.png" alt="抢救结果" />
+<figcaption aria-hidden="true">抢救结果</figcaption>
+</figure></li>
+<li><p>节假日前在「时效物流」检查「仓库休息日对截单期影响」，按建议在休息日前发出或安排值班。</p>
+<figure>
+<img loading="lazy" src="img/s-risk-03-holiday.png" alt="休息日影响" />
+<figcaption aria-hidden="true">休息日影响</figcaption>
+</figure></li>
+<li><p>实在来不及的缺货单，取消申请会进入审批中心（取消会计入取消率），由老板决定。</p>
+<figure>
+<img loading="lazy" src="img/s-risk-04-cancel.png" alt="取消送审" />
+<figcaption aria-hidden="true">取消送审</figcaption>
+</figure></li>
+</ol>
+<section id="manual-常见问题订单" class="level3">
+<h3>常见问题（订单）</h3>
+<ul>
+<li><strong>点「面单」后运单号和物流商的不一致？</strong>
+免密钥模式下系统生成的是内部跟踪号，请以物流商真实单号为准，在 Ozon
+后台填写真实单号。</li>
+<li><strong>为什么「一键审单」后还有订单没过？</strong> 金额 ≥ 5000₽
+或有买家留言的订单需要人工审核。</li>
+<li><strong>仓管看不到「审单」？</strong>
+审单属于运营权限；仓管负责采购完成、面单、发货。</li>
+<li><strong>订单详情里看不到「确认发货」？</strong>
+只有已有运单号且未发货的订单才显示该按钮，先申请面单。</li>
+</ul>
+<hr />
+</section>
+</section>
+</section>
+<section id="manual-第四部分-商品上架与定价利润" class="level1">
+<h1>第四部分 商品上架与定价利润</h1>
+<section id="manual-选品与利润测算" class="level2">
+<h2>4.1 选品与利润测算</h2>
+<ul>
+<li><strong>目的</strong>：上架前算清到手净利，避免卖一单亏一单。</li>
+<li><strong>适用角色</strong>：运营、老板（财务可看利润定价）。</li>
+<li><strong>前置条件</strong>：无。</li>
+</ul>
+<ol type="1">
+<li><p>「商品增长 → 智能选品」，在商品卡上点
+<strong>「测算利润」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-01-pick-a.png" alt="测算利润" />
+<figcaption aria-hidden="true">测算利润</figcaption>
+</figure></li>
+<li><p>右侧「一键利润测算」面板载入该商品：Ozon 售价、1688
+采购价、重量、汇率、平台佣金、头程物流、手续费 +
+退货拨备、到手净利、利润率。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-01-pick-b.png" alt="载入商品" />
+<figcaption aria-hidden="true">载入商品</figcaption>
+</figure></li>
+<li><p>按实际修改售价 / 采购价 / 重量，点
+<strong>「一键测算利润」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-02-calc-a.png" alt="一键测算" />
+<figcaption aria-hidden="true">一键测算</figcaption>
+</figure></li>
+<li><p>提示「测算完成 · 净利 N ₽ · 利润率 N%」。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-02-calc-b.png" alt="测算结果" />
+<figcaption aria-hidden="true">测算结果</figcaption>
+</figure></li>
+<li><p>利润达标后点商品卡上的 <strong>「认领」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-03-claim-a.png" alt="认领" />
+<figcaption aria-hidden="true">认领</figcaption>
+</figure></li>
+<li><p>提示「『商品名』已加入刊登草稿」，并进入「刊登上架」。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-03-claim-b.png" alt="认领结果" />
+<figcaption aria-hidden="true">认领结果</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-利润定价三情景" class="level2">
+<h2>4.2 利润定价（三情景）</h2>
+<ol type="1">
+<li><p>「财务风控 → 利润定价」，左侧「选品 / 在售 · 快速测算」点某商品的
+<strong>「测算利润」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-04-profit-pick-a.png" alt="选择商品" />
+<figcaption aria-hidden="true">选择商品</figcaption>
+</figure></li>
+<li><p>右侧「情景对比」给出 <strong>日常价 / 跟卖价（售价 × 95%）/
+活动价（售价 × 90%）</strong> 三种情景的佣金、头程、手续费 +
+拨备、净利与利润率；亏损情景标红。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-04-profit-pick-b.png" alt="三情景" />
+<figcaption aria-hidden="true">三情景</figcaption>
+</figure></li>
+<li><p>在「共享费率」修改汇率 ¥→₽、头程 ¥/kg、支付手续费、退货拨备后点
+<strong>「保存费率」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-05-rates-a.png" alt="修改费率" />
+<figcaption aria-hidden="true">修改费率</figcaption>
+</figure></li>
+<li><p>提示「共享费率已保存」，全站利润测算、对账与 Agent
+统一用新口径。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-05-rates-b.png" alt="费率保存" />
+<figcaption aria-hidden="true">费率保存</figcaption>
+</figure></li>
+</ol>
+<blockquote>
+<p>佣金阶梯（按售价）：≤500₽ 15%；500–2000₽ 12%；&gt;2000₽ 10%。头程 =
+max(80₽, 重量 kg × 头程单价 × 汇率 + 45₽)。</p>
+</blockquote>
+</section>
+<section id="manual-刊登上架" class="level2">
+<h2>4.3 刊登上架</h2>
+<ol type="1">
+<li><p>「商品增长 → 刊登上架」，状态签（红框）：全部 / 草稿 / 映射中 /
+待发布 / 已发布 / 审核失败。</p>
+<figure>
+<img loading="lazy" src="img/s-prd-06-listing.png" alt="刊登状态签" />
+<figcaption aria-hidden="true">刊登状态签</figcaption>
+</figure></li>
+<li><p>点
+<strong>「推进映射」</strong>（红框）补齐类目映射与俄语属性。</p>
+<p><img loading="lazy" src="img/s-prd-07-adv-a.png" alt="推进映射" /> <img
+src="img/s-prd-07-adv-b.png" alt="映射结果" /></p></li>
+<li><p>审核失败的商品点
+<strong>「修复」</strong>，提示「已修复并回到待发布」。</p>
+<p><img loading="lazy" src="img/s-prd-08-fix-a.png" alt="修复" /> <img
+src="img/s-prd-08-fix-b.png" alt="修复结果" /></p></li>
+<li><p>待发布商品点 <strong>「发布」</strong>，提示「已发布上架 · Ozon
+SKU …」，生成在售商品与库存记录。</p>
+<p><img loading="lazy" src="img/s-prd-09-pub-a.png" alt="发布" /> <img
+src="img/s-prd-09-pub-b.png" alt="发布结果" /></p></li>
+<li><p>点 <strong>「批量发布待发布」</strong> 一次发布全部就绪商品。</p>
+<p><img loading="lazy" src="img/s-prd-10-batch-a.png" alt="批量发布" /> <img
+src="img/s-prd-10-batch-b.png" alt="批量发布结果" /></p>
+<p>⚠ 人工完成：免密钥模式下发布只在 OzonFlow
+内生成在售记录，<strong>请在 Ozon 卖家后台创建 /
+更新商品卡</strong>；接入 Api-Key 后经审批走
+<code>/v3/product/import</code>。</p></li>
+<li><p>内容质量：「内容合规」页对内容分低的商品点 <strong>「AI
+补齐」</strong>，生成标题 / 属性 / 富文本草稿（人工确认后再同步到
+Ozon）。</p>
+<p><img loading="lazy" src="img/s-prd-11-content-fix-a.png" alt="AI 补齐" /> <img
+src="img/s-prd-11-content-fix-b.png" alt="补齐结果" /></p></li>
+<li><p>「俄语标题公式与改写」卡片点
+<strong>「采用」</strong>，标题更新为建议标题。</p>
+<p><img loading="lazy" src="img/s-prd-12-title-a.png" alt="采用标题" /> <img
+src="img/s-prd-12-title-b.png" alt="标题结果" /></p></li>
+</ol>
+</section>
+<section id="manual-市场选品与换供" class="level2">
+<h2>4.4 市场选品与换供</h2>
+<ol type="1">
+<li><p>「市场选品」多维评分表点 <strong>「认领进刊登」</strong>。</p>
+<p><img loading="lazy" src="img/s-mkt-01-claim-a.png" alt="认领进刊登" /> <img
+src="img/s-mkt-01-claim-b.png" alt="认领结果" /></p></li>
+<li><p>「以图搜货 / 断货换供」点
+<strong>「切换货源」</strong>，货源与采购价更新、利润重算。</p>
+<p><img loading="lazy" src="img/s-mkt-02-switch-a.png" alt="切换货源" /> <img
+src="img/s-mkt-02-switch-b.png" alt="换供结果" /></p></li>
+</ol>
+</section>
+<section id="manual-素材工坊生成商品短视频" class="level2">
+<h2>4.5 素材工坊：生成商品短视频</h2>
+<ol type="1">
+<li><p>「素材工坊」选择商品与卖点后，点
+<strong>「生成视频」</strong>，在浏览器本地合成主图轮播 +
+俄语卖点字幕的短视频。</p>
+<p><img loading="lazy" src="img/s-std-01-video-a.png" alt="生成视频" /> <img
+src="img/s-std-01-video-b.png" alt="视频结果" /></p></li>
+</ol>
+<section id="manual-常见问题商品" class="level3">
+<h3>常见问题（商品）</h3>
+<ul>
+<li><strong>净利为负还能认领吗？</strong> 能，但利润守门 Agent
+会标记并给出建议价。</li>
+<li><strong>为什么证书过期的商品发布不了？</strong> 刊登 Agent
+会拦截证书缺失或过期的商品，先在内容合规里登记证书。</li>
+</ul>
+<hr />
+</section>
+</section>
+</section>
+<section id="manual-第五部分-库存补货" class="level1">
+<h1>第五部分 库存补货</h1>
+<ul>
+<li><strong>目的</strong>：防止断货与超卖。</li>
+<li><strong>适用角色</strong>：仓管、老板（运营可看）。</li>
+<li><strong>前置条件</strong>：已有在售商品与库存记录。</li>
+</ul>
+<ol type="1">
+<li><p>「订单履约 → 物流与库存」点
+<strong>「立即同步」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-stk-01-sync-a.png" alt="立即同步" />
+<figcaption aria-hidden="true">立即同步</figcaption>
+</figure></li>
+<li><p>提示「库存同步完成 · 更新 N SKU · 低库存 N」，本地仓数量同步到
+Ozon 在售库存。</p>
+<figure>
+<img loading="lazy" src="img/s-stk-01-sync-b.png" alt="同步结果" />
+<figcaption aria-hidden="true">同步结果</figcaption>
+</figure></li>
+<li><p>低库存 SKU 点 <strong>「补货 +50」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-stk-02-restock-a.png" alt="补货" />
+<figcaption aria-hidden="true">补货</figcaption>
+</figure></li>
+<li><p>提示「商品 已补货 +50 · 本地 N」。</p>
+<figure>
+<img loading="lazy" src="img/s-stk-02-restock-b.png" alt="补货结果" />
+<figcaption aria-hidden="true">补货结果</figcaption>
+</figure>
+<p>⚠ 人工完成：在 Ozon 后台同步修改在售库存（接入 Api-Key 后走
+<code>/v2/products/stocks</code>）。</p></li>
+<li><p>未连接的物流渠道点 <strong>「连接」</strong>，提示「渠道
+已连接」。</p>
+<p><img loading="lazy" src="img/s-stk-03-connect-a.png" alt="连接渠道" /> <img
+src="img/s-stk-03-connect-b.png" alt="连接结果" /></p></li>
+<li><p>「供应链库存」海外仓补货计划点
+<strong>「生成补货单」</strong>：金额 ≥ ¥1000 时提示「补货金额
+¥N，已进审批中心」。</p>
+<p><img loading="lazy" src="img/s-stk-04-fbo-a.png" alt="生成补货单" /> <img
+src="img/s-stk-04-fbo-b.png" alt="补货送审" /></p></li>
+<li><p>多店共享库存点 <strong>「全部重分配」</strong>，按各店近 7
+天销量比例分配并预留 10% 安全量。</p>
+<p><img loading="lazy" src="img/s-stk-05-split-a.png" alt="全部重分配" /> <img
+src="img/s-stk-05-split-b.png" alt="重分配结果" /></p></li>
+<li><p>「自动化规则」点 <strong>「立即执行规则引擎」</strong>，审单 /
+物流匹配 / 采购 / 库存同步 / 取号规则执行。</p>
+<p><img loading="lazy" src="img/s-stk-06-rules-a.png" alt="执行规则" /> <img
+src="img/s-stk-06-rules-b.png" alt="规则结果" /></p></li>
+<li><p>每张规则卡右上角开关可启停（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-stk-07-toggle.png" alt="规则开关" />
+<figcaption aria-hidden="true">规则开关</figcaption>
+</figure></li>
+</ol>
+<hr />
+</section>
+<section id="manual-第六部分-客服差评与退货" class="level1">
+<h1>第六部分 客服、差评与退货</h1>
+<section id="manual-回复评价与问答" class="level2">
+<h2>6.1 回复评价与问答</h2>
+<ul>
+<li><strong>目的</strong>：及时用俄语回复差评与提问，降低差评占比。</li>
+<li><strong>适用角色</strong>：客服、运营、老板。</li>
+<li><strong>前置条件</strong>：评价 / 问答已同步。</li>
+</ul>
+<ol type="1">
+<li><p>「客服售后 → 客服评价 · 评价」，对差评点
+<strong>「模板回复」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-cs-01-reply-a.png" alt="模板回复" />
+<figcaption aria-hidden="true">模板回复</figcaption>
+</figure></li>
+<li><p>提示「已回复评价」，按评分匹配俄语模板。</p>
+<figure>
+<img loading="lazy" src="img/s-cs-01-reply-b.png" alt="回复结果" />
+<figcaption aria-hidden="true">回复结果</figcaption>
+</figure></li>
+<li><p>切换 <strong>「问答 Q&amp;A」</strong>，点
+<strong>「回答」</strong>，提示「已回答买家提问」。</p>
+<p><img loading="lazy" src="img/s-cs-02-qa-tab-a.png" alt="问答签" /> <img
+src="img/s-cs-02-qa-tab-b.png" alt="问答列表" /> <img
+src="img/s-cs-03-qa-answer-a.png" alt="回答" /> <img
+src="img/s-cs-03-qa-answer-b.png" alt="回答结果" /></p></li>
+<li><p>切换 <strong>「俄语回复模板」</strong>，点
+<strong>「复制」</strong>，模板复制到剪贴板。</p>
+<p><img loading="lazy" src="img/s-cs-04-tpl-tab-a.png" alt="模板签" /> <img
+src="img/s-cs-04-tpl-tab-b.png" alt="模板列表" /> <img
+src="img/s-cs-05-tpl-copy-a.png" alt="复制模板" /> <img
+src="img/s-cs-05-tpl-copy-b.png" alt="复制结果" /></p></li>
+<li><p>「客服收件箱」按意图给出俄语建议回复，点
+<strong>「发送」</strong>，提示「已回复 买家名」。</p>
+<p><img loading="lazy" src="img/s-cs-06-inbox-a.png" alt="收件箱发送" /> <img
+src="img/s-cs-06-inbox-b.png" alt="发送结果" /></p></li>
+</ol>
+<p>⚠ 人工完成：回复、回答、聊天在免密钥模式下只记录在
+OzonFlow，<strong>请把回复内容粘贴到 Ozon 卖家后台对应评价 / 问答 /
+聊天中发送</strong>；评价、问答、聊天接口还需要 Premium Plus 订阅。</p>
+</section>
+<section id="manual-差评预警升级" class="level2">
+<h2>6.2 差评预警升级</h2>
+<ol type="1">
+<li><p>在「自动化 Agent」运行 <strong>「差评预警升级
+Agent」</strong>（红框）。</p>
+<figure>
+<img loading="lazy" src="img/s-cs-07-escalate-a.png" alt="差评升级" />
+<figcaption aria-hidden="true">差评升级</figcaption>
+</figure></li>
+<li><p>1 星差评升级为理赔工单并联动退货队列，提示「差评预警升级 · N
+条」。</p>
+<figure>
+<img loading="lazy" src="img/s-cs-07-escalate-b.png" alt="升级结果" />
+<figcaption aria-hidden="true">升级结果</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-退货处理" class="level2">
+<h2>6.3 退货处理</h2>
+<ul>
+<li><strong>目的</strong>：按状态机处理取消 / 退货 / 索赔：待处理 →
+调查中 / 已同意 / 已拒绝 → 已退款 → 已关闭。</li>
+<li><strong>适用角色</strong>：客服、仓管、运营、财务、老板。</li>
+<li><strong>前置条件</strong>：存在退货单。</li>
+</ul>
+<ol type="1">
+<li><p>「退货异常 · 待处理」，点
+<strong>「调查」</strong>（红框），提示「RT… → 调查中」。</p>
+<p><img loading="lazy" src="img/s-ret-01-investigate-a.png" alt="调查" /> <img
+src="img/s-ret-01-investigate-b.png" alt="调查结果" /></p></li>
+<li><p>核实后点 <strong>「同意」</strong>，提示「→ 已同意」。</p>
+<p><img loading="lazy" src="img/s-ret-02-approve-a.png" alt="同意" /> <img
+src="img/s-ret-02-approve-b.png" alt="同意结果" /></p></li>
+<li><p>在「已同意」中点 <strong>「退款」</strong>：金额 &lt; 2000₽
+直接「→ 已退款」。</p>
+<p><img loading="lazy" src="img/s-ret-03-refund-a.png" alt="退款" /> <img
+src="img/s-ret-03-refund-b.png" alt="退款结果" /></p></li>
+<li><p>金额 ≥ 2000₽ 的退款提示「退款 N₽
+已提交审批中心」，需老板审批后执行。</p>
+<p><img loading="lazy" src="img/s-ret-04-refund-big-a.png" alt="大额退款" /> <img
+src="img/s-ret-04-refund-big-b.png" alt="大额送审" /></p></li>
+<li><p>不符合条件的申请点 <strong>「拒绝」</strong>，提示「→
+已拒绝」，留痕可追溯。</p>
+<p><img loading="lazy" src="img/s-ret-05-reject-a.png" alt="拒绝" /> <img
+src="img/s-ret-05-reject-b.png" alt="拒绝结果" /></p></li>
+</ol>
+<p>⚠ 人工完成：同意退款、拒绝等决定需在 Ozon
+卖家后台退货页同步处理。</p>
+<hr />
+</section>
+</section>
+<section id="manual-第七部分-财务对账" class="level1">
+<h1>第七部分 财务对账</h1>
+<ul>
+<li><strong>目的</strong>：逐单比对 Ozon
+结算与订单测算利润，找出佣金、物流、罚款、退货造成的利润漏损。</li>
+<li><strong>适用角色</strong>：财务、老板。</li>
+<li><strong>前置条件</strong>：结算数据已通过扩展或财务报表导入。</li>
+</ul>
+<ol type="1">
+<li><p>「财务风控 → 财务对账」，差异单逐笔核对后点
+<strong>「标记已核」</strong>，提示「结算单号 已标记」。</p>
+<p><img loading="lazy" src="img/s-fin-01-check-a.png" alt="标记已核" /> <img
+src="img/s-fin-01-check-b.png" alt="标记结果" /></p></li>
+<li><p>罚款类差异（如逾期发货罚款）点
+<strong>「发起申诉」</strong>，提示「申诉已进审批中心」。</p>
+<p><img loading="lazy" src="img/s-fin-02-dispute-a.png" alt="发起申诉" /> <img
+src="img/s-fin-02-dispute-b.png" alt="申诉结果" /></p></li>
+<li><p>点 <strong>「批量标记一致项」</strong>，差异 ≤ 30₽
+的已结算单批量标记。</p>
+<p><img loading="lazy" src="img/s-fin-03-checkall-a.png" alt="批量标记" /> <img
+src="img/s-fin-03-checkall-b.png" alt="批量结果" /></p></li>
+<li><p>切换 <strong>「全部」</strong> 查看所有结算单。</p>
+<p><img loading="lazy" src="img/s-fin-04-tab-all-a.png" alt="全部签" /> <img
+src="img/s-fin-04-tab-all-b.png" alt="全部结算" /></p></li>
+<li><p>下方查看「回款日历与资金预测」（每月 15 日 /
+月末两次回款估算）与「汇兑损益明细」（下单日 vs 结算日汇率）。</p>
+<figure>
+<img loading="lazy" src="img/s-fin-05-calendar.png" alt="回款与汇兑" />
+<figcaption aria-hidden="true">回款与汇兑</figcaption>
+</figure></li>
+<li><p>「收款主体与资金合规」清单逐项勾选完成（仅作自查，不构成税务或法律意见）。</p>
+<p><img loading="lazy" src="img/s-fin-06-compliance-a.png" alt="合规清单" /> <img
+src="img/s-fin-06-compliance-b.png" alt="勾选结果" /></p></li>
+</ol>
+<hr />
+</section>
+<section id="manual-第八部分-推广与价格竞争" class="level1">
+<h1>第八部分 推广与价格竞争</h1>
+<section id="manual-价格竞争" class="level2">
+<h2>8.1 价格竞争</h2>
+<ol type="1">
+<li><p>「价格竞争」价格指数偏高的商品点
+<strong>「按建议调价」</strong>：幅度 ≤ 10% 直接生效；&gt; 10%
+提示「改价幅度较大，已提交审批」。任何调价都不会低于利润底价。</p>
+<p><img loading="lazy" src="img/s-gro-01-reprice-a.png" alt="按建议调价" /> <img
+src="img/s-gro-01-reprice-b.png" alt="调价送审" /></p></li>
+<li><p>「采购价变动 → 利润重算」点
+<strong>「更新成本并重算」</strong>，提示新净利率。</p>
+<p><img loading="lazy" src="img/s-gro-02-cost-a.png" alt="更新成本" /> <img
+src="img/s-gro-02-cost-b.png" alt="重算结果" /></p></li>
+<li><p>「跨境 VAT 压力测试」切换 <strong>VAT 20%</strong>，查看各 SKU
+净利率变化（仅压力测试，以正式法规为准）。</p>
+<p><img loading="lazy" src="img/s-gro-03-vat-a.png" alt="VAT 测试" /> <img
+src="img/s-gro-03-vat-b.png" alt="VAT 结果" /></p></li>
+</ol>
+</section>
+<section id="manual-推广活动" class="level2">
+<h2>8.2 推广活动</h2>
+<ol type="1">
+<li><p>「推广活动」亏损广告点
+<strong>「暂停（审批）」</strong>，提示「暂停请求已进审批中心」。</p>
+<p><img loading="lazy" src="img/s-gro-04-pause-a.png" alt="暂停广告" /> <img
+src="img/s-gro-04-pause-b.png" alt="暂停送审" /></p></li>
+<li><p>点 <strong>「应用建议预算」</strong>，总预算不变，按「单件净利 ×
+转化率」重新分配。</p>
+<p><img loading="lazy" src="img/s-gro-05-budget-a.png" alt="建议预算" /> <img
+src="img/s-gro-05-budget-b.png" alt="预算结果" /></p></li>
+<li><p>「活动报名前利润测算」点
+<strong>「报名」</strong>：活动后净利率高于底价直接报名；低于底价进入审批。</p>
+<p><img loading="lazy" src="img/s-gro-06-join-a.png" alt="报名" /> <img
+src="img/s-gro-06-join-b.png" alt="报名结果" /></p></li>
+</ol>
+<p>⚠ 人工完成：改价、暂停广告、报名活动审批通过后，在 Ozon 后台价格 /
+广告 / 促销页面执行（广告接口需 Performance API 授权）。</p>
+<hr />
+</section>
+</section>
+<section id="manual-第九部分-合规" class="level1">
+<h1>第九部分 合规</h1>
+<ul>
+<li><strong>目的</strong>：避免因证书、标签、禁限售词、图片、商品卡合并违规被下架或罚款。</li>
+<li><strong>适用角色</strong>：运营、老板。</li>
+</ul>
+<ol type="1">
+<li><p>「内容合规」禁限售词卡片点
+<strong>「清洗文案」</strong>，提示「风险词已清洗」。</p>
+<p><img loading="lazy" src="img/s-cmp-01-clean-a.png" alt="清洗文案" /> <img
+src="img/s-cmp-01-clean-b.png" alt="清洗结果" /></p></li>
+<li><p>EAC 证书即将到期 / 缺失的商品点 <strong>「登记证书 /
+登记续期」</strong>，提示「证书已登记」。</p>
+<p><img loading="lazy" src="img/s-cmp-02-cert-a.png" alt="登记证书" /> <img
+src="img/s-cmp-02-cert-b.png" alt="登记结果" /></p></li>
+<li><p>Честный знак 需贴标的商品点
+<strong>「生成贴标任务」</strong>。</p>
+<p><img loading="lazy" src="img/s-cmp-03-mark-a.png" alt="贴标任务" /> <img
+src="img/s-cmp-03-mark-b.png" alt="贴标结果" /></p></li>
+<li><p>图片不合规的商品点
+<strong>「生成合规图」</strong>（白底、无中文、≥900px）。</p>
+<p><img loading="lazy" src="img/s-cmp-04-img-a.png" alt="合规图" /> <img
+src="img/s-cmp-04-img-b.png" alt="合规图结果" /></p></li>
+<li><p>疑似盗图点
+<strong>「发起投诉（审批）」</strong>，投诉进入审批中心。</p>
+<p><img loading="lazy" src="img/s-cmp-05-ip-a.png" alt="盗图投诉" /> <img
+src="img/s-cmp-05-ip-b.png" alt="投诉送审" /></p></li>
+<li><p>「店铺健康」商品卡合并违规点
+<strong>「生成整改任务」</strong>。</p>
+<p><img loading="lazy" src="img/s-cmp-06-merge-a.png" alt="整改任务" /> <img
+src="img/s-cmp-06-merge-b.png" alt="整改结果" /></p></li>
+<li><p>对误判的错误点
+<strong>「申诉误判错误」</strong>，申诉进入审批中心。</p>
+<p><img loading="lazy" src="img/s-cmp-07-appeal-a.png" alt="申诉误判" /> <img
+src="img/s-cmp-07-appeal-b.png" alt="申诉结果" /></p></li>
+</ol>
+<hr />
+</section>
+<section id="manual-第十部分-自动化-agent-中枢" class="level1">
+<h1>第十部分 自动化 Agent 中枢</h1>
+<ul>
+<li><strong>目的</strong>：让 13 个专业 Agent
+按规则自动处理重复工作，人只处理异常与审批。</li>
+<li><strong>适用角色</strong>：所有角色可运行（老板 /
+运营可开关）。</li>
+<li><strong>前置条件</strong>：无。「旺季履约突击」「多店公司化」场景默认启用
+9 个 Agent。</li>
+</ul>
+<p>13 个 Agent：选品雷达、刊登过审、审单履约、超时抢救、1688
+采购跟单、物流轨迹异常、利润守门、汇率佣金重算、俄语客服、差评预警升级、退货理赔、库存补货、周报汇报。</p>
+<ol type="1">
+<li><p>打开「自动化与集成 → 自动化 Agent」，顶部显示启用中 / 今日处理 /
+专业 Agent 数，下方每张卡片是一个 Agent。</p>
+<figure>
+<img loading="lazy" src="img/s-agt-01-hub.png" alt="Agent 中枢" />
+<figcaption aria-hidden="true">Agent 中枢</figcaption>
+</figure></li>
+<li><p>用卡片右上角 <strong>开关</strong>（红框）启用 /
+停用，提示「已启用 / 已停用」。</p>
+<p><img loading="lazy" src="img/s-agt-02-toggle-a.png" alt="开关" /> <img
+src="img/s-agt-02-toggle-b.png" alt="开关结果" /></p></li>
+<li><p>点卡片的 <strong>「运行」</strong> 立即运行（停用的 Agent
+也可手动运行），提示处理数量，卡片显示上次运行时间、今日处理数与活动日志。</p>
+<p><img loading="lazy" src="img/s-agt-03-run-a.png" alt="立即运行" /> <img
+src="img/s-agt-03-run-b.png" alt="运行结果" /></p></li>
+<li><p>点 <strong>「执行定时回合」</strong> 只运行已启用的
+Agent（页面打开时系统每 45 秒自动执行一次）。</p>
+<p><img loading="lazy" src="img/s-agt-04-tick-a.png" alt="定时回合" /> <img
+src="img/s-agt-04-tick-b.png" alt="回合结果" /></p></li>
+<li><p>点 <strong>「一键跑全部 Agent」</strong> 按级联顺序运行全部 13
+个：选品雷达 → 刊登过审 → 利润守门 → 汇率佣金重算 → 1688 采购 → 超时抢救
+→ 审单履约 → 物流轨迹异常 → 库存补货 → 俄语客服 → 差评预警 → 退货理赔 →
+周报汇报。依次提示总处理数、级联明细与周报快照。</p>
+<p><img loading="lazy" src="img/s-agt-05-runall-a.png" alt="一键跑全部" /> <img
+src="img/s-agt-05-runall-b.png" alt="一键跑全部结果" /></p></li>
+<li><p>查看日志：页面底部「最近活动合流」（红框）汇总所有 Agent
+的动作；每张卡片也有自己的活动日志。</p>
+<p><img loading="lazy" src="img/s-agt-06-log.png" alt="活动日志" /> <img
+src="img/s-agt-07-after.png" alt="运行后全貌" /></p></li>
+<li><p>经营总览顶部也有 <strong>「一键跑全部 Agent」</strong>。</p>
+<p><img loading="lazy" src="img/s-agt-08-dash-runall-a.png" alt="总览一键跑" /> <img
+src="img/s-agt-08-dash-runall-b.png" alt="总览结果" /></p></li>
+</ol>
+<blockquote>
+<p>注意：Agent 的高风险动作（改价 &gt;10%、退款 ≥2000₽、采购
+≥¥1000、取消订单等）不会直接执行，而是进入审批中心。</p>
+</blockquote>
+<hr />
+</section>
+<section id="manual-第十一部分-审批流程" class="level1">
+<h1>第十一部分 审批流程</h1>
+<ul>
+<li><strong>目的</strong>：人在环把关高风险动作。</li>
+<li><strong>适用角色</strong>：老板审批；其他角色可查看。</li>
+<li><strong>审批阈值</strong>：改价 &gt; 10% · 退款 ≥ 2000₽ · 采购 ≥
+¥1000 · 取消订单 · 暂停广告 · 低于底价报名 · 申诉 · 侵权投诉。</li>
+</ul>
+<ol type="1">
+<li><p>打开「工作台 → 审批中心」：顶部为待审批 / 已通过 / 已驳回 /
+审计记录；列表列出风险等级、类型、事项、变更前 →
+后、原因、发起方、时间。</p>
+<figure>
+<img loading="lazy" src="img/s-apv-01-list.png" alt="审批列表" />
+<figcaption aria-hidden="true">审批列表</figcaption>
+</figure></li>
+<li><p>核对后点
+<strong>「通过」</strong>（红框），提示「已通过并执行：…」，动作立即生效并写入审计日志。</p>
+<p><img loading="lazy" src="img/s-apv-02-approve-a.png" alt="通过" /> <img
+src="img/s-apv-02-approve-b.png" alt="通过结果" /></p></li>
+<li><p>不同意点 <strong>「驳回」</strong>，提示「已驳回：…」。</p>
+<p><img loading="lazy" src="img/s-apv-03-reject-a.png" alt="驳回" /> <img
+src="img/s-apv-03-reject-b.png" alt="驳回结果" /></p></li>
+<li><p>切换 <strong>「已处理」</strong> 查看历史。</p>
+<p><img loading="lazy" src="img/s-apv-04-done-a.png" alt="已处理签" /> <img
+src="img/s-apv-04-done-b.png" alt="已处理" /></p></li>
+<li><p>非老板角色（如运营）打开审批中心：通过 /
+驳回按钮置灰，表格下方提示「当前角色可查看审批，切到『老板』角色后可通过或驳回」。</p>
+<p><img loading="lazy" src="img/s-apv-05-nonboss-a.png" alt="非老板" /> <img
+src="img/s-apv-05-nonboss-b.png" alt="按钮置灰" /></p></li>
+<li><p>老板点 <strong>「批量通过」</strong>
+一次处理全部待审批，提示「批量通过 N 项」。</p>
+<p><img loading="lazy" src="img/s-apv-06-all-a.png" alt="批量通过" /> <img
+src="img/s-apv-06-all-b.png" alt="批量结果" /></p></li>
+<li><p>页面底部「操作审计日志」记录每一次人工与 Agent
+动作（时间、操作人、动作、对象、结果）。</p>
+<figure>
+<img loading="lazy" src="img/s-apv-07-audit.png" alt="审计日志" />
+<figcaption aria-hidden="true">审计日志</figcaption>
+</figure></li>
+</ol>
+<p>⚠ 人工完成：免密钥模式下审批通过后的改价、退款、取消等，仍需在 Ozon
+后台执行一次。</p>
+<hr />
+</section>
+<section id="manual-第十二部分-周报" class="level1">
+<h1>第十二部分 周报</h1>
+<ul>
+<li><strong>目的</strong>：每周回顾分店铺、分 SKU
+的销售、净利、超时率、退货率。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+</ul>
+<ol type="1">
+<li><p>「工作台 → 经营周报」点
+<strong>「刷新数据」</strong>，提示「周报已刷新 · 时间」。</p>
+<p><img loading="lazy" src="img/s-wk-01-refresh-a.png" alt="刷新周报" /> <img
+src="img/s-wk-01-refresh-b.png" alt="刷新结果" /></p></li>
+<li><p>点
+<strong>「导出周报」</strong>，提示「已导出『店铺』经营周报（本地导出提示）」。</p>
+<p><img loading="lazy" src="img/s-wk-02-export-a.png" alt="导出周报" /> <img
+src="img/s-wk-02-export-b.png" alt="导出结果" /></p></li>
+<li><p>在 Agent 中枢运行 <strong>「周报汇报 Agent」</strong>
+生成周报快照，提示各店合计销售与净利。</p>
+<p><img loading="lazy" src="img/s-wk-03-agent-a.png" alt="周报 Agent" /> <img
+src="img/s-wk-03-agent-b.png" alt="周报快照" /></p></li>
+<li><p>「平台集成 · 每日经营简报」点 <strong>「复制简报」</strong>
+贴到工作群；或在「数据连接 ⑥」添加群机器人定时推送。</p>
+<p><img loading="lazy" src="img/s-wk-04-brief-a.png" alt="复制简报" /> <img
+src="img/s-wk-04-brief-b.png" alt="复制结果" /></p></li>
+</ol>
+<hr />
+</section>
+<section id="manual-第十三部分-命令面板与-ai-指令台" class="level1">
+<h1>第十三部分 命令面板与 AI 指令台</h1>
+<section id="manual-命令面板" class="level2">
+<h2>13.1 命令面板</h2>
+<ol type="1">
+<li><p>顶栏搜索框（红框）即命令面板入口，也可按 <strong>Ctrl
+K</strong>（Mac 为 ⌘K）或 <strong>/</strong> 打开。</p>
+<figure>
+<img loading="lazy" src="img/s-cmdk-01-trigger.png" alt="入口" />
+<figcaption aria-hidden="true">入口</figcaption>
+</figure></li>
+<li><p>打开后默认列出页面与常用操作（一键跑全部
+Agent、同步店铺数据、打开开店引导、打开使用手册）。</p>
+<figure>
+<img loading="lazy" src="img/s-cmdk-02-open.png" alt="命令面板" />
+<figcaption aria-hidden="true">命令面板</figcaption>
+</figure></li>
+<li><p>输入「退货」实时筛选页面、三级筛选与「让 AI 执行」。</p>
+<figure>
+<img loading="lazy" src="img/s-cmdk-03-search.png" alt="搜索" />
+<figcaption aria-hidden="true">搜索</figcaption>
+</figure></li>
+<li><p>回车直达第一项（退货异常）。上下方向键切换，Esc 关闭。</p>
+<figure>
+<img loading="lazy" src="img/s-cmdk-04-enter.png" alt="直达" />
+<figcaption aria-hidden="true">直达</figcaption>
+</figure></li>
+<li><p>输入一句话指令，最后一项是「让 AI 执行：…」；选中后回车。</p>
+<p><img loading="lazy" src="img/s-cmdk-05-ai.png" alt="AI 指令" /> <img
+src="img/s-cmdk-06-ai-select.png" alt="选中" /></p></li>
+<li><p>跳到 AI 指令台并生成执行计划，确认后才执行。</p>
+<figure>
+<img loading="lazy" src="img/s-cmdk-07-plan.png" alt="执行计划" />
+<figcaption aria-hidden="true">执行计划</figcaption>
+</figure></li>
+</ol>
+</section>
+<section id="manual-ai-指令台" class="level2">
+<h2>13.2 AI 指令台</h2>
+<ol type="1">
+<li><p>点示例
+<strong>「处理所有超时订单」</strong>（或输入后点「解析指令」），生成执行计划：识别意图、影响对象、风险等级。</p>
+<p><img loading="lazy" src="img/s-ai-01-example-a.png" alt="示例" /> <img
+src="img/s-ai-01-example-b.png" alt="计划" /></p></li>
+<li><p>点
+<strong>「确认执行」</strong>，执行完成并写入指令记录；高风险动作自动送审批。</p>
+<p><img loading="lazy" src="img/s-ai-02-exec-a.png" alt="确认执行" /> <img
+src="img/s-ai-02-exec-b.png" alt="执行结果" /></p></li>
+<li><p>输入「把毛利低于20%的商品提价8%」点
+<strong>「解析指令」</strong>，列出受影响商品与新价格。</p>
+<p><img loading="lazy" src="img/s-ai-03-price-a.png" alt="改价指令" /> <img
+src="img/s-ai-03-price-b.png" alt="改价计划" /></p></li>
+</ol>
+<hr />
+</section>
+</section>
+<section id="manual-第十四部分-平台集成为接入-api-key-做准备"
+class="level1">
+<h1>第十四部分 平台集成（为接入 Api-Key 做准备）</h1>
+<ol type="1">
+<li><p>「平台集成」点 <strong>「导出 MCP 工具清单」</strong>，下载 17
+个工具定义。</p>
+<p><img loading="lazy" src="img/s-plt-01-mcp-a.png" alt="导出 MCP" /> <img
+src="img/s-plt-01-mcp-b.png" alt="导出结果" /></p></li>
+<li><p>拿到 Api-Key 后：在服务器运行
+<code>OZON_CLIENT_ID=xxx OZON_API_KEY=yyy ALLOW_ORIGIN=https://rong001.github.io PORT=8787 node server/ozon-proxy.js</code>，把模式切到「代理（真实店铺）」，填
+HTTPS 代理地址，点 <strong>「测试连接」</strong>。</p>
+<figure>
+<img loading="lazy" src="img/s-plt-02-proxy.png" alt="代理模式" />
+<figcaption aria-hidden="true">代理模式</figcaption>
+</figure></li>
+<li><p>未填写或无法访问代理时给出明确提示（如「未填写代理地址」「代理在线，但服务器上没配置
+OZON_CLIENT_ID / OZON_API_KEY」）。</p>
+<figure>
+<img loading="lazy" src="img/s-plt-03-test.png" alt="测试提示" />
+<figcaption aria-hidden="true">测试提示</figcaption>
+</figure></li>
+</ol>
+<hr />
+</section>
+<section id="manual-第十五部分-手机端使用" class="level1">
+<h1>第十五部分 手机端使用</h1>
+<p>在手机浏览器打开同一地址即可（390
+宽实测）。侧栏收起为图标轨，点一下先展开再点具体页面；表格可横向滑动。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>经营总览</th>
+<th>侧栏展开</th>
+<th>订单履约</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><img loading="lazy" src="img/m-01-dashboard.png" /></td>
+<td><img loading="lazy" src="img/m-03-nav-open.png" /></td>
+<td><img loading="lazy" src="img/m-04-orders.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>命令面板</th>
+<th>审批中心</th>
+<th>Agent 中枢</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><img loading="lazy" src="img/m-05-cmdk.png" /></td>
+<td><img loading="lazy" src="img/m-06-approvals.png" /></td>
+<td><img loading="lazy" src="img/m-07-agents.png" /></td>
+</tr>
+</tbody>
+</table>
+<hr />
+</section>
+<section id="manual-常见问题" class="level1">
+<h1>常见问题</h1>
+<p><strong>Q1：数据存在哪里？换电脑后还在吗？</strong>
+数据保存在当前浏览器的 localStorage（键
+<code>ozonflow_rfbs_v2</code>）。换电脑或清缓存后需重新通过扩展同步或导入报表。「数据连接
+⑦」可导出经营数据 JSON 备份。</p>
+<p><strong>Q2：没有 Api-Key，哪些事情 OzonFlow
+能做、哪些必须人工？</strong>
+读数据（订单、结算、商品、公开价格、物流轨迹）通过扩展和报表导入完成；所有写回
+Ozon
+的动作（发货、回传运单号、改价、上架、库存、回复、退款、取消、广告、报名活动）必须在
+Ozon 卖家后台人工完成，见「阅读前须知」表格。</p>
+<p><strong>Q3：扩展装好了，「从插件同步」却提示没有捕获数据？</strong>
+需在同一浏览器登录
+seller.ozon.ru，并打开订单、财务、商品列表页面让后台加载数据；然后点「刷新插件状态」再同步。</p>
+<p><strong>Q4：为什么点「通过」没有反应？</strong>
+只有老板角色能审批，其他角色按钮置灰。顶栏切到「老板」后再操作。</p>
+<p><strong>Q5：Agent 会不会擅自改价、退款？</strong>
+不会。超过阈值的动作都进入审批中心；低于阈值的（如改价
+≤10%）会自动执行并写审计日志，可在审批中心底部查看。</p>
+<p><strong>Q6：我改错了数据，怎么恢复？</strong> 顶栏「↻」或「经营场景 →
+重置当前场景数据」可恢复当前场景初始数据（会清除本场景所有改动）。</p>
+<p><strong>Q7：报表导入识别为「未识别」？</strong> 确认文件是 Ozon
+后台原始导出、表头为俄文（如 Номер отправления / Тип начисления），CSV
+分隔符为分号或逗号均可。</p>
+<p><strong>Q8：页面右上角的提示一闪就没了？</strong> 提示约 3
+秒后自动消失，操作结果同时会体现在列表状态、审计日志或同步记录中。</p>
+</section>
+</div></article>
+<article class="doc" id="doc-pages" hidden><aside class="toc"><div class="toc-h">页面说明书</div><ul>
+<li><a href="#pages-页面说明书"
+id="pages-toc-页面说明书">页面说明书</a></li>
+<li><a href="#pages-一工作台" id="pages-toc-一工作台">一、工作台</a>
+<ul>
+<li><a href="#pages-经营总览dashboard"
+id="pages-toc-经营总览dashboard">1. 经营总览（dashboard）</a></li>
+<li><a href="#pages-ai-指令台copilot" id="pages-toc-ai-指令台copilot">2.
+AI 指令台（copilot）</a></li>
+<li><a href="#pages-审批中心approvals"
+id="pages-toc-审批中心approvals">3. 审批中心（approvals）</a></li>
+<li><a href="#pages-经营周报weekly" id="pages-toc-经营周报weekly">4.
+经营周报（weekly）</a></li>
+</ul></li>
+<li><a href="#pages-二订单履约"
+id="pages-toc-二订单履约">二、订单履约</a>
+<ul>
+<li><a href="#pages-订单履约orders" id="pages-toc-订单履约orders">5.
+订单履约（orders）</a></li>
+<li><a href="#pages-时效物流sla" id="pages-toc-时效物流sla">6.
+时效物流（sla）</a></li>
+<li><a href="#pages-物流与库存logistics"
+id="pages-toc-物流与库存logistics">7. 物流与库存（logistics）</a></li>
+<li><a href="#pages-供应链库存supply" id="pages-toc-供应链库存supply">8.
+供应链库存（supply）</a></li>
+<li><a href="#pages-自动化规则rules" id="pages-toc-自动化规则rules">9.
+自动化规则（rules）</a></li>
+</ul></li>
+<li><a href="#pages-三商品增长"
+id="pages-toc-三商品增长">三、商品增长</a>
+<ul>
+<li><a href="#pages-智能选品selection"
+id="pages-toc-智能选品selection">10. 智能选品（selection）</a></li>
+<li><a href="#pages-市场选品market" id="pages-toc-市场选品market">11.
+市场选品（market）</a></li>
+<li><a href="#pages-刊登上架listing" id="pages-toc-刊登上架listing">12.
+刊登上架（listing）</a></li>
+<li><a href="#pages-素材工坊studio" id="pages-toc-素材工坊studio">13.
+素材工坊（studio）</a></li>
+<li><a href="#pages-内容合规content" id="pages-toc-内容合规content">14.
+内容合规（content）</a></li>
+<li><a href="#pages-价格竞争compete" id="pages-toc-价格竞争compete">15.
+价格竞争（compete）</a></li>
+<li><a href="#pages-推广活动promo" id="pages-toc-推广活动promo">16.
+推广活动（promo）</a></li>
+</ul></li>
+<li><a href="#pages-四客服售后"
+id="pages-toc-四客服售后">四、客服售后</a>
+<ul>
+<li><a href="#pages-客服评价cs" id="pages-toc-客服评价cs">17.
+客服评价（cs）</a></li>
+<li><a href="#pages-客服收件箱inbox" id="pages-toc-客服收件箱inbox">18.
+客服收件箱（inbox）</a></li>
+<li><a href="#pages-退货异常returns" id="pages-toc-退货异常returns">19.
+退货异常（returns）</a></li>
+</ul></li>
+<li><a href="#pages-五财务风控"
+id="pages-toc-五财务风控">五、财务风控</a>
+<ul>
+<li><a href="#pages-利润定价profit" id="pages-toc-利润定价profit">20.
+利润定价（profit）</a></li>
+<li><a href="#pages-财务对账finance" id="pages-toc-财务对账finance">21.
+财务对账（finance）</a></li>
+<li><a href="#pages-店铺健康health" id="pages-toc-店铺健康health">22.
+店铺健康（health）</a></li>
+</ul></li>
+<li><a href="#pages-六自动化与集成"
+id="pages-toc-六自动化与集成">六、自动化与集成</a>
+<ul>
+<li><a href="#pages-自动化-agentagents"
+id="pages-toc-自动化-agentagents">23. 自动化 Agent（agents）</a></li>
+<li><a href="#pages-数据连接connect" id="pages-toc-数据连接connect">24.
+数据连接（connect）</a></li>
+<li><a href="#pages-平台集成platform"
+id="pages-toc-平台集成platform">25. 平台集成（platform）</a></li>
+<li><a href="#pages-能力矩阵capability"
+id="pages-toc-能力矩阵capability">26. 能力矩阵（capability）</a></li>
+</ul></li>
+<li><a href="#pages-附弹窗与浮层"
+id="pages-toc-附弹窗与浮层">附：弹窗与浮层</a></li>
+</ul>
+</aside><div class="content"><section id="pages-页面说明书" class="level1">
+<h1>页面说明书</h1>
+<p>本说明书覆盖 OzonFlow 的 <strong>全部 26 个页面</strong>（视图 ID
+来自 <code>index.html</code> 中
+<code>.nav-item[data-view]</code>），按侧栏 6
+个分组排序。每页包含：截图、页面用途、入口路径、页面区域说明、数据来源、适用角色、关联页面。截图均为
+1440
+宽整页实拍（「旺季履约突击」经营场景、广州数码专营店、老板角色）。</p>
+<p><strong>数据来源标记说明</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>标记</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>【连接器】</td>
+<td>免密钥模式：OzonFlow
+连接器扩展在已登录的卖家后台读取，或卖家后台导出报表导入</td>
+</tr>
+<tr class="even">
+<td>【公开接口】</td>
+<td>经扩展调用的公开数据：Ozon / WB 前台同款价格、菜鸟国际轨迹查询</td>
+</tr>
+<tr class="odd">
+<td>【本地计算】</td>
+<td>浏览器内根据业务数据集与共享费率计算（利润、风险分、建议等），存于
+localStorage</td>
+</tr>
+<tr class="even">
+<td>【待接 API】</td>
+<td>需要 Ozon Seller API Api-Key（经
+<code>server/ozon-proxy.js</code>）或第三方授权后才能自动读写</td>
+</tr>
+</tbody>
+</table>
+<p><strong>全局元素（所有页面通用）</strong></p>
+<ul>
+<li><strong>侧栏</strong>：6 个分组（工作台 / 订单履约 / 商品增长 /
+客服售后 / 财务风控 /
+自动化与集成），悬停展开，可固定；分组图标角标为组内待办合计；底部「开店引导」「使用手册」「固定侧栏」。</li>
+<li><strong>顶栏</strong>：面包屑 +
+页面标题；命令面板入口（Ctrl/⌘K）；经营场景；店铺切换；角色切换；订单同步状态；通知铃铛；使用手册「?」；重置当前场景「↻」；角色头像。</li>
+<li><strong>提示消息</strong>：每次操作后在右上角显示约 3 秒（✓ 成功 / ℹ
+信息）。</li>
+<li><strong>说明图标 ⓘ</strong>：卡片标题旁的 ⓘ
+悬停显示该卡片的口径说明。</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>分组</th>
+<th>页面（视图 ID）</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>工作台</td>
+<td>经营总览 dashboard · AI 指令台 copilot · 审批中心 approvals ·
+经营周报 weekly</td>
+</tr>
+<tr class="even">
+<td>订单履约</td>
+<td>订单履约 orders · 时效物流 sla · 物流与库存 logistics · 供应链库存
+supply · 自动化规则 rules</td>
+</tr>
+<tr class="odd">
+<td>商品增长</td>
+<td>智能选品 selection · 市场选品 market · 刊登上架 listing · 素材工坊
+studio · 内容合规 content · 价格竞争 compete · 推广活动 promo</td>
+</tr>
+<tr class="even">
+<td>客服售后</td>
+<td>客服评价 cs · 客服收件箱 inbox · 退货异常 returns</td>
+</tr>
+<tr class="odd">
+<td>财务风控</td>
+<td>利润定价 profit · 财务对账 finance · 店铺健康 health</td>
+</tr>
+<tr class="even">
+<td>自动化与集成</td>
+<td>自动化 Agent agents · 数据连接 connect · 平台集成 platform ·
+能力矩阵 capability</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</section>
+<section id="pages-一工作台" class="level1">
+<h1>一、工作台</h1>
+<section id="pages-经营总览dashboard" class="level2">
+<h2>1. 经营总览（dashboard）</h2>
+<figure>
+<img loading="lazy" src="img/p-dashboard.png" alt="经营总览" />
+<figcaption aria-hidden="true">经营总览</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：每天开工的第一屏，汇总当前店铺今日关键数字、按风险排序的待办和趋势。</li>
+<li><strong>入口路径</strong>：侧栏「工作台 →
+经营总览」；打开系统默认进入；命令面板输入「总览」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>焦点区（Hero）</strong>：日期 · 星期 ·
+店铺；一句话今日重点（如「今天先处理 3 单临近超时，4
+项待审批」）；「Agent 今日已处理 N 项」「N/13 个已启用」；按钮「AI
+指令台」（跳转 AI 指令台）、「一键跑全部 Agent」（按级联顺序运行 13 个
+Agent，见 agents 页）。</li>
+<li><strong>开店进度卡</strong>：仅在开店向导未完成或刚完成时显示，4
+项（绑定店铺 / 选择 rFBS / 默认物流 /
+导入商品）完成状态与「继续引导」。</li>
+<li><strong>KPI 卡（5
+张）</strong>：今日订单（当前店铺）；待发货（副标题：含待采购
+N）；超时风险（距截单 &lt; 6h，红色）；预估毛利 ₽（已扣退货拨备）；差评
+/ 退货（差评 N · 退货 N）。</li>
+<li><strong>今日待办</strong>：右上角「N 项」。每行：色点（红 =
+高风险、橙 = 警示、紫 = 待采、蓝 =
+信息）、标题、说明、按钮。条目包括：高风险动作待审批 →
+去审批（审批中心）；超时备货 → 去处理（订单 · 超时风险）；待审单 →
+去审单（订单 · 待审核）；缺货待采 → 去采购（订单 · 待采购）；差评待回 →
+去回复（客服评价）；退货异常 → 去处理（退货 · 待处理）；物流轨迹异常 →
+去查看（订单 · 已发货）；1★ 待升级 → 去客服；资金异常提醒 →
+看周报；刊登待处理 → 去刊登。</li>
+<li><strong>近 7 日订单趋势</strong>：柱状图（订单量 /
+峰值日高亮），右上角为当前店铺标签。</li>
+<li><strong>今日热销 TOP 5</strong>：列 = 商品（俄文名 + 中文名）/ Ozon
+SKU / 今日销量 / 售价 ₽ / 预估毛利（%）/ 库存（低库存标红）；「查看选品
+→」跳智能选品。</li>
+</ul></li>
+<li><strong>数据来源</strong>：订单、商品【连接器】；KPI、毛利、待办排序【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、客服、财务。</li>
+<li><strong>关联页面</strong>：订单履约、审批中心、客服评价、退货异常、刊登上架、智能选品、自动化
+Agent、AI 指令台。</li>
+</ul>
+</section>
+<section id="pages-ai-指令台copilot" class="level2">
+<h2>2. AI 指令台（copilot）</h2>
+<figure>
+<img loading="lazy" src="img/p-copilot.png" alt="AI 指令台" />
+<figcaption aria-hidden="true">AI 指令台</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：用一句中文口语下达经营指令，系统先给出执行计划（影响范围与风险），确认后执行或送审批。</li>
+<li><strong>入口路径</strong>：侧栏「工作台 → AI 指令台」；经营总览「AI
+指令台」按钮；命令面板最后一项「让 AI 执行：…」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>输入卡「想让系统做什么？」</strong>：ⓘ
+说明「先预览影响范围，确认后才执行。改价超 10%、退款 ≥ 2000₽、采购 ≥
+¥1000、取消订单都会进审批中心」；输入框（回车或「解析指令」）；示例标签
+7 个 + 「更多 15 条」（共 22 条：把毛利低于 20% 的商品提价 8% /
+处理所有超时订单 / 回复所有差评 / 补货低于安全库存的 SKU / 跑一遍所有
+Agent / 查询今天待发货订单 / 检查物流轨迹异常 / 生成本周周报 /
+切换到深圳配件馆 / 打开审批中心 / 暂停所有亏损广告 /
+检查证书到期和风险词 / 对一下本店回款差异 / 看看店铺健康和错误指数 /
+回传所有运单号 / 回复买家消息 / 生成今日简报 / 同步店铺数据 /
+采集同款价格 / 查物流轨迹 / 推送简报到群 / 库存快没了怎么办）。</li>
+<li><strong>执行计划卡</strong>（解析后出现）：识别意图、影响对象数量、风险标签（低风险
+/ 需审批）、受影响对象明细表（列随意图变化，如 商品 / SKU / 本地库存 /
+安全库存）；按钮「确认执行」「取消」。</li>
+<li><strong>指令记录</strong>：时间、指令、结果；非只读指令同时写入审计日志。</li>
+</ul></li>
+<li><strong>数据来源</strong>：意图解析为规则引擎 + 浏览器内语义模型
+bge-small-zh（transformers.js，首次加载约 24MB，无需大模型
+Key）【本地计算】；执行动作作用于业务数据【本地计算】，写回平台【待接
+API】。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、客服、财务（执行受角色权限约束）。</li>
+<li><strong>关联页面</strong>：审批中心、订单履约、自动化
+Agent、命令面板。</li>
+</ul>
+</section>
+<section id="pages-审批中心approvals" class="level2">
+<h2>3. 审批中心（approvals）</h2>
+<figure>
+<img loading="lazy" src="img/p-approvals.png" alt="审批中心" />
+<figcaption aria-hidden="true">审批中心</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：人在环把关高风险动作，老板通过即执行、驳回留痕，所有动作可审计。</li>
+<li><strong>入口路径</strong>：侧栏「工作台 →
+审批中心」（角标为待审批数）；经营总览待办「去审批」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：待审批（高风险 N）/ 已通过（通过即执行）/
+已驳回（留痕可追溯）/ 审计记录（人工 + Agent）。</li>
+<li><strong>审批列表</strong>：页签「待审批 N」「已处理
+N」；右侧阈值说明「改价 &gt; 10% · 退款 ≥ 2000₽ · 采购 ≥ ¥1000 ·
+取消订单」与「批量通过」。列：风险（中 / 高）/
+类型（改价、退款、取消订单、采购、暂停广告、活动报名、申诉、侵权投诉）/
+事项 / 变更前 → 后 / 原因 / 发起方（Agent 或角色）/ 时间 /
+操作（通过、驳回）。非老板角色按钮置灰并提示切到老板。</li>
+<li><strong>操作审计日志</strong>：最近 N 条 · 当前店铺；列 时间 /
+操作人 / 动作 / 对象 / 结果。</li>
+</ul></li>
+<li><strong>数据来源</strong>：审批项由 Agent、AI
+指令台、各业务页按阈值生成【本地计算】；执行后写回平台【待接
+API】。</li>
+<li><strong>适用角色</strong>：老板（审批）、运营、财务（查看）。</li>
+<li><strong>关联页面</strong>：价格竞争、推广活动、退货异常、供应链库存、内容合规、店铺健康、自动化
+Agent、财务对账。</li>
+</ul>
+</section>
+<section id="pages-经营周报weekly" class="level2">
+<h2>4. 经营周报（weekly）</h2>
+<figure>
+<img loading="lazy" src="img/p-weekly.png" alt="经营周报" />
+<figcaption aria-hidden="true">经营周报</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：按店铺、按 SKU
+回顾销售、净利、超时率与退货率。</li>
+<li><strong>入口路径</strong>：侧栏「工作台 →
+经营周报」；总览待办「看周报」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>操作栏</strong>：「刷新数据」（重新计算并提示生成时间）、「导出周报」（导出当前店铺周报，本地导出提示）。</li>
+<li><strong>KPI</strong>：本周销售额（₽ · 全店合计）/ 预估净利 /
+平均超时率（rFBS 时效）/ 平均退货率（含取消 / 索赔）。</li>
+<li><strong>分店铺汇总</strong>：店铺（当前店标注）/ 订单 / 已发货 /
+销售额 ₽ / 净利 ₽ / 毛利率 / 超时率 / 退货率。</li>
+<li><strong>当前店铺 · SKU 明细</strong>：SKU / 商品 / 单量 / 销售额 ₽ /
+净利 ₽ / 毛利率。</li>
+</ul></li>
+<li><strong>数据来源</strong>：订单与退货【连接器】；汇总口径【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：自动化 Agent（周报汇报
+Agent）、平台集成（每日简报）、数据连接（群推送）。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-二订单履约" class="level1">
+<h1>二、订单履约</h1>
+<section id="pages-订单履约orders" class="level2">
+<h2>5. 订单履约（orders）</h2>
+<figure>
+<img loading="lazy" src="img/p-orders.png" alt="订单履约" />
+<figcaption aria-hidden="true">订单履约</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：rFBS
+订单从审核、采购、面单到发货的主工作台。</li>
+<li><strong>入口路径</strong>：侧栏「订单履约 →
+订单履约」（角标为待处理数）；三级菜单 待审核 / 待采购 / 待发货 /
+超时风险；总览待办。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>筛选签</strong>：全部 / 待审核 / 待采购 / 待发货 / 已发货 /
+超时风险（剩余时效 ≤ 6h 且未发货），均带数量。</li>
+<li><strong>搜索框</strong>：按订单号 / 买家 / SKU 即时过滤。</li>
+<li><strong>按钮</strong>：「同步订单」（在当前业务数据集中按在售商品生成新订单；真实订单经数据连接导入）；「一键审单」（对待审核订单执行审单规则）；「批量申请面单」（为待发货
+/ 待采购且无运单号的订单取号）。</li>
+<li><strong>表格列</strong>：订单号 / 商品（缩略图、名称、SKU）/ 买家 /
+城市 / 金额 ₽ / 物流（渠道或「未分配」）/
+自动化（已审单、已匹配物流、已取号、已采购标签）/ 状态 / 剩余时效（≤6h
+红色）/ 操作（审单、采购完成、面单、发货，按状态显示）。</li>
+<li><strong>订单详情抽屉</strong>（点击行）：商品信息与状态；买家、收货城市、订单金额、采购成本（¥
+≈ ₽）、预估毛利（₽ 与
+%）、物流渠道、运单号、剩余时效；自动化轨迹时间线；快捷操作（手动审单 /
+匹配物流 / 采购完成 / 申请面单 / 确认发货）。</li>
+</ul></li>
+<li><strong>数据来源</strong>：订单【连接器】（扩展捕获或报表导入）；审单、物流匹配、取号规则【本地计算】；发货、取号写回
+Ozon【待接
+API】（<code>/v4/posting/fbs/ship</code>、<code>/v2/posting/fbs/package-label</code>），当前需在卖家后台人工完成。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、客服（只读）。</li>
+<li><strong>关联页面</strong>：时效物流、物流与库存、自动化规则、店铺健康、数据连接、自动化
+Agent。</li>
+</ul>
+</section>
+<section id="pages-时效物流sla" class="level2">
+<h2>6. 时效物流（sla）</h2>
+<figure>
+<img loading="lazy" src="img/p-sla.png" alt="时效物流" />
+<figcaption aria-hidden="true">时效物流</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：围绕 rFBS
+截单时效：休息日影响、运单号回传、渠道运价比较、报关一致性、IML
+退货仓处置。</li>
+<li><strong>入口路径</strong>：侧栏「订单履约 →
+时效物流」（角标为未回传运单数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：休息日影响截单（截单期内有仓库休息日）/
+运单号未回传（已发货但 Ozon 后台无轨迹）/ 可省物流费
+₽（改走最便宜且满足时效的渠道）/ 报关资料异常（HS
+编码、品名或申报价不一致）。</li>
+<li><strong>仓库休息日对截单期影响</strong>：输入框「休息日（MM-DD，逗号分隔）」「每周休息」；表格
+订单 / 商品 / 剩余时效 / 截单时间 / 期间休息日 / 建议（休息日前发出 /
+安排值班）。ⓘ 提醒在 Ozon 后台同步仓库日程。</li>
+<li><strong>rFBS 状态与运单号回传</strong>：「全部回传」；列 订单 / 商品
+/ 物流 / 运单号 / Ozon 状态（未回传、已回传 · 运输中）/
+操作「回传运单号」。</li>
+<li><strong>渠道规则匹配与运价比较</strong>：订单 / 重量 / 当前渠道 /
+云途 / 燕文 / OGL / 本地仓（运费与时效）/ 建议 / 操作「改用」。运费 =
+每公斤单价 × 重量 + 挂号费 ¥12。</li>
+<li><strong>报关资料一致性校验</strong>：订单 / HS 编码 / 申报价 /
+订单价 / 问题 / 「一键修正」（按订单价 80% 校准、补 HS
+编码与英文品名）。</li>
+<li><strong>IML 退货仓处置决策</strong>：退货单 / 商品 / 金额 /
+退回国内成本 / 本地二次销售 / 建议 / 「按建议处置」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：订单与运单【连接器】；休息日、运价、报关校验【本地计算】；运单号回传【待接
+API】（<code>/v2/fbs/posting/tracking-number/set</code>），当前需在卖家后台手动填写。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管。</li>
+<li><strong>关联页面</strong>：订单履约、店铺健康、退货异常、物流与库存。</li>
+</ul>
+</section>
+<section id="pages-物流与库存logistics" class="level2">
+<h2>7. 物流与库存（logistics）</h2>
+<figure>
+<img loading="lazy" src="img/p-logistics.png" alt="物流与库存" />
+<figcaption aria-hidden="true">物流与库存</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：管理物流渠道连接与本地仓 ↔︎ Ozon
+在售库存同步、补货。</li>
+<li><strong>入口路径</strong>：侧栏「订单履约 → 物流与库存」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>物流渠道</strong>：卡片 云途专线·俄线 / 燕文物流·经济 / Ozon
+OGL 官方 / 递四方·标准 / CNE 国际快递 /
+义乌集货仓·自提；每张显示连接状态、均价（¥/kg
+或按平台计费）、时效、今日票数；未连接的有「连接」按钮。</li>
+<li><strong>仓库库存同步 ·
+当前店铺</strong>：「上次同步：…」「立即同步」；列 SKU / 货号 / 商品 /
+本地仓 / Ozon 在售库存 / 安全库存 / 同步状态（正常、低库存）/ 操作「补货
++50」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：库存与商品【连接器】；渠道参数与低库存判断【本地计算】；库存回写【待接
+API】（<code>/v2/products/stocks</code>），物流商面单接口需各物流商账号【待接
+API】。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管。</li>
+<li><strong>关联页面</strong>：订单履约、供应链库存、自动化规则、开店向导（默认物流）。</li>
+</ul>
+</section>
+<section id="pages-供应链库存supply" class="level2">
+<h2>8. 供应链库存（supply）</h2>
+<figure>
+<img loading="lazy" src="img/p-supply.png" alt="供应链库存" />
+<figcaption aria-hidden="true">供应链库存</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：多店共享库存防超卖、SKU 级 rFBS / FBO /
+FBP 决策、海外仓补货与滞销清理。</li>
+<li><strong>入口路径</strong>：侧栏「订单履约 → 供应链库存」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：超卖风险 SKU / 建议转 FBO/FBP /
+海外仓滞销（库龄或周转 &gt; 90 天）/ 海外仓 SKU（出库申请时限 60
+天）。</li>
+<li><strong>多店共享库存防超卖</strong>：「全部重分配」；列 SKU / 商品 /
+实际库存 / 各店挂出 / 合计挂出 / 状态 / 操作。按近 7
+天销量比例分配并预留 10%。</li>
+<li><strong>SKU 级履约模式决策</strong>：商品 / 日销 / rFBS 单件物流 /
+FBO 单件物流 + 仓储 / 单件节省 / 备货资金（45 天）/ 建议（FBO、FBP
+合作仓、rFBS）。</li>
+<li><strong>海外仓补货计划与滞销清理</strong>：商品 / 海外仓库存 / 库龄
+/ 日销 / 周转天数 / 建议 / 操作「生成补货单」（金额 ≥ ¥1000
+进审批）、「生成清仓方案」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：库存、销量【连接器】；分配与决策【本地计算】；海外仓出库申请【待接
+API】。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管。</li>
+<li><strong>关联页面</strong>：物流与库存、审批中心、推广活动（清仓报名）。</li>
+</ul>
+</section>
+<section id="pages-自动化规则rules" class="level2">
+<h2>9. 自动化规则（rules）</h2>
+<figure>
+<img loading="lazy" src="img/p-rules.png" alt="自动化规则" />
+<figcaption aria-hidden="true">自动化规则</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：配置并执行 IF / THEN 履约规则。</li>
+<li><strong>入口路径</strong>：侧栏「订单履约 → 自动化规则」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>类型签</strong>：全部规则 / 审单 / 物流匹配 / 采购 /
+库存同步 /
+取号；「立即执行规则引擎」（对未发货订单执行全部启用规则，并检查低库存）。</li>
+<li><strong>规则卡（6 张）</strong>：名称、描述、条件（当 … 且 … →
+动作）、右上角启停开关、「累计命中 N · 今日 N」。
+<ol type="1">
+<li>自动审单 · 常规订单：金额 &lt; 5000₽ 且买家留言为空 →
+自动审核通过；</li>
+<li>物流匹配 · 轻小件走云途：重量 ≤ 500g → 云途俄线；</li>
+<li>物流匹配 · 大件走燕文：重量 &gt; 500g → 燕文经济；</li>
+<li>采购标记 · 审后无本地库存：本地仓库存不足 → 待采购；</li>
+<li>库存同步 · 低库存预警：本地仓 ≤ 安全库存 → 同步下调并通知；</li>
+<li>自动取号 · 已审且有物流：审单通过且已匹配渠道 → 可申请运单号。</li>
+</ol></li>
+</ul></li>
+<li><strong>数据来源</strong>：规则定义与执行【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营（可启停与执行）。</li>
+<li><strong>关联页面</strong>：订单履约、物流与库存、自动化 Agent。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-三商品增长" class="level1">
+<h1>三、商品增长</h1>
+<section id="pages-智能选品selection" class="level2">
+<h2>10. 智能选品（selection）</h2>
+<figure>
+<img loading="lazy" src="img/p-selection.png" alt="智能选品" />
+<figcaption aria-hidden="true">智能选品</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：浏览爆款 / 蓝海 /
+跟卖机会，一键测算利润并认领进刊登。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 →
+智能选品」；总览「查看选品 →」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>筛选栏</strong>：页签 Ozon 爆款 / 蓝海机会 /
+跟卖监控；类目下拉（全部、电子配件、家居收纳、美容个护、厨房小电）；搜索（商品
+/ SKU / 关键词）；「刷新榜单」；「打开利润定价 →」。</li>
+<li><strong>商品卡网格</strong>：TOP 排名、缩略图、中文名、俄文名、售价
+₽ /
+月销、指标；按钮「测算利润」（载入右侧面板）、「认领」（加入刊登草稿，已认领则置灰）。</li>
+<li><strong>一键利润测算面板</strong>：选中商品 / Ozon 售价 ₽ / 1688
+采购价 ¥ / 重量 g（可编辑）/ 汇率 ¥→₽ / 平台佣金 / 头程物流 / 手续费 +
+退货拨备 / 到手净利 ₽ /
+利润率；「一键测算利润」「认领到刊登草稿」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：榜单为业务数据集，可配合扩展采集的 Ozon /
+WB 同款价格【公开接口】；利润【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>关联页面</strong>：利润定价、刊登上架、市场选品、自动化
+Agent（选品雷达）。</li>
+</ul>
+</section>
+<section id="pages-市场选品market" class="level2">
+<h2>11. 市场选品（market）</h2>
+<figure>
+<img loading="lazy" src="img/p-market.png" alt="市场选品" />
+<figcaption aria-hidden="true">市场选品</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：公开权重的多维选品评分、节点备货倒推、断货换供。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 → 市场选品」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：候选商品（已认领 N）/
+高分（≥70，建议优先上架）/ 红线拦截（禁限售或高风险直接 0 分）/
+最近大促（如 11.11，还剩 N 天备货）。</li>
+<li><strong>多维选品评分</strong>：商品 / 总分 / 销量 / 净利率 / 重量 /
+竞争度 / 趋势 / 红线 / 「认领进刊登」。权重：销量 25 · 净利率 30 · 重量
+10 · 竞争度 15 · 趋势 20。</li>
+<li><strong>节点 / 季节需求预测</strong>：节点 / 日期 / 距今 /
+备货截止（节点 − 26 天）/ 推荐品类。</li>
+<li><strong>以图搜货 / 断货换供</strong>：订单 / 商品 / 备选货源 / 价格
+/ 评分 / 图片相似度 / 「切换货源」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：评分与倒推【本地计算】；1688
+货源搜索与下单【待接 API】（1688 开放平台授权），当前可在数据连接页跳转
+1688 拍立淘。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>关联页面</strong>：智能选品、刊登上架、数据连接（以图搜货）、价格竞争。</li>
+</ul>
+</section>
+<section id="pages-刊登上架listing" class="level2">
+<h2>12. 刊登上架（listing）</h2>
+<figure>
+<img loading="lazy" src="img/p-listing.png" alt="刊登上架" />
+<figcaption aria-hidden="true">刊登上架</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：把认领商品从草稿推进到映射、待发布、已发布。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 →
+刊登上架」（角标为待处理数）；认领后自动跳转。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>状态签</strong>：全部 / 草稿 / 映射中 / 待发布 / 审核失败 /
+已发布（带数量）。</li>
+<li><strong>按钮</strong>：「同步新订单」（为已发布商品生成 2
+笔新订单并跳到订单履约）；「批量发布待发布」。</li>
+<li><strong>表格列</strong>：商品信息 / 俄文标题 / 类目映射（如
+Электроника › Наушники）/ 属性完整度（进度条 %）/ 状态 /
+操作（推进映射、修复、发布、测算）。</li>
+</ul></li>
+<li><strong>数据来源</strong>：草稿与映射【本地计算】；类目必填属性与商品卡创建【待接
+API】（<code>/v1/description-category/attribute</code>、<code>/v3/product/import</code>），当前需在卖家后台上架。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>关联页面</strong>：智能选品、市场选品、内容合规、利润定价、开店向导。</li>
+</ul>
+</section>
+<section id="pages-素材工坊studio" class="level2">
+<h2>13. 素材工坊（studio）</h2>
+<figure>
+<img loading="lazy" src="img/p-studio.png" alt="素材工坊" />
+<figcaption aria-hidden="true">素材工坊</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：在浏览器本地生成白底主图、卖点短视频和
+Ozon 富内容 JSON。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 → 素材工坊」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：本次处理主图（900×1200 白底 JPG）/
+累计生成主图 / 累计生成视频（主图轮播 + 俄语卖点字幕）/ 富内容
+JSON（Rich-контент v0.3）。</li>
+<li><strong>商品与卖点</strong>：商品下拉、俄语标题、卖点（每行一条）、图片地址。</li>
+<li><strong>① 白底主图</strong>：选择图片文件、背景容差；生成 900×1200
+白底 JPG 可下载。</li>
+<li><strong>② 卖点短视频</strong>：「生成视频」（新版 Chrome / Edge 输出
+MP4，否则 WebM）。</li>
+<li><strong>③ Ozon 富内容 JSON</strong>：raTextBlock + raShowcase
+结构预览；「复制 JSON」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：全部在浏览器本地处理【本地计算】；上传到
+Ozon 商品卡需人工或【待接 API】。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>关联页面</strong>：内容合规、刊登上架。</li>
+</ul>
+</section>
+<section id="pages-内容合规content" class="level2">
+<h2>14. 内容合规（content）</h2>
+<figure>
+<img loading="lazy" src="img/p-content.png" alt="内容合规" />
+<figcaption aria-hidden="true">内容合规</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：内容评分与补齐、俄语标题改写、EAC
+证书、Честный знак、禁限售词、图片规范、问答回写、防盗图。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 → 内容合规」（角标为证书 +
+风险词数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：平均内容评分（/100）/ 证书到期或缺失 /
+禁限售风险 / 疑似盗图。</li>
+<li><strong>内容评分与补齐清单</strong>：商品 / 评分 / 标题 / 属性完整度
+/ 图片 / 富文本 / 视频 / 合规 / 「AI 补齐」；「全部 AI
+补齐」。评分维度：俄语标题 25、类目属性 25、图片 20、富文本 10、视频
+10、合规 10。</li>
+<li><strong>俄语标题公式与改写</strong>：商品 / 当前标题 /
+建议标题（类型 + 品牌 / 型号 + 核心参数）/ 「采用」。</li>
+<li><strong>EAC 证书 / 豁免函到期预警</strong>：商品 / 技术法规 / 类型 /
+编号 / 剩余天数 / 「登记证书」「登记续期」（提前 60
+天提醒，缺失或过期的会被刊登 Agent 拦截）。</li>
+<li><strong>Честный знак 标签识别</strong>：商品 / 品类 / 要求 /
+「生成贴标任务」。</li>
+<li><strong>禁限售词与品类拦截</strong>：商品 / 命中 / 原因 /
+「清洗文案」。</li>
+<li><strong>图片规范与 AI 生图合规</strong>：商品 / 张数 / 白底主图 /
+中文字样 / 分辨率 / 「生成合规图」（≥5 张、主图白底、无中文和水印、边长
+≥900px）。</li>
+<li><strong>高频问答回写商品卡</strong>：商品 / 问题 / 回答 /
+「回写到描述」。</li>
+<li><strong>品牌资产库与防盗图</strong>：图片 / 指纹 / 疑似盗用 /
+「发起投诉（审批）」。</li>
+<li><strong>视频与富文本生成</strong>：「批量生成富文本草稿」「批量生成视频脚本」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：商品内容【连接器】；评分、风险词、证书预警【本地计算】；同步到商品卡【待接
+API】。</li>
+<li><strong>适用角色</strong>：老板、运营。</li>
+<li><strong>关联页面</strong>：刊登上架、素材工坊、审批中心、客服评价（问答）。</li>
+</ul>
+</section>
+<section id="pages-价格竞争compete" class="level2">
+<h2>15. 价格竞争（compete）</h2>
+<figure>
+<img loading="lazy" src="img/p-compete.png" alt="价格竞争" />
+<figcaption aria-hidden="true">价格竞争</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：价格指数、跟卖监控、底价保护、外部比价、成本栈、采购价变动重算、VAT
+压力测试、佣金重排。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 →
+价格竞争」（角标为价格指数偏红数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：价格指数偏红（比全网最低高 10% 以上）/
+被跟卖商品 / 低于利润底价（底价 = 净利率 20%）/ 采购价上涨。</li>
+<li><strong>价格指数 + 跟卖监控 + 底价保护</strong>：商品 / 现价 /
+全网参考价 / 价格指数 / 跟卖 / 跟卖最低价 / 利润底价 / 建议价 /
+「按建议调价」；「全部按建议调价」。调价不低于底价，幅度 &gt; 10%
+进审批。</li>
+<li><strong>外部平台同款比价</strong>：商品 / Ozon 最低 / Wildberries /
+Yandex Market / AliExpress。</li>
+<li><strong>采购价变动 → 利润重算</strong>：商品 / 原采购价 / 新采购价 /
+原净利率 / 新净利率 / 「更新成本并重算」。</li>
+<li><strong>可配置成本栈</strong>：利润底价（净利率 %）、头程
+¥/kg、退货拨备、支付手续费、包材
+¥、汇率、广告占比，改一处全系统同步。</li>
+<li><strong>跨境 VAT 压力测试</strong>：页签 现行 / VAT 5% / 10% /
+20%；商品 / 现净利率 / VAT 后 / 状态。</li>
+<li><strong>按类目佣金重排 SKU</strong>：排名 / 商品 / 售价 / 佣金率 /
+佣金 / 单件净利 / 净利率。</li>
+</ul></li>
+<li><strong>数据来源</strong>：同款价格【公开接口】（扩展采集 Ozon /
+WB）；其他平台比价需比价数据服务【待接 API】；改价写回【待接
+API】（<code>/v1/product/import/prices</code>，审批后执行）；计算【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：利润定价、审批中心、数据连接、推广活动。</li>
+</ul>
+</section>
+<section id="pages-推广活动promo" class="level2">
+<h2>16. 推广活动（promo）</h2>
+<figure>
+<img loading="lazy" src="img/p-promo.png" alt="推广活动" />
+<figcaption aria-hidden="true">推广活动</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：广告 ДРР / ROI
+监控、亏损送审暂停、按利润分预算、活动报名前利润测算。</li>
+<li><strong>入口路径</strong>：侧栏「商品增长 →
+推广活动」（角标为亏损广告数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：广告总花费（带来销售 N ₽）/ 整体 ДРР（目标 ≤
+15%）/ 亏损广告 / 可报名活动。</li>
+<li><strong>广告 ДРР / ROI 监控与亏损暂停</strong>：商品 / 广告类型 /
+点击 / 订单 / 花费 / 销售额 / ДРР / ROI / 扣广告后净利 / 状态 /
+操作（暂停、暂停（审批）、恢复）；「亏损广告全部送审暂停」。</li>
+<li><strong>按利润分配广告预算</strong>：商品 / 单件净利 / 转化率 /
+当前预算 / 建议预算 / 变化；「应用建议预算」。</li>
+<li><strong>活动报名前利润测算</strong>：活动 / 折扣 / 截止 /
+各商品参加活动后的净利率 / 「报名」（低于底价进审批）。</li>
+</ul></li>
+<li><strong>数据来源</strong>：广告数据需 Ozon Performance
+API（client_id + client_secret）【待接 API】；活动列表
+<code>/v1/actions</code>【待接 API】；利润测算【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：价格竞争、审批中心、利润定价、供应链库存（清仓）。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-四客服售后" class="level1">
+<h1>四、客服售后</h1>
+<section id="pages-客服评价cs" class="level2">
+<h2>17. 客服评价（cs）</h2>
+<figure>
+<img loading="lazy" src="img/p-cs.png" alt="客服评价" />
+<figcaption aria-hidden="true">客服评价</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：处理评价、问答，管理俄语回复模板。</li>
+<li><strong>入口路径</strong>：侧栏「客服售后 →
+客服评价」（角标为待回数）；三级菜单 评价 / 问答 / 回复模板。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>页签</strong>：评价 / 问答 Q&amp;A /
+俄语回复模板；右侧提示「待回差评 N · 待答问答 N」。</li>
+<li><strong>评价表</strong>：商品 / 评分（星级，≤3 星为差评）/ 评价内容
+/ 买家 / 回复 / 操作「模板回复」。</li>
+<li><strong>问答表</strong>：商品 / 问题 / 回答 / 状态 /
+操作「回答」。</li>
+<li><strong>回复模板</strong>：差评致歉·质量、物流延误说明、好评感谢、尺码
+/ 参数答疑、退货指引；每张显示中文名与俄语正文，按钮「复制」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：评价与问答【连接器】；回复发送【待接
+API】（<code>/v1/review/comment/create</code>、<code>/v1/question/answer/create</code>，需
+Premium Plus 订阅），当前需在卖家后台粘贴发送。</li>
+<li><strong>适用角色</strong>：老板、运营、客服。</li>
+<li><strong>关联页面</strong>：客服收件箱、退货异常、内容合规（问答回写）、自动化
+Agent（俄语客服、差评预警升级）。</li>
+</ul>
+</section>
+<section id="pages-客服收件箱inbox" class="level2">
+<h2>18. 客服收件箱（inbox）</h2>
+<figure>
+<img loading="lazy" src="img/p-inbox.png" alt="客服收件箱" />
+<figcaption aria-hidden="true">客服收件箱</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：多店买家聊天聚合与俄语意图回复，差评根因聚类回流。</li>
+<li><strong>入口路径</strong>：侧栏「客服售后 →
+客服收件箱」（角标为未回复会话数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：待回复会话（其中超 24 小时 N）/ 覆盖店铺 /
+差评 / 退货样本 / 第一根因。</li>
+<li><strong>多店买家聊天聚合</strong>：页签 全部店铺 /
+当前店铺；「全部按建议回复」；列 会话 / 店铺 / 买家 / 订单 / 消息 / 意图
+/ 等待 / AI 建议回复 / 「发送」。</li>
+<li><strong>差评根因聚类 → 回流选品 / 内容</strong>：根因 / 样本数 /
+占比 / 回流动作 / 「去处理」（跳内容合规、时效物流、市场选品等）。</li>
+</ul></li>
+<li><strong>数据来源</strong>：聊天需
+<code>/v3/chat/list</code>、<code>/v1/chat/send/message</code>（Premium
+Plus）【待接 API】；意图识别与聚类【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、客服。</li>
+<li><strong>关联页面</strong>：客服评价、退货异常、内容合规、时效物流、市场选品。</li>
+</ul>
+</section>
+<section id="pages-退货异常returns" class="level2">
+<h2>19. 退货异常（returns）</h2>
+<figure>
+<img loading="lazy" src="img/p-returns.png" alt="退货异常" />
+<figcaption aria-hidden="true">退货异常</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：取消 / 退货 / 索赔按状态机处理。</li>
+<li><strong>入口路径</strong>：侧栏「客服售后 →
+退货异常」（角标为待处理数）；三级菜单 待处理 / 调查中 / 已同意。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>筛选签</strong>：全部 / 待处理 / 调查中 / 已同意 /
+已完结；状态机说明「待处理 → 调查中 / 已同意 / 已拒绝 → 已退款 →
+已关闭」。</li>
+<li><strong>表格列</strong>：单号 / 关联订单 / 类型（退货、索赔、取消）/
+商品 / 原因（俄语原文）/ 金额 ₽ / 状态 /
+操作（调查、同意、拒绝、退款，按状态显示）。退款 ≥ 2000₽
+进入审批中心。</li>
+</ul></li>
+<li><strong>数据来源</strong>：退货单【连接器】；状态推进【本地计算】；退货列表接口
+<code>/v1/returns/list</code>【待接
+API】，退款决定需在卖家后台处理。</li>
+<li><strong>适用角色</strong>：老板、仓管、客服（运营、财务可经 Agent
+处理）。</li>
+<li><strong>关联页面</strong>：审批中心、订单履约、客服评价、时效物流（IML
+处置）、财务对账。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-五财务风控" class="level1">
+<h1>五、财务风控</h1>
+<section id="pages-利润定价profit" class="level2">
+<h2>20. 利润定价（profit）</h2>
+<figure>
+<img loading="lazy" src="img/p-profit.png" alt="利润定价" />
+<figcaption aria-hidden="true">利润定价</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：维护共享费率，按日常价 / 跟卖价 /
+活动价三情景测算净利。</li>
+<li><strong>入口路径</strong>：侧栏「财务风控 →
+利润定价」；智能选品「打开利润定价 →」；刊登「测算」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>共享费率（单位经济）</strong>：汇率 ¥→₽、头程
+¥/kg、支付手续费、退货拨备；佣金阶梯（≤500₽ 15% / 500–2000₽ 12% /
+&gt;2000₽ 10%）；「保存费率」。</li>
+<li><strong>选品 / 在售 · 快速测算</strong>：商品 / 售价 ₽ / 成本 ¥ /
+「测算利润」。</li>
+<li><strong>情景对比 · 跟卖价 /
+活动价</strong>：日常价（当前售价）、跟卖价（× 95%）、活动价（×
+90%）三张卡：售价、佣金率与金额、头程、手续费 +
+拨备、净利、利润率（亏损标红）。</li>
+<li><strong>自定义测算</strong>：售价 ₽、采购价 ¥、重量
+g；「重新测算三情景」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：【本地计算】（净利 = 售价 − 采购成本 ×
+汇率 − 佣金 − 头程 − 手续费 − 退货拨备 − 包材 − 广告）。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：智能选品、刊登上架、价格竞争、财务对账、自动化
+Agent（利润守门、汇率佣金重算）。</li>
+</ul>
+</section>
+<section id="pages-财务对账finance" class="level2">
+<h2>21. 财务对账（finance）</h2>
+<figure>
+<img loading="lazy" src="img/p-finance.png" alt="财务对账" />
+<figcaption aria-hidden="true">财务对账</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：结算明细 vs
+订单利润逐单对账、争议申诉、回款日历、汇兑损益、收款合规自查。</li>
+<li><strong>入口路径</strong>：侧栏「财务风控 →
+财务对账」（角标为差异单数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：本期结算单（待结算 N）/
+对账差异单（实际净利偏离预期超 30₽）/ 利润漏损 ₽ / 汇兑损益 ¥。</li>
+<li><strong>结算明细 vs 订单利润逐单对账</strong>：页签 差异 / 待结算 /
+全部；「批量标记一致项」；列 结算单 / 日期 / 商品 / 售价 / 佣金 / 物流 /
+收单 / 罚款 / 退货 / 预期净利 / 实际净利 / 差异 / 原因 /
+操作（标记已核、发起申诉）。</li>
+<li><strong>回款日历与资金预测</strong>：日期 / 来源 / 金额 ₽ / 折合
+¥（每月 15 日与月末两次回款估算）。</li>
+<li><strong>汇兑损益明细</strong>：结算单 / 净额 / 下单日汇率 /
+结算日汇率 / 损益。</li>
+<li><strong>收款主体与资金合规</strong>：6
+项勾选清单（收款主体与店铺主体一致、持牌收款服务商账户、跨境服务合同归档、结汇对应订单流水、VAT
+代扣代缴口径、报关单 / 发票与结汇金额对应），显示完成数。</li>
+</ul></li>
+<li><strong>数据来源</strong>：结算【连接器】（扩展捕获财务页或导入财务报表）；对账与汇兑【本地计算】；新财务接口
+<code>/v1/finance/accrual/*</code>、回款流水【待接 API】。</li>
+<li><strong>适用角色</strong>：老板、财务。</li>
+<li><strong>关联页面</strong>：数据连接、利润定价、审批中心（申诉）、店铺健康（罚款）。</li>
+</ul>
+</section>
+<section id="pages-店铺健康health" class="level2">
+<h2>22. 店铺健康（health）</h2>
+<figure>
+<img loading="lazy" src="img/p-health.png" alt="店铺健康" />
+<figcaption aria-hidden="true">店铺健康</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：服务质量指标、错误指数分档与罚金估算、封店风险分、临期抢救、多账号与商品卡合并违规。</li>
+<li><strong>入口路径</strong>：侧栏「财务风控 →
+店铺健康」（角标「!」表示有罚金或风险分 ≥ 60）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：错误指数（%，分档，2026-09-22 起重新计算）/
+本期罚金估算 ₽（降到 5% 以下需少出错 N 单）/ 封店风险分（/100）/
+店铺评分（差评占比 · 退货率）。</li>
+<li><strong>服务质量指标</strong>：「一键抢救临期订单」；列
+指标（卖家原因取消率、逾期发货率、渠道 / 运单错误率）/ 统计窗口 / 当前 /
+平台阈值 / 占用 / 状态。</li>
+<li><strong>错误指数趋势（近 8 周）</strong>：柱图；ⓘ 中可调罚金单价（₽
+/ 单）。分档：≤5% 正常 · 5.1–10% 一档 · &gt;10% 二档。</li>
+<li><strong>风险分构成</strong>：维度（取消率 30、逾期发货 25、错误指数
+20、差评占比 15、退货率 10）/ 权重 / 当前。风险分 ≥ 60
+时申诉、下架、批量改价强制审批。</li>
+<li><strong>临期订单抢救清单</strong>：订单 / 商品 / 状态 / 剩余时效 /
+建议；「申诉误判错误」。</li>
+<li><strong>同主体多账号结构</strong>：同一执照最多 6
+家店，提示跨店重复铺货。</li>
+<li><strong>商品卡合并违规</strong>：SKU / 商品 / 问题 /
+「生成整改任务」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：订单与评价【连接器】；指标与风险分【本地计算】（阈值来自平台规则知识库）。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：订单履约、时效物流、审批中心、平台集成（规则知识库）。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-六自动化与集成" class="level1">
+<h1>六、自动化与集成</h1>
+<section id="pages-自动化-agentagents" class="level2">
+<h2>23. 自动化 Agent（agents）</h2>
+<figure>
+<img loading="lazy" src="img/p-agents.png" alt="自动化 Agent" />
+<figcaption aria-hidden="true">自动化 Agent</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：13 个跨境 rFBS 垂直 Agent
+的开关、立即运行、定时回合、一键级联与活动日志。</li>
+<li><strong>入口路径</strong>：侧栏「自动化与集成 → 自动化
+Agent」（角标为启用数）。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>标题栏</strong>：「自动化 Agent Hub」+ 场景 · 启用数 ·
+今日已处理；「执行定时回合」（运行已启用的 Agent）；「一键跑全部
+Agent」。</li>
+<li><strong>概览条</strong>：启用中 / 今日处理 / 专业 Agent（13）。</li>
+<li><strong>Agent 卡片（13
+张）</strong>：名称、职责、启停开关、「上次：…」「今日
+N」、「运行」（手动运行，停用也可）、「查看模块 →」、活动日志。13 个
+Agent 与职责： | Agent | 职责 | 关联页面 | |—|—|—| | 选品雷达 |
+扫描爆款榜，按毛利阈值（25%）认领进刊登草稿 | 智能选品 | | 刊登过审 |
+推进类目映射完整度，就绪后发布 | 刊登上架 | | 审单履约 | 自动审单 →
+匹配物流 → 申请面单 | 订单履约 | | 超时抢救 | 优先处理 eta ≤ 6h：审单 →
+面单 → 发货，缺货标采购 | 订单履约 | | 1688 采购跟单 |
+待采购订单下单跟单，回写入库并推进待发货 | 订单履约 | | 物流轨迹异常 |
+扫描已发货轨迹停滞 / 清关异常，写预警 | 订单履约 | | 利润守门 | 拦截 /
+标记低于最低毛利的刊登与跟卖价，给建议价 | 利润定价 | | 汇率佣金重算 |
+按最新汇率与佣金阶梯重算净利，标异常 | 利润定价 | | 俄语客服 |
+对未回复差评发送俄语致歉模板 | 客服评价 | | 差评预警升级 | 1
+星差评升级为理赔工单，联动退货 | 客服评价 | | 退货理赔 |
+推进开放退货单：调查 → 同意 / 拒绝 → 退款关闭 | 退货异常 | | 库存补货 |
+低于安全库存的 SKU 补货入库 | 物流与库存 | | 周报汇报 |
+生成经营周报快照并推送摘要 | 经营周报 |</li>
+<li><strong>最近活动合流</strong>：所有 Agent
+的动作按时间汇总，右上角条数。</li>
+</ul></li>
+<li><strong>数据来源</strong>：【本地计算】（页面打开时每 45
+秒执行一次已启用 Agent 的定时回合）；高风险动作进入审批中心。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、客服（执行受各自权限约束）。</li>
+<li><strong>关联页面</strong>：经营总览、审批中心，以及上表各业务页面。</li>
+</ul>
+</section>
+<section id="pages-数据连接connect" class="level2">
+<h2>24. 数据连接（connect）</h2>
+<figure>
+<img loading="lazy" src="img/p-connect.png" alt="数据连接" />
+<figcaption aria-hidden="true">数据连接</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：免 Api-Key
+接入真实店铺数据的总入口。</li>
+<li><strong>入口路径</strong>：侧栏「自动化与集成 →
+数据连接」；命令面板「同步店铺数据」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：浏览器插件（未安装 / 已连接 vX）/
+插件已捕获（订单 · 结算 · 商品）/ 已并入真实订单 / 比价已采集。</li>
+<li><strong>① Ozon 卖家后台直连</strong>：4 步安装说明（下载 zip →
+chrome://extensions 开发者模式加载 → 登录卖家后台浏览订单 / 财务 / 商品
+→ 从插件同步）；最近捕获表（页面 / 订单 / 结算 /
+商品）；「从插件同步」「刷新插件状态」「清空插件缓存」（已安装时）；识别到
+Premium 订阅门槛时显示提示。</li>
+<li><strong>② 报表导入</strong>：选择 CSV / XLSX；导入记录（时间 / 文件
+/ 类型 订单·结算·未识别 / 识别行数 / 结果）。</li>
+<li><strong>③ 同款公开价格采集</strong>：「采集全部同款价格」；商品 /
+搜索词 / Ozon 最低 / 中位 / WB 最低 / 中位 / 采集时间 / 链接。</li>
+<li><strong>④ 物流轨迹公开查询</strong>：「刷新全部轨迹」；订单 /
+运单号（可点开菜鸟查询页）/ 最新轨迹 / 状态。</li>
+<li><strong>⑤ 以图搜货 / 断货换供</strong>：输入商品图片地址后出现「1688
+以图搜货」「Яндекс 同款」「Google
+Lens」「速卖通」跳转；浏览过的商品列表。</li>
+<li><strong>⑥ 简报推送</strong>：类型（企业微信 / 钉钉 /
+飞书群机器人、Telegram Bot、通用 Webhook）、Webhook
+地址、「添加」；每日推送时间、桌面通知、「立即推送今日简报」。</li>
+<li><strong>⑦ 给 AI Agent 用：MCP
+服务与数据导出</strong>：启动命令；「导出经营数据 JSON」「检查 Ozon API
+文档变化」；导入 AI
+助手提交的改价建议（ozonflow-pending.json，全部进审批中心）。</li>
+<li><strong>同步记录</strong>：时间 / 动作 / 结果。</li>
+</ul></li>
+<li><strong>数据来源</strong>：【连接器】【公开接口】；推送使用用户自己配置的群机器人
+Webhook。</li>
+<li><strong>适用角色</strong>：老板、运营、仓管、财务。</li>
+<li><strong>关联页面</strong>：订单履约、财务对账、价格竞争、平台集成。</li>
+</ul>
+</section>
+<section id="pages-平台集成platform" class="level2">
+<h2>25. 平台集成（platform）</h2>
+<figure>
+<img loading="lazy" src="img/p-platform.png" alt="平台集成" />
+<figcaption aria-hidden="true">平台集成</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：Seller API 适配层与代理配置、API 废弃 /
+订阅门槛监控、平台规则知识库、MCP 工具导出、每日简报、角色说明。</li>
+<li><strong>入口路径</strong>：侧栏「自动化与集成 → 平台集成」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：API 连接（离线模式 / 已连接）/
+已映射端点（17，废弃迁移 2 · 订阅门槛 3）/ 规则知识条目（8）/ 可供 Agent
+调用的工具（17，写操作需审批）。</li>
+<li><strong>Ozon Seller API 适配层</strong>：模式（离线（本地数据层）/
+代理（真实店铺））、后端代理地址、「测试连接」。</li>
+<li><strong>API 废弃 / 迁移监控</strong>：动作 / 端点 / 说明（如
+shipOrder 迁移到 v4；财务旧接口 2026-09-08 停用）。</li>
+<li><strong>订阅门槛识别</strong>：replyReview、answerQa 需 Premium
+Plus；chatList 需核验。</li>
+<li><strong>平台规则知识库</strong>：规则 / 当前值 / 来源 / 日期 /
+用在（错误指数分档、取消率、逾期率、财务接口迁移、订阅门槛、开店上限、海外仓时限、审批阈值）。</li>
+<li><strong>Agent 通过 MCP 调用 Ozon API</strong>：工具名 / HTTP / 端点
+/ 权限（只读 · 自动、写 · 记审计、写 · 必须审批）；「导出 MCP
+工具清单」。</li>
+<li><strong>每日经营简报</strong>：简报文本；「复制简报」。</li>
+<li><strong>多店分区 + 角色权限</strong>：角色与可见页面数（老板 26 /
+运营 24 / 仓管 9 / 客服 7 / 财务 12）；「切换到财务角色」。</li>
+</ul></li>
+<li><strong>数据来源</strong>：端点映射来自
+<code>js/adapters/ozon-seller-api.js</code>；代理为
+<code>server/ozon-proxy.js</code>【待接
+API】；规则知识库【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：数据连接、能力矩阵、审批中心、店铺健康。</li>
+</ul>
+</section>
+<section id="pages-能力矩阵capability" class="level2">
+<h2>26. 能力矩阵（capability）</h2>
+<figure>
+<img loading="lazy" src="img/p-capability.png" alt="能力矩阵" />
+<figcaption aria-hidden="true">能力矩阵</figcaption>
+</figure>
+<ul>
+<li><strong>页面用途</strong>：62 条需求地图的覆盖度总览，按方向 /
+优先级 / 状态筛选并直达对应页面。</li>
+<li><strong>入口路径</strong>：侧栏「自动化与集成 → 能力矩阵」。</li>
+<li><strong>页面区域说明</strong>
+<ul>
+<li><strong>KPI</strong>：需求总数（62，22 个业务方向）/ 已上线 /
+部分上线 / 规划中。</li>
+<li><strong>业务方向覆盖度</strong>：22
+个方向格子（条数与覆盖率进度条），点击筛选，再点清除。</li>
+<li><strong>需求表</strong>：页签 全部优先级 / P0 / P1 / P2，全部状态 /
+已上线 / 部分上线 / 规划；列 编号 / 方向 / 需求 / 痛点 / AI 解法 /
+优先级 / 状态 / 入口（跳转对应页面）。</li>
+<li><strong>平台接入 · Ozon Seller API</strong>：分组 / 业务动作 / 方法
+/ 端点 / 说明 / 备注（17 个端点）。</li>
+</ul></li>
+<li><strong>数据来源</strong>：<code>js/requirements-data.js</code>（与
+REQUIREMENTS_MAP.md 同源）【本地计算】。</li>
+<li><strong>适用角色</strong>：老板、运营、财务。</li>
+<li><strong>关联页面</strong>：全部业务页面。</li>
+</ul>
+<hr />
+</section>
+</section>
+<section id="pages-附弹窗与浮层" class="level1">
+<h1>附：弹窗与浮层</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>浮层</th>
+<th>触发</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>新手开店引导</td>
+<td>首次进入小白冷启动 / 侧栏「开店引导」/ 场景下拉</td>
+<td>4 步：绑定店铺、选择 rFBS、默认物流、导入商品</td>
+</tr>
+<tr class="even">
+<td>订单详情抽屉</td>
+<td>订单履约点击行</td>
+<td>商品、订单信息、自动化轨迹、快捷操作</td>
+</tr>
+<tr class="odd">
+<td>命令面板</td>
+<td>顶栏搜索、Ctrl/⌘K、/</td>
+<td>页面、三级筛选、常用操作、让 AI 执行</td>
+</tr>
+<tr class="even">
+<td>经营场景 / 店铺 / 角色下拉</td>
+<td>顶栏</td>
+<td>切换业务数据集、店铺分区、角色权限</td>
+</tr>
+</tbody>
+</table>
+<p><img loading="lazy" src="img/s-cmdk-03-search.png" alt="命令面板" /> <img
+src="img/s-wizard-01-auto-open.png" alt="向导" /></p>
+</section>
+</div></article>
+<article class="doc" id="doc-prd" hidden><aside class="toc"><div class="toc-h">PRD</div><ul>
+<li><a href="#prd-产品需求文档prd"
+id="prd-toc-产品需求文档prd">产品需求文档（PRD）</a></li>
+<li><a href="#prd-背景" id="prd-toc-背景">1. 背景</a></li>
+<li><a href="#prd-用户与角色" id="prd-toc-用户与角色">2. 用户与角色</a>
+<ul>
+<li><a href="#prd-目标用户" id="prd-toc-目标用户">2.1 目标用户</a></li>
+<li><a href="#prd-角色" id="prd-toc-角色">2.2 角色</a></li>
+</ul></li>
+<li><a href="#prd-痛点" id="prd-toc-痛点">3. 痛点</a></li>
+<li><a href="#prd-产品目标与指标" id="prd-toc-产品目标与指标">4.
+产品目标与指标</a></li>
+<li><a href="#prd-范围" id="prd-toc-范围">5. 范围</a>
+<ul>
+<li><a href="#prd-已上线v1.0" id="prd-toc-已上线v1.0">5.1
+已上线（v1.0）</a></li>
+<li><a href="#prd-需要-api-key-或第三方接口的-9-项规划"
+id="prd-toc-需要-api-key-或第三方接口的-9-项规划">5.2 需要 Api-Key
+或第三方接口的 9 项（规划）</a></li>
+<li><a href="#prd-不在范围" id="prd-toc-不在范围">5.3 不在范围</a></li>
+</ul></li>
+<li><a href="#prd-信息架构" id="prd-toc-信息架构">6. 信息架构</a>
+<ul>
+<li><a href="#prd-导航结构" id="prd-toc-导航结构">6.1 导航结构</a></li>
+<li><a href="#prd-全局框架" id="prd-toc-全局框架">6.2 全局框架</a></li>
+</ul></li>
+<li><a href="#prd-功能需求按模块" id="prd-toc-功能需求按模块">7.
+功能需求（按模块）</a>
+<ul>
+<li><a href="#prd-工作台" id="prd-toc-工作台">7.1 工作台</a></li>
+<li><a href="#prd-订单履约" id="prd-toc-订单履约">7.2 订单履约</a></li>
+<li><a href="#prd-商品增长" id="prd-toc-商品增长">7.3 商品增长</a></li>
+<li><a href="#prd-客服售后" id="prd-toc-客服售后">7.4 客服售后</a></li>
+<li><a href="#prd-财务风控" id="prd-toc-财务风控">7.5 财务风控</a></li>
+<li><a href="#prd-自动化与集成" id="prd-toc-自动化与集成">7.6
+自动化与集成</a></li>
+</ul></li>
+<li><a href="#prd-关键流程" id="prd-toc-关键流程">8. 关键流程</a>
+<ul>
+<li><a href="#prd-订单履约-1" id="prd-toc-订单履约-1">8.1
+订单履约</a></li>
+<li><a href="#prd-审批" id="prd-toc-审批">8.2 审批</a></li>
+<li><a href="#prd-agent-编排一键级联"
+id="prd-toc-agent-编排一键级联">8.3 Agent 编排（一键级联）</a></li>
+</ul></li>
+<li><a href="#prd-权限矩阵" id="prd-toc-权限矩阵">9. 权限矩阵</a></li>
+<li><a href="#prd-非功能需求" id="prd-toc-非功能需求">10.
+非功能需求</a></li>
+<li><a href="#prd-数据与集成" id="prd-toc-数据与集成">11. 数据与集成</a>
+<ul>
+<li><a href="#prd-免密钥模式当前" id="prd-toc-免密钥模式当前">11.1
+免密钥模式（当前）</a></li>
+<li><a href="#prd-api-key-模式规划" id="prd-toc-api-key-模式规划">11.2
+Api-Key 模式（规划）</a></li>
+</ul></li>
+<li><a href="#prd-版本规划" id="prd-toc-版本规划">12. 版本规划</a></li>
+<li><a href="#prd-关键页面截图" id="prd-toc-关键页面截图">13.
+关键页面截图</a></li>
+</ul>
+</aside><div class="content"><section id="prd-产品需求文档prd" class="level1">
+<h1>产品需求文档（PRD）</h1>
+<table>
+<thead>
+<tr class="header">
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>产品</td>
+<td>OzonFlow · Ozon rFBS 跨境直发经营操作系统</td>
+</tr>
+<tr class="even">
+<td>版本</td>
+<td>v1.0（已上线的 Web 版 + 浏览器连接器扩展 v1.0.0）</td>
+</tr>
+<tr class="odd">
+<td>线上地址</td>
+<td>https://rong001.github.io/ozonflow-rfbs-app/</td>
+</tr>
+<tr class="even">
+<td>代码仓库</td>
+<td>rong001/ozonflow-rfbs-app</td>
+</tr>
+<tr class="odd">
+<td>文档范围</td>
+<td>已上线功能 + 需要 Api-Key / 第三方接口的 9 项规划能力</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="prd-背景" class="level1">
+<h1>1. 背景</h1>
+<p>Ozon 是俄罗斯第一大电商平台。中国卖家多以 <strong>rFBS（Realistic
+FBS，卖家自发货跨境直发）</strong>
+模式经营：买家下单后，卖家需在截单时效内完成审单、1688
+采购、打包、申请面单、交给跨境物流并回传运单号。这条链路跨越 Ozon
+卖家后台、1688、物流商系统、Excel
+利润表和多个聊天工具，信息分散、全靠人盯。</p>
+<p>2025–2026 年平台规则持续收紧：错误指数自 2026-09-22
+起重新计算并分档罚款；财务旧接口 2026-09-08 停用；评价 / 问答 /
+聊天接口需要 Premium Plus 订阅；同一执照最多开 6 家店。卖家需要一套以
+<strong>履约时效、利润、店铺健康</strong>
+为核心、能被团队分工使用、且高风险动作可控的经营系统。</p>
+</section>
+<section id="prd-用户与角色" class="level1">
+<h1>2. 用户与角色</h1>
+<section id="prd-目标用户" class="level2">
+<h2>2.1 目标用户</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>用户类型</th>
+<th>画像</th>
+<th>对应经营场景（业务数据集）</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>新手卖家</td>
+<td>刚开店，1 家店、几个 SKU，不懂 rFBS 流程</td>
+<td>小白冷启动（义乌）</td>
+</tr>
+<tr class="even">
+<td>成长期卖家</td>
+<td>1–2 家店，日单几十到上百，旺季超时多</td>
+<td>旺季履约突击（广州，默认）</td>
+</tr>
+<tr class="odd">
+<td>公司化团队</td>
+<td>3 家以上店铺，老板 / 运营 / 仓管 / 客服 / 财务分工</td>
+<td>多店公司化</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="prd-角色" class="level2">
+<h2>2.2 角色</h2>
+<table>
+<thead>
+<tr class="header">
+<th>角色</th>
+<th>职责</th>
+<th>可见页面数</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>老板</td>
+<td>全局经营、审批高风险动作</td>
+<td>26</td>
+</tr>
+<tr class="even">
+<td>运营</td>
+<td>选品、刊登、定价、推广、订单与规则</td>
+<td>24</td>
+</tr>
+<tr class="odd">
+<td>仓管</td>
+<td>订单履约、物流、库存、退货</td>
+<td>9</td>
+</tr>
+<tr class="even">
+<td>客服</td>
+<td>评价、问答、聊天、退货</td>
+<td>7</td>
+</tr>
+<tr class="odd">
+<td>财务</td>
+<td>利润、对账、回款、健康、审批查看</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="prd-痛点" class="level1">
+<h1>3. 痛点</h1>
+<ol type="1">
+<li><strong>时效焦虑</strong>：rFBS
+截单时效短，休息日、缺货、面单没取都会导致逾期，直接推高错误指数与罚款。</li>
+<li><strong>利润算不清</strong>：佣金阶梯、汇率、头程、退货拨备、广告、VAT
+叠加，跟卖与活动价常常亏本而不自知。</li>
+<li><strong>工具割裂</strong>：卖家后台、1688、物流商、Excel、聊天工具来回切换，团队协作靠截图和口头。</li>
+<li><strong>俄语客服门槛</strong>：差评、问答、聊天需俄语回复，响应慢导致评分下降。</li>
+<li><strong>对账黑盒</strong>：结算单罚款、物流费差异、汇兑损益难以逐单核对。</li>
+<li><strong>API 门槛</strong>：Api-Key 申请、Premium Plus
+订阅、接口频繁废弃迁移，小卖家难以接入。</li>
+<li><strong>自动化不可控</strong>：直接让脚本改价、退款、采购风险高，缺少审批与审计。</li>
+</ol>
+</section>
+<section id="prd-产品目标与指标" class="level1">
+<h1>4. 产品目标与指标</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>目标</th>
+<th>指标</th>
+<th>目标值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>降低逾期</td>
+<td>rFBS 逾期发货率</td>
+<td>&lt; 平台阈值，超时风险订单当日清零</td>
+</tr>
+<tr class="even">
+<td>控制罚款</td>
+<td>错误指数</td>
+<td>≤ 5%（正常档）</td>
+</tr>
+<tr class="odd">
+<td>守住利润</td>
+<td>低于利润底价（净利率 20%）上架或调价的 SKU 数</td>
+<td>0（全部被拦截或送审）</td>
+</tr>
+<tr class="even">
+<td>提效</td>
+<td>订单审单 + 物流匹配 + 取号自动化率</td>
+<td>≥ 80% 订单由规则 / Agent 完成</td>
+</tr>
+<tr class="odd">
+<td>客服响应</td>
+<td>差评、问答 24 小时内回复率</td>
+<td>≥ 95%</td>
+</tr>
+<tr class="even">
+<td>对账</td>
+<td>结算差异单定位时间</td>
+<td>由逐单人工核对降到分钟级</td>
+</tr>
+<tr class="odd">
+<td>可控</td>
+<td>高风险动作经审批比例</td>
+<td>100%，且全部留审计日志</td>
+</tr>
+<tr class="even">
+<td>上手</td>
+<td>新手完成开店向导的时间</td>
+<td>≤ 5 分钟</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="prd-范围" class="level1">
+<h1>5. 范围</h1>
+<section id="prd-已上线v1.0" class="level2">
+<h2>5.1 已上线（v1.0）</h2>
+<ul>
+<li>26 个页面：经营总览、AI
+指令台、审批中心、经营周报、订单履约、时效物流、物流与库存、供应链库存、自动化规则、智能选品、市场选品、刊登上架、素材工坊、内容合规、价格竞争、推广活动、客服评价、客服收件箱、退货异常、利润定价、财务对账、店铺健康、自动化
+Agent、数据连接、平台集成、能力矩阵。</li>
+<li>13 个垂直 Agent（「旺季履约突击」「多店公司化」默认启用 9
+个），一键级联运行。</li>
+<li>5 角色权限、多店分区、审批中心 + 审计日志。</li>
+<li>免 Api-Key
+数据接入：浏览器连接器扩展（读取已登录的卖家后台）、卖家后台报表导入（CSV
+/ XLSX）、同款公开价格采集（Ozon /
+WB）、菜鸟物流轨迹公开查询、以图搜货跳转、群机器人简报推送。</li>
+<li>浏览器内语义模型的中文指令解析；素材工坊本地生成主图 / 视频 / 富内容
+JSON。</li>
+<li>本地 MCP 服务（<code>server/mcp-ozonflow.js</code>，8 个只读 /
+建议类工具）与经营数据 JSON 导出。</li>
+<li>需求地图 62 条（22 个方向）全部为已上线状态。</li>
+</ul>
+</section>
+<section id="prd-需要-api-key-或第三方接口的-9-项规划" class="level2">
+<h2>5.2 需要 Api-Key 或第三方接口的 9 项（规划）</h2>
+<blockquote>
+<p>说明：代码中没有单独的「9 项」清单，以下由适配层
+<code>js/adapters/ozon-seller-api.js</code> 和
+<code>AI_ARCHITECTURE.md</code>
+中需要密钥的写操作整理。适配层已映射端点，代理
+<code>server/ozon-proxy.js</code> 已就绪，填入密钥并放开
+<code>WRITE_ALLOW</code> 后即可启用。当前这些动作在系统内完成计算 /
+审批后，<strong>需要在 Ozon 卖家后台或第三方平台人工完成</strong>。</p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>能力</th>
+<th>接口</th>
+<th>授权要求</th>
+<th>当前人工替代</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>发货回写</td>
+<td><code>POST /v4/posting/fbs/ship</code></td>
+<td>Ozon Api-Key</td>
+<td>卖家后台点「发货」</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>运单号回传</td>
+<td><code>POST /v2/fbs/posting/tracking-number/set</code></td>
+<td>Ozon Api-Key</td>
+<td>卖家后台填写运单号</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>面单 PDF</td>
+<td><code>POST /v2/posting/fbs/package-label</code></td>
+<td>Ozon Api-Key</td>
+<td>卖家后台下载面单</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>改价回写</td>
+<td><code>POST /v1/product/import/prices</code></td>
+<td>Ozon Api-Key（审批后执行）</td>
+<td>卖家后台改价</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>商品发布</td>
+<td><code>POST /v3/product/import</code>（含类目属性
+<code>/v1/description-category/attribute</code>）</td>
+<td>Ozon Api-Key</td>
+<td>卖家后台上架</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>库存回写</td>
+<td><code>POST /v2/products/stocks</code></td>
+<td>Ozon Api-Key</td>
+<td>卖家后台改库存</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>评价 / 问答 / 聊天回复</td>
+<td><code>/v1/review/comment/create</code>、<code>/v1/question/answer/create</code>、<code>/v1/chat/send/message</code></td>
+<td>Api-Key + Premium Plus 订阅</td>
+<td>复制俄语模板到后台发送</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>广告数据与暂停</td>
+<td>Ozon Performance API</td>
+<td>client_id + client_secret（OAuth）</td>
+<td>广告后台手动暂停</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>1688 下单与采购价同步</td>
+<td>1688 开放平台</td>
+<td>1688 应用授权</td>
+<td>1688 手动下单、拍立淘搜同款</td>
+</tr>
+</tbody>
+</table>
+<p>其他候选：物流商面单 / 轨迹
+API（云途、燕文等，需物流商账号）；活动报名
+<code>/v1/actions/products/activate</code>；新财务接口
+<code>/v1/finance/accrual/*</code> 自动拉取。</p>
+</section>
+<section id="prd-不在范围" class="level2">
+<h2>5.3 不在范围</h2>
+<ul>
+<li>代替卖家登录 Ozon 或存储卖家后台密码；</li>
+<li>自动绕过平台订阅门槛；</li>
+<li>无审批的高风险写操作。</li>
+</ul>
+</section>
+</section>
+<section id="prd-信息架构" class="level1">
+<h1>6. 信息架构</h1>
+<section id="prd-导航结构" class="level2">
+<h2>6.1 导航结构</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-1.png" class="mmd" alt="图 1：导航结构" />
+<figcaption aria-hidden="true">图 1：导航结构</figcaption>
+</figure>
+</section>
+<section id="prd-全局框架" class="level2">
+<h2>6.2 全局框架</h2>
+<ul>
+<li>顶栏：命令面板（Ctrl/⌘K）、经营场景、店铺、角色、同步状态、通知、使用手册、重置。</li>
+<li>侧栏：6 分组，悬停展开 / 固定，分组角标 =
+组内待办合计；订单、客服、退货有三级菜单。</li>
+<li>浮层：开店向导、订单详情抽屉、命令面板、提示消息。</li>
+</ul>
+<figure>
+<img loading="lazy" src="img/p-dashboard.png" alt="经营总览" />
+<figcaption aria-hidden="true">经营总览</figcaption>
+</figure>
+</section>
+</section>
+<section id="prd-功能需求按模块" class="level1">
+<h1>7. 功能需求（按模块）</h1>
+<blockquote>
+<p>每个模块包含：用户故事、功能、业务规则、验收标准。</p>
+</blockquote>
+<section id="prd-工作台" class="level2">
+<h2>7.1 工作台</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为老板，我打开系统就能看到今天最该先做的事，按风险排好序。</li>
+<li>作为老板，我用一句中文就能批量处理（如「处理所有超时订单」），并先看到影响范围。</li>
+<li>作为老板，所有高风险动作都要经我审批，可追溯。</li>
+</ul>
+<p><strong>功能</strong>：经营总览（5 KPI、今日待办、7 日趋势、热销
+TOP5、一键跑全部 Agent）；AI 指令台（22
+条示例、执行计划预览、确认执行）；审批中心（待审批 /
+已处理、批量通过、审计日志）；经营周报（分店铺 / SKU 汇总、导出）。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+<li>待办排序：高风险审批 &gt; 超时 &gt; 待审单 &gt; 缺货 &gt; 差评 &gt;
+退货 &gt; 轨迹异常 &gt; 资金 &gt; 刊登。</li>
+<li>审批阈值：改价 &gt; 10%、退款 ≥ 2000₽、采购 ≥
+¥1000、取消订单、暂停广告、低于底价报名活动、申诉、侵权投诉。</li>
+<li>仅老板可通过 / 驳回；其他角色按钮置灰并提示。</li>
+<li>AI 指令台非只读指令写入审计日志。</li>
+</ul>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>总览 KPI 与订单页筛选数一致；待办按钮跳转到对应页面与筛选签。</li>
+<li>输入「把毛利低于 20% 的商品提价
+8%」出现执行计划，确认后生成改价或审批项。</li>
+<li>审批通过后状态变为已处理，审计日志新增一条。</li>
+</ul>
+<figure>
+<img loading="lazy" src="img/s-apv-02-approve-b.png" alt="审批中心" />
+<figcaption aria-hidden="true">审批中心</figcaption>
+</figure>
+</section>
+<section id="prd-订单履约" class="level2">
+<h2>7.2 订单履约</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为仓管，我希望订单自动审单、匹配物流、取号，我只负责打包发货。</li>
+<li>作为运营，我要第一时间看到 6 小时内要超时的订单。</li>
+<li>作为仓管，休息日前要知道哪些单必须提前发。</li>
+</ul>
+<p><strong>功能</strong>：订单 6 状态筛选 +
+搜索；一键审单；批量申请面单；订单抽屉与自动化时间线；6 条 IF / THEN
+规则；休息日截单影响；运单号回传；渠道运价比较；报关一致性；IML
+退货处置；物流渠道；库存同步与补货；多店共享库存防超卖；rFBS / FBO / FBP
+决策；海外仓补货与滞销。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+<li>自动审单：金额 &lt; 5000₽ 且无买家留言。</li>
+<li>物流匹配：≤ 500g 云途俄线，&gt; 500g 燕文经济。</li>
+<li>审单后本地库存不足 → 待采购；采购完成 → 待发货。</li>
+<li>超时风险：剩余时效 ≤ 6h 且未发货。</li>
+<li>运费 = 单价 × 重量 + 挂号费 ¥12；报关申报价按订单价 80% 校准。</li>
+<li>共享库存按近 7 天销量比例分配，预留 10%。</li>
+<li>补货单金额 ≥ ¥1000 进审批。</li>
+</ul>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>「一键审单」后符合规则的订单进入待发货并带「已审单」「已匹配物流」标签。</li>
+<li>「批量申请面单」后订单生成运单号与「已取号」标签。</li>
+<li>「发货」后状态为已发货，总览待发货数同步减少。</li>
+<li>发货 / 运单号回传在接入 Api-Key 前明确提示需在卖家后台完成。</li>
+</ul>
+<figure>
+<img loading="lazy" src="img/s-ord-08-waybill-a.png" alt="订单履约 · 批量面单" />
+<figcaption aria-hidden="true">订单履约 · 批量面单</figcaption>
+</figure>
+</section>
+<section id="prd-商品增长" class="level2">
+<h2>7.3 商品增长</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为运营，我要知道哪个品值得做，上架前就算清利润。</li>
+<li>作为运营，刊登前自动检查属性、证书、禁限售词和图片规范。</li>
+<li>作为运营，跟卖压价时不能跌破底价，大幅调价要老板批。</li>
+</ul>
+<p><strong>功能</strong>：智能选品（爆款 / 蓝海 /
+跟卖、利润测算、认领）；市场选品（5
+维评分、节点倒推、断货换供）；刊登上架（草稿 → 映射 → 待发布 →
+已发布）；素材工坊（白底主图、视频、富内容
+JSON）；内容合规（内容评分、标题公式、EAC、Честный
+знак、禁限售词、图片规范、问答回写、防盗图）；价格竞争（价格指数、跟卖、底价、比价、成本栈、VAT、佣金重排）；推广活动（ДРР
+/ ROI、亏损暂停、预算分配、活动利润）。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+<li>选品评分权重：销量 25 · 净利率 30 · 重量 10 · 竞争度 15 · 趋势
+20；红线品直接 0 分。</li>
+<li>备货截止 = 节点日期 − 26 天。</li>
+<li>内容评分：俄语标题 25、类目属性 25、图片 20、富文本 10、视频
+10、合规 10。</li>
+<li>证书到期前 60 天提醒；缺失或过期的商品被刊登 Agent 拦截。</li>
+<li>图片：≥ 5 张、主图白底、无中文与水印、边长 ≥ 900px。</li>
+<li>价格指数偏红 = 比全网最低高 10% 以上；建议价不低于底价（净利率
+20%）。</li>
+<li>整体 ДРР 目标 ≤
+15%；亏损广告暂停需审批；低于底价的活动报名需审批。</li>
+</ul>
+<p><strong>验收标准</strong></p>
+<ul>
+<li>选品「测算利润」后右侧显示净利与利润率；「认领」后进入刊登草稿并跳转。</li>
+<li>刊登「批量发布待发布」后状态为已发布。</li>
+<li>价格竞争「按建议调价」幅度 &gt; 10%
+时生成审批项，否则直接生效。</li>
+</ul>
+<figure>
+<img loading="lazy" src="img/s-prd-02-calc-b.png" alt="智能选品 · 测算" />
+<figcaption aria-hidden="true">智能选品 · 测算</figcaption>
+</figure>
+</section>
+<section id="prd-客服售后" class="level2">
+<h2>7.4 客服售后</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为客服，我不会俄语也能用模板快速回复差评和问答。</li>
+<li>作为客服，多家店的买家消息要在一个地方回。</li>
+<li>作为老板，大额退款要我批。</li>
+</ul>
+<p><strong>功能</strong>：评价 / 问答 / 俄语模板（5
+类）；多店聊天聚合与意图建议回复；差评根因聚类回流；退货状态机（待处理 →
+调查中 / 已同意 / 已拒绝 → 已退款 → 已关闭）。</p>
+<p><strong>业务规则</strong>：≤ 3 星为差评；1 星差评升级为理赔工单；退款
+≥ 2000₽ 进审批；回复发送需 Premium Plus（未开通时复制到后台）。</p>
+<p><strong>验收标准</strong>：「模板回复」后评价显示回复内容、待回数减少；退款
+≥ 2000₽ 时出现在审批中心。</p>
+</section>
+<section id="prd-财务风控" class="level2">
+<h2>7.5 财务风控</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为财务，我要逐单看结算和预期利润的差异，找出罚款和多扣的物流费。</li>
+<li>作为老板，我要知道错误指数离下一档还差多少、要罚多少钱。</li>
+</ul>
+<p><strong>功能</strong>：共享费率与三情景测算；逐单对账、申诉、回款日历、汇兑损益、合规清单；服务质量指标、错误指数分档与罚金、风险分、临期抢救、多账号、商品卡合并违规。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+<li>佣金阶梯：≤ 500₽ 15%，500–2000₽ 12%，&gt; 2000₽ 10%。</li>
+<li>跟卖价 = 售价 × 95%，活动价 = 售价 × 90%。</li>
+<li>头程运费 = max(80, 重量 kg × 头程 ¥/kg × 汇率 + 45) ₽。</li>
+<li>对账差异：实际净利偏离预期超过 30₽。</li>
+<li>回款：每月 15 日与月末两次估算。</li>
+<li>错误指数：≤ 5% 正常，5.1–10% 一档，&gt; 10% 二档。</li>
+<li>风险分权重：取消率 30、逾期 25、错误指数 20、差评 15、退货 10；≥ 60
+时申诉 / 下架 / 批量改价强制审批。</li>
+</ul>
+<p><strong>验收标准</strong>：修改费率保存后，选品、价格竞争、利润定价净利同步更新；对账「发起申诉」生成审批项。</p>
+<figure>
+<img loading="lazy" src="img/s-fin-01-check-a.png" alt="财务对账" />
+<figcaption aria-hidden="true">财务对账</figcaption>
+</figure>
+</section>
+<section id="prd-自动化与集成" class="level2">
+<h2>7.6 自动化与集成</h2>
+<p><strong>用户故事</strong></p>
+<ul>
+<li>作为老板，我希望重复劳动交给
+Agent，按顺序自动跑完一轮，高风险的留给我批。</li>
+<li>作为卖家，我没有 Api-Key 也能把真实店铺数据接进来。</li>
+</ul>
+<p><strong>功能</strong>：13 Agent 开关 / 运行 / 定时回合（45 秒）/
+一键级联 / 活动日志；数据连接 7 个入口；Seller API 适配层（17
+端点）与代理配置、废弃迁移与订阅门槛监控、规则知识库、MCP
+工具清单、每日简报、角色说明；能力矩阵 62 条需求。</p>
+<p><strong>业务规则</strong></p>
+<ul>
+<li>一键级联顺序：选品雷达 → 刊登过审 → 利润守门 → 汇率佣金重算 → 1688
+采购跟单 → 超时抢救 → 审单履约 → 物流轨迹异常 → 库存补货 → 俄语客服 →
+差评预警升级 → 退货理赔 → 周报汇报。</li>
+<li>Agent 产生的高风险动作一律进入审批中心。</li>
+<li>MCP /
+适配层工具权限：只读自动执行；写操作记审计；高风险写操作必须审批。</li>
+<li>连接器只读取用户已登录页面，不保存账号密码。</li>
+</ul>
+<p><strong>验收标准</strong>：「一键跑全部
+Agent」后提示处理条数，活动日志合流新增记录；安装扩展后数据连接显示「已连接
+v1.0.0」，「从插件同步」后订单数增加。</p>
+<figure>
+<img loading="lazy" src="img/s-agt-05-runall-b.png" alt="一键跑全部 Agent" />
+<figcaption aria-hidden="true">一键跑全部 Agent</figcaption>
+</figure>
+</section>
+</section>
+<section id="prd-关键流程" class="level1">
+<h1>8. 关键流程</h1>
+<section id="prd-订单履约-1" class="level2">
+<h2>8.1 订单履约</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-2.png" class="mmd" alt="图 2：订单履约" />
+<figcaption aria-hidden="true">图 2：订单履约</figcaption>
+</figure>
+</section>
+<section id="prd-审批" class="level2">
+<h2>8.2 审批</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-3.png" class="mmd" alt="图 3：审批" />
+<figcaption aria-hidden="true">图 3：审批</figcaption>
+</figure>
+</section>
+<section id="prd-agent-编排一键级联" class="level2">
+<h2>8.3 Agent 编排（一键级联）</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-4.png" class="mmd"
+alt="图 4：Agent 编排（一键级联）" />
+<figcaption aria-hidden="true">图 4：Agent 编排（一键级联）</figcaption>
+</figure>
+</section>
+</section>
+<section id="prd-权限矩阵" class="level1">
+<h1>9. 权限矩阵</h1>
+<p>✔ = 可见可操作；◐ = 可见、部分操作受限；— = 不可见。</p>
+<table>
+<thead>
+<tr class="header">
+<th>页面</th>
+<th>老板</th>
+<th>运营</th>
+<th>仓管</th>
+<th>客服</th>
+<th>财务</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>经营总览</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="even">
+<td>AI 指令台</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>审批中心</td>
+<td>✔（审批）</td>
+<td>◐ 查看</td>
+<td>—</td>
+<td>—</td>
+<td>◐ 查看</td>
+</tr>
+<tr class="even">
+<td>经营周报</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>订单履约</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>◐</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>时效物流</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>物流与库存</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>供应链库存</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>自动化规则</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>智能选品</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>市场选品</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>刊登上架</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>素材工坊</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>内容合规</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>价格竞争</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="even">
+<td>推广活动</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>客服评价</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>✔</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>客服收件箱</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>✔</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>退货异常</td>
+<td>✔</td>
+<td>—</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>利润定价</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>财务对账</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="even">
+<td>店铺健康</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>自动化 Agent</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>数据连接</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td>平台集成</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="even">
+<td>能力矩阵</td>
+<td>✔</td>
+<td>✔</td>
+<td>—</td>
+<td>—</td>
+<td>✔</td>
+</tr>
+<tr class="odd">
+<td><strong>合计可见</strong></td>
+<td><strong>26</strong></td>
+<td><strong>24</strong></td>
+<td><strong>9</strong></td>
+<td><strong>7</strong></td>
+<td><strong>12</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>来源：<code>js/store.js</code> 中的
+<code>ROLE_VIEWS</code>。切换角色后侧栏只显示可见页面；直接访问不可见页面时提示「当前角色无权访问」，当前页面不可见时自动回到经营总览。</p>
+</blockquote>
+<figure>
+<img loading="lazy" src="img/s-role-02-warehouse-nav.png" alt="角色切换" />
+<figcaption aria-hidden="true">角色切换</figcaption>
+</figure>
+</section>
+<section id="prd-非功能需求" class="level1">
+<h1>10. 非功能需求</h1>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>类别</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>性能</td>
+<td>首屏为纯静态 HTML/JS，无构建；页面切换 &lt;
+200ms；语义模型首次加载约 24MB，加载前降级为规则解析</td>
+</tr>
+<tr class="even">
+<td>兼容</td>
+<td>桌面 Chrome / Edge 最新版；1440 宽为基准；移动端 390
+宽侧栏收为底部图标栏、表格横向滚动</td>
+</tr>
+<tr class="odd">
+<td>安全</td>
+<td>不保存卖家后台账号密码；Api-Key
+只存在代理服务器环境变量（<code>OZON_CLIENT_ID</code>、<code>OZON_API_KEY</code>），前端不接触；代理默认只读，<code>WRITE_ALLOW</code>
+显式放开写操作；<code>ALLOW_ORIGIN</code> 限制来源</td>
+</tr>
+<tr class="even">
+<td>可控</td>
+<td>高风险动作 100%
+经审批；所有写动作写审计日志（时间、操作人、动作、对象、结果）</td>
+</tr>
+<tr class="odd">
+<td>数据隔离</td>
+<td>多店分区，所有列表与 KPI 按当前店铺过滤；状态存于浏览器
+localStorage（<code>ozonflow_rfbs_v2</code>），可一键重置</td>
+</tr>
+<tr class="even">
+<td>可用性</td>
+<td>每个 KPI / 卡片有 ⓘ
+口径说明；所有操作有即时提示；命令面板全局可达；内置使用手册</td>
+</tr>
+<tr class="odd">
+<td>可维护</td>
+<td>平台规则集中在规则知识库；API 端点集中在适配层，废弃迁移有监控</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="prd-数据与集成" class="level1">
+<h1>11. 数据与集成</h1>
+<section id="prd-免密钥模式当前" class="level2">
+<h2>11.1 免密钥模式（当前）</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-5.png" class="mmd"
+alt="图 5：免密钥模式（当前）" />
+<figcaption aria-hidden="true">图 5：免密钥模式（当前）</figcaption>
+</figure>
+<ul>
+<li>连接器：Chrome 扩展（ID
+以安装为准），在用户已登录的卖家后台页面读取接口返回，app 页面经 bridge
+获取数据并显示「已连接 v1.0.0」。</li>
+<li>报表导入：自动识别订单报表与财务报表，记录识别行数。</li>
+<li>MCP：<code>node server/mcp-ozonflow.js</code>，工具
+ozonflow_summary、list_orders、list_products、shop_health、finance_diffs、compete_prices、daily_brief、propose_price_change；改价建议写入
+ozonflow-pending.json，导入后全部进审批。</li>
+</ul>
+</section>
+<section id="prd-api-key-模式规划" class="level2">
+<h2>11.2 Api-Key 模式（规划）</h2>
+<figure>
+<img loading="lazy" src="img/mmd-prd-6.png" class="mmd"
+alt="图 6：Api-Key 模式（规划）" />
+<figcaption aria-hidden="true">图 6：Api-Key 模式（规划）</figcaption>
+</figure>
+<ul>
+<li>部署：<code>OZON_CLIENT_ID=… OZON_API_KEY=… ALLOW_ORIGIN=… PORT=8787 node server/ozon-proxy.js</code>；平台集成页切换「代理」模式并「测试连接」。</li>
+<li>写操作白名单 <code>WRITE_ALLOW</code>，并叠加审批中心。</li>
+<li>端点迁移：shipOrder 用 v4；财务改用
+<code>/v1/finance/accrual/*</code>。</li>
+</ul>
+</section>
+</section>
+<section id="prd-版本规划" class="level1">
+<h1>12. 版本规划</h1>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>版本</th>
+<th>时间</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v1.0（当前）</td>
+<td>2026 Q3</td>
+<td>26 页 + 13 Agent + 5 角色 + 审批 / 审计 + 免密钥连接器 / 报表导入 /
+公开数据 + MCP + 使用手册</td>
+</tr>
+<tr class="even">
+<td>v1.1</td>
+<td>2026 Q4</td>
+<td>Api-Key
+只读接入：订单、商品、库存、结算自动拉取（代理只读模式），替代手动同步</td>
+</tr>
+<tr class="odd">
+<td>v1.2</td>
+<td>2026 Q4</td>
+<td>写回 1–6：发货、运单号、面单
+PDF、改价、发布、库存（审批后执行）</td>
+</tr>
+<tr class="even">
+<td>v1.3</td>
+<td>2027 Q1</td>
+<td>7–8：Premium Plus 评价 / 问答 / 聊天回复，Performance API
+广告读取与暂停</td>
+</tr>
+<tr class="odd">
+<td>v1.4</td>
+<td>2027 Q1</td>
+<td>9：1688 开放平台下单与采购价同步；物流商面单 / 轨迹
+API；活动报名</td>
+</tr>
+<tr class="even">
+<td>v2.0</td>
+<td>2027 Q2</td>
+<td>多人账号与云端同步、团队权限后台、跨设备审批</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="prd-关键页面截图" class="level1">
+<h1>13. 关键页面截图</h1>
+<table>
+<thead>
+<tr class="header">
+<th>页面</th>
+<th>截图</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>经营总览</td>
+<td><img loading="lazy" src="img/p-dashboard.png" /></td>
+</tr>
+<tr class="even">
+<td>订单履约</td>
+<td><img loading="lazy" src="img/p-orders.png" /></td>
+</tr>
+<tr class="odd">
+<td>审批中心</td>
+<td><img loading="lazy" src="img/p-approvals.png" /></td>
+</tr>
+<tr class="even">
+<td>自动化 Agent</td>
+<td><img loading="lazy" src="img/p-agents.png" /></td>
+</tr>
+<tr class="odd">
+<td>数据连接（已连接）</td>
+<td><img loading="lazy" src="img/s-ext-05-connected.png" /></td>
+</tr>
+<tr class="even">
+<td>利润定价</td>
+<td><img loading="lazy" src="img/p-profit.png" /></td>
+</tr>
+<tr class="odd">
+<td>店铺健康</td>
+<td><img loading="lazy" src="img/p-health.png" /></td>
+</tr>
+<tr class="even">
+<td>移动端</td>
+<td><img loading="lazy" src="img/m-01-dashboard.png" /></td>
+</tr>
+</tbody>
+</table>
+</section>
+</div></article></main>
+<div class="lb" id="lb"><img alt=""></div>
+<button class="totop" title="回到顶部" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+(function(){
+  var NAMES={manual:'操作手册',pages:'页面说明书',prd:'PRD'};
+  function show(){
+    var h=decodeURIComponent(location.hash.slice(1)), k=h.split('-')[0];
+    if(!NAMES[k]) k='manual';
+    document.querySelectorAll('.doc').forEach(function(d){d.hidden=d.id!=='doc-'+k});
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on',t.dataset.k===k)});
+    document.getElementById('dlPdf').href=NAMES[k]+'.pdf';
+    document.getElementById('dlDocx').href=NAMES[k]+'.docx';
+    document.title='OzonFlow · '+NAMES[k];
+    if(h && h!==k){var el=document.getElementById(h); if(el) el.scrollIntoView();} else scrollTo(0,0);
+  }
+  addEventListener('hashchange',show); show();
+  var lb=document.getElementById('lb');
+  document.addEventListener('click',function(e){
+    var i=e.target.closest('.content img:not(.mmd)'); if(i){lb.querySelector('img').src=i.src;lb.classList.add('on');return;}
+    if(e.target.closest('#lb')) lb.classList.remove('on');
+  });
+  addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('on')});
+  var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){var id=en.target.id;document.querySelectorAll('.toc a').forEach(function(a){a.classList.toggle('cur',a.getAttribute('href')==='#'+id)});}})},{rootMargin:'-70px 0px -75% 0px'});
+  document.querySelectorAll('.content section[id]').forEach(function(s){io.observe(s)});
+})();
+</script>
+</body>
+</html>

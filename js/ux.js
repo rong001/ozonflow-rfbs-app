@@ -247,6 +247,7 @@ window.OFUX = (function () {
       ['一键跑全部 Agent', '自动化', () => { const b = doc.getElementById('btnRunAllAgentsDash'); if (b) b.click(); }],
       ['同步店铺数据', '数据连接', () => runAI('同步店铺数据')],
       ['打开开店引导', '工作台', () => { const b = doc.getElementById('btnOpenWizard'); if (b) b.click(); }],
+      ['打开使用手册', '帮助', () => { window.open('docs/manual/index.html', '_blank', 'noopener'); }],
     ];
     quick.forEach(q => out.push({ kind: '操作', label: q[0], sub: q[1], run: q[2] }));
     return out;

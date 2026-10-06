@@ -73,7 +73,7 @@
       card('可配置成本栈（R20）', `<div class="ofs-form">
         ${[['fx', '汇率（₽/¥）', set.fx, 0.01], ['paymentFee', '收单费率', set.paymentFee, 0.001], ['shipCnyPerKg', '头程+末端（¥/kg）', set.shipCnyPerKg, 0.5], ['returnProvision', '退货计提率', set.returnProvision || 0, 0.005], ['packCny', '包装耗材（¥/单）', set.packCny || 0, 0.5], ['adShare', '广告费摊销率', set.adShare || 0, 0.01]].map(([k, l, v, step]) => `<label class="ofs-field"><span>${l}</span><input type="number" step="${step}" value="${v}" data-ofs-change="costSet" data-k="${k}" class="ofs-mini-input"></label>`).join('')}
         <label class="ofs-field"><span>利润底价净利率（%）</span><input type="number" step="1" value="${floorM}" data-ofs-change="floorSet" class="ofs-mini-input"></label>
-      </div>` + note('改一处，全系统同步：利润定价、选品、活动模拟、对账和 Agent 都用这一套成本口径。')) +
+      </div>` + note('改一处，全系统同步：利润定价、选品、活动利润测算、对账和 Agent 都用这一套成本口径。')) +
       card(`跨境 VAT 压力测试（R23）`, F.tabs('compete', 'vat', [['0', '现行'], ['5', 'VAT 5%'], ['10', 'VAT 10%'], ['20', 'VAT 20%']], String(vat)) +
         table(['商品', '现净利率', `VAT ${vat}% 后`, '状态'], vatRows.map(x => [esc(x.p.name), pct(x.base.margin), pct(x.pv.margin), x.pv.margin < floorM ? tag('跌破底价', 'red') : tag('可承受', 'green')])) +
         note(`假设售价不变、税额从售价中扣除，在 VAT ${vat}% 下有 <b>${vatBreak}</b> 个 SKU 跌破底价。俄罗斯对跨境电商征 VAT 的方案仍在讨论中，这里只做压力测试，以正式法规为准。`), '', { flush: true }) + `</div>` +
@@ -93,7 +93,7 @@
   F.on('costSet', (d, el) => { const v = parseFloat(el.value); if (isNaN(v)) return; Store.updateSettings({ [d.k]: v }); F.act(Store.roleLabel(), '成本栈调整', d.k, String(v)); return undefined; });
   F.on('floorSet', (d, el) => { const v = parseFloat(el.value); const a = F.S().agents.find(x => x.id === 'profit_guard'); if (a && !isNaN(v)) { a.config = a.config || {}; a.config.marginMin = v; F.act(Store.roleLabel(), '利润底价调整', '净利率', v + '%'); } return { ok: true, msg: '利润底价净利率已设为 ' + v + '%' }; });
 
-  /* ---------- 推广活动：活动利润模拟 / 广告 ДРР ROI / 预算分配 ---------- */
+  /* ---------- 推广活动：活动利润测算 / 广告 ДРР ROI / 预算分配 ---------- */
   F.seed('promo', (s, r) => {
     const actions = [
       { id: 'A1', name: 'Распродажа недели · 周促', discount: 10, deadline: '3 天后截止' },
@@ -133,7 +133,7 @@
         a.on ? (a.net < 0 ? btn('暂停（审批）', 'adPause', { id: a.id }, 'btn-danger') : btn('暂停', 'adPause', { id: a.id })) : btn('恢复', 'adResume', { id: a.id }),
       ])) + note('ДРР = 广告花费 ÷ 广告带来的销售额。扣广告后净利 = 单件净利 × 订单数 − 花费。暂停广告属于高风险动作，会先进审批中心。'), btn('亏损广告全部送审暂停', 'adPauseLoss', {}, 'btn-secondary'), { flush: true }) +
       card('按利润分配广告预算（R26）', table(['商品', '单件净利', '转化率', '当前预算', '建议预算', '变化'], ads.map((a, i) => { const sug = Math.round(totalBudget * weight[i] / wsum / 100) * 100; return [esc(a.p.name), rub(a.unit), pct(a.orders / Math.max(1, a.clicks) * 100), rub(a.budget), `<b>${rub(sug)}</b>`, sug > a.budget ? tag('+' + rub(sug - a.budget), 'green') : sug < a.budget ? tag('−' + rub(a.budget - sug), 'orange') : '—']; })) + note(`总预算 ${rub(totalBudget)} 不变，按“单件净利 × 转化率”重新分配。净利为负的商品不再分预算。`), btn('应用建议预算', 'adRebudget', {}, 'btn-primary'), { flush: true }) +
-      card('活动报名前利润模拟（R24）', table(['活动', '折扣', '截止', ...ps.map(p => esc(p.name.slice(0, 8)))], pr.actions.map(ac => [esc(ac.name), '−' + ac.discount + '%', esc(ac.deadline), ...ps.map(p => {
+      card('活动报名前利润测算（R24）', table(['活动', '折扣', '截止', ...ps.map(p => esc(p.name.slice(0, 8)))], pr.actions.map(ac => [esc(ac.name), '−' + ac.discount + '%', esc(ac.deadline), ...ps.map(p => {
         const m = F.profitOf(p, Math.round(p.price * (1 - ac.discount / 100))).margin; const k = ac.id + ':' + p.sku; const j = pr.joined[k];
         return `<div class="ofs-cell">${pct(m)} ${m >= floorM ? tag('可报', 'green') : m >= 0 ? tag('低于底价', 'orange') : tag('亏损', 'red')}<br>${j ? tag(j === 'pending' ? '审批中' : '已报名', j === 'pending' ? 'orange' : 'blue') : btn('报名', 'promoJoin', { a: ac.id, sku: p.sku }, m >= floorM ? 'btn-ghost' : 'btn-ghost')}</div>`;
       })])) + note(`单元格里是参加活动后的净利率。高于底价 ${floorM}% 的直接报名；低于底价的报名会进审批中心。`), '', { flush: true });
