@@ -1,0 +1,17 @@
+{
+  "name": "ozonflow-rfbs-app",
+  "version": "1.1.0",
+  "description": "OzonFlow rFBS 跨境直发中台 — 静态前端 + 零依赖 Node 后端",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "NODE_ENV=development node server/app.js",
+    "proxy": "node server/ozon-proxy.js",
+    "pack:connector": "bash scripts/pack-connector.sh",
+    "deploy": "bash scripts/deploy.sh"
+  },
+  "main": "server/app.js"
+}

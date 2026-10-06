@@ -99,9 +99,30 @@
       ]) +
       card('Ozon Seller API 适配层（R60）', `<div class="ofs-form">
           <label class="ofs-field"><span>模式</span><select class="ofs-mini-input" data-ofs-change="apiMode"><option value="offline"${st.mode === 'offline' ? ' selected' : ''}>离线（本地数据层）</option><option value="proxy"${st.mode === 'proxy' ? ' selected' : ''}>代理（真实店铺）</option></select></label>
-          <label class="ofs-field"><span>后端代理地址</span><input class="ofs-mini-input" style="width:300px" placeholder="https://your-server/ozon" value="${esc(A ? A.config.proxyBase : '')}" data-ofs-change="apiProxy"></label>
+          <label class="ofs-field"><span>后端代理地址</span><input class="ofs-mini-input" style="width:300px" placeholder="https://your-server" value="${esc(A ? A.config.proxyBase : '')}" data-ofs-change="apiProxy"></label>
           ${btn('测试连接', 'apiTest', {}, 'btn-primary')}
-        </div>` + note('密钥不进浏览器。仓库里的 <span class="mono">server/ozon-proxy.js</span> 是一个零依赖的 Node 代理：在服务器上用环境变量 <span class="mono">OZON_CLIENT_ID</span>、<span class="mono">OZON_API_KEY</span> 启动，再把代理地址填到这里，就能切到真实店铺。') + (ui.test ? `<p class="hint">${esc(ui.test)}</p>` : '')) +
+        </div>` + note('密钥不进浏览器。自建部署时用 <span class="mono">server/app.js</span>（或 Docker Compose）启动完整后端；也可用精简代理 <span class="mono">server/ozon-proxy.js</span>。有 Key 走代理写操作，无 Key 走「数据连接」连接器。') + (ui.test ? `<p class="hint">${esc(ui.test)}</p>` : '')) +
+      (function () {
+        const D = window.OzonFlowDeploy; if (!D) return '';
+        const base = esc(D.getBase() || (typeof location !== 'undefined' ? location.origin : ''));
+        const tok = esc(D.getToken());
+        const dep = ui.deploy || {};
+        return card('自建部署（生产后端 · 状态同步 · 密钥托管）', `<div class="ofs-form">
+          <label class="ofs-field" style="flex:1"><span>API 基址</span><input class="ofs-mini-input" style="width:100%" id="depBase" placeholder="http://127.0.0.1:8787 或 https://your-host" value="${base}" data-ofs-change="depBase"></label>
+          <label class="ofs-field" style="flex:1"><span>部署令牌（Bearer）</span><input class="ofs-mini-input" style="width:100%" id="depToken" type="password" autocomplete="off" placeholder="服务器启动时打印的 DEPLOY_TOKEN" value="${tok}" data-ofs-change="depToken"></label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          ${btn('测试连接', 'depProbe', {}, 'btn-primary')}
+          ${btn('从服务器拉取状态', 'depPull', {}, 'btn-secondary')}
+          ${btn('推送状态到服务器', 'depPush', {}, 'btn-secondary')}
+        </div>
+        <div class="ofs-form" style="margin-top:12px">
+          <label class="ofs-field"><span>Ozon Client-Id（只提交到服务器，不明文存浏览器）</span><input class="ofs-mini-input" style="width:220px" id="depCid" autocomplete="off" placeholder="留空则不修改"></label>
+          <label class="ofs-field"><span>Ozon Api-Key</span><input class="ofs-mini-input" style="width:220px" id="depKey" type="password" autocomplete="off" placeholder="留空则不修改"></label>
+          <label class="ofs-field" style="flex:1"><span>ALLOW_ORIGIN（可选，GitHub Pages 等）</span><input class="ofs-mini-input" style="width:100%" id="depOrigin" placeholder="https://rong001.github.io"></label>
+          ${btn('保存到服务器', 'depSaveCfg', {}, 'btn-primary')}
+        </div>` + note('一键部署见仓库 <span class="mono">DEPLOY.md</span>：Docker Compose 或 <span class="mono">npm start</span>。无 Api-Key 时 mode=connector，读写经营状态与连接器推送仍可用；有 Key 后自动启用发货/运单/面单代理。') + (dep.msg ? `<p class="hint" style="margin-top:8px">${esc(dep.msg)}</p>` : '') + (dep.cfg ? `<p class="hint">服务器配置：Client-Id ${esc(dep.cfg.ozonClientId || '—')} · Api-Key ${esc(dep.cfg.ozonApiKey || '—')} · 凭证 ${dep.cfg.credentials ? '已配置' : '未配置'} · 模式 ${esc(dep.cfg.mode || '')}</p>` : ''));
+      })() +
       `<div class="ofs-grid-2">` +
       card('API 废弃 / 迁移监控（R61）', table(['动作', '端点', '说明'], deprecated.concat(st.endpoints.filter(e => /需核验/.test(e.note || ''))).map(e => [`<span class="mono">${esc(e.action)}</span>`, `<span class="mono">${esc(e.path)}</span>`, /需核验/.test(e.note) ? tag('需核验版本', 'orange') : tag(e.note, 'red')])) + note('接入后每天比对 Ozon 官方更新日志，发现端点被停用就告警，并切换到替代端点。'), '', { flush: true }) +
       card('订阅门槛识别（R62）', table(['动作', '端点', '门槛'], gated.map(e => [`<span class="mono">${esc(e.action)}</span>`, `<span class="mono">${esc(e.path)}</span>`, tag(e.note, 'purple')])) + note('如果返回 403 且提示订阅不足，会标为“需升级 Premium Plus”，并自动改成人工处理，不会反复重试。'), '', { flush: true }) + `</div>` +
@@ -126,5 +147,71 @@
     return { ok: true, msg: '已导出 ' + tools.length + ' 个工具定义' };
   });
   F.on('briefCopy', () => { const t = brief(); F.uiState('platform').brief = t; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => F.toast('success', '简报已复制'), () => F.toast('info', '浏览器不允许复制，请手动选择文本')); });
+
+  /* ---------- 自建部署 ---------- */
+  F.on('depBase', (d, el) => { if (window.OzonFlowDeploy) OzonFlowDeploy.setBase(el.value); return { ok: true, msg: 'API 基址已保存' }; });
+  F.on('depToken', (d, el) => { if (window.OzonFlowDeploy) OzonFlowDeploy.setToken(el.value); return { ok: true, msg: '部署令牌已保存（仅本机）' }; });
+  F.on('depProbe', () => {
+    const D = window.OzonFlowDeploy, u = F.uiState('platform');
+    if (!D) return { ok: false, msg: '部署客户端未加载' };
+    const baseEl = document.getElementById('depBase'); const tokEl = document.getElementById('depToken');
+    if (baseEl) D.setBase(baseEl.value); if (tokEl) D.setToken(tokEl.value);
+    u.deploy = Object.assign(u.deploy || {}, { msg: '正在连接…' }); F.render('platform');
+    D.probe().then(r => {
+      u.deploy = Object.assign(u.deploy || {}, { msg: r.msg });
+      if (r.ok) {
+        // 同步适配层代理地址为同一基址，便于写操作
+        if (window.OzonFlowAdapter) OzonFlowAdapter.configure({ mode: 'proxy', proxyBase: D.getBase(), apiKeyConfigured: !!(r.data && r.data.credentials) });
+        return D.getConfig().then(c => { if (c.ok) u.deploy.cfg = c.data; F.render('platform'); });
+      }
+      F.render('platform');
+    }).catch(e => { u.deploy = { msg: e.message }; F.render('platform'); });
+  });
+  F.on('depPull', () => {
+    const D = window.OzonFlowDeploy, u = F.uiState('platform');
+    if (!D) return;
+    u.deploy = Object.assign(u.deploy || {}, { msg: '正在拉取…' }); F.render('platform');
+    D.pullState().then(r => {
+      if (!r.ok) { u.deploy.msg = '拉取失败：HTTP ' + r.status + (r.data && r.data.error ? ' · ' + r.data.error : ''); F.render('platform'); return; }
+      if (r.data.empty || !r.data.state) { u.deploy.msg = '服务器上还没有状态包，可先「推送状态到服务器」'; F.render('platform'); return; }
+      D.applyState(r.data.state);
+      u.deploy.msg = '已拉取并写入本地，即将刷新页面…'; F.render('platform');
+      setTimeout(() => location.reload(), 600);
+    }).catch(e => { u.deploy.msg = e.message; F.render('platform'); });
+  });
+  F.on('depPush', () => {
+    const D = window.OzonFlowDeploy, u = F.uiState('platform');
+    if (!D) return;
+    u.deploy = Object.assign(u.deploy || {}, { msg: '正在推送…' }); F.render('platform');
+    D.pushState().then(r => {
+      u.deploy.msg = r.ok ? ('已推送（' + (r.data.bytes || 0) + ' 字节）') : ('推送失败：' + (r.data.error || r.status) + (r.status === 401 ? ' · 请检查部署令牌' : ''));
+      F.render('platform');
+    }).catch(e => { u.deploy.msg = e.message; F.render('platform'); });
+  });
+  F.on('depSaveCfg', () => {
+    const D = window.OzonFlowDeploy, u = F.uiState('platform');
+    if (!D) return;
+    const cid = (document.getElementById('depCid') || {}).value;
+    const key = (document.getElementById('depKey') || {}).value;
+    const origin = (document.getElementById('depOrigin') || {}).value;
+    const patch = {};
+    if (cid != null && String(cid).trim()) patch.ozonClientId = String(cid).trim();
+    if (key != null && String(key).trim()) patch.ozonApiKey = String(key).trim();
+    if (origin != null) patch.allowOrigin = String(origin).trim();
+    if (!Object.keys(patch).length) { u.deploy = Object.assign(u.deploy || {}, { msg: '没有要保存的字段' }); F.render('platform'); return; }
+    u.deploy = Object.assign(u.deploy || {}, { msg: '正在保存配置…' }); F.render('platform');
+    D.postConfig(patch).then(r => {
+      if (r.ok) {
+        u.deploy.cfg = r.data;
+        u.deploy.msg = '已保存到服务器（密钥仅存服务端，页面只显示掩码）';
+        if (window.OzonFlowAdapter) OzonFlowAdapter.configure({ mode: 'proxy', proxyBase: D.getBase(), apiKeyConfigured: !!r.data.credentials });
+        // clear password fields by re-render
+      } else {
+        u.deploy.msg = '保存失败：' + (r.data.error || r.status) + (r.status === 401 ? ' · 请检查部署令牌' : '');
+      }
+      F.render('platform');
+    }).catch(e => { u.deploy.msg = e.message; F.render('platform'); });
+  });
+
   F.on('roleFin', () => { Store.setRole('finance'); });
 })();

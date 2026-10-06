@@ -17,6 +17,22 @@ python3 -m http.server 8080
 # 浏览器打开 http://localhost:8080
 ```
 
+
+## 生产部署
+
+完整后端（静态托管 + 配置/状态持久化 + 连接器接入 + Ozon 代理）一键起：
+
+```bash
+cp .env.example .env
+npm start
+# 或：bash scripts/deploy.sh   # Docker Compose
+```
+
+- 无 Api-Key：连接器免密钥路径 + 状态同步即可经营。
+- 有 Api-Key：同一服务开启发货/运单/面单代理写操作。
+
+详见 **[DEPLOY.md](./DEPLOY.md)**（Docker、环境变量、反向代理 HTTPS、API 列表与排障）。
+
 ## 模块
 
 | 导航 | 能力 |
@@ -104,7 +120,10 @@ ozonflow-rfbs-app/
 │   ├── requirements-data.js
 │   ├── adapters/ozon-seller-api.js
 │   └── suite/              # 10 个经营模块
-├── server/ozon-proxy.js    # Ozon Seller API 后端代理（零依赖）
+├── server/app.js          # 生产后端（静态+API+代理，零依赖）
+├── server/ozon-proxy.js    # 精简 Ozon 代理（可选）
+├── Dockerfile / docker-compose.yml / .env.example
+├── DEPLOY.md
 ├── SCENARIOS.md
 ├── AGENTS_SPEC.md
 └── README.md

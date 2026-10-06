@@ -23,12 +23,14 @@ window.OzonFlowAdapter = (function () {
   /* 探活：后端代理 GET {proxyBase}/__health 返回 { ok, credentials } */
   async function ping() {
     if (!config.proxyBase) return { ok: false, msg: '未填写代理地址' };
+    const base = config.proxyBase.replace(/\/$/, '');
     try {
-      const res = await fetch(config.proxyBase.replace(/\/$/, '') + '/__health');
+      let res = await fetch(base + '/api/health');
+      if (res.status === 404) res = await fetch(base + '/__health');
       const j = await res.json().catch(() => ({}));
       if (!res.ok) return { ok: false, status: res.status, msg: 'HTTP ' + res.status };
-      if (!j.credentials) return { ok: false, msg: '代理在线，但服务器上没配置 OZON_CLIENT_ID / OZON_API_KEY' };
-      return { ok: true, msg: '代理在线，凭证已配置' };
+      if (!j.credentials) return { ok: false, msg: '服务在线，但尚未配置 OZON_CLIENT_ID / OZON_API_KEY（仍可用连接器免密钥路径）', mode: j.mode, online: true };
+      return { ok: true, msg: '服务在线，凭证已配置 · 模式 ' + (j.mode || 'proxy'), mode: j.mode };
     } catch (e) { return { ok: false, msg: '无法访问代理（' + e.message + '）' }; }
   }
 

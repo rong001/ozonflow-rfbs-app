@@ -2,3 +2,6 @@ verify-*.png
 *.png.bak
 .DS_Store
 node_modules/
+.env
+data/*
+!data/.gitkeep
