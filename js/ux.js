@@ -192,7 +192,7 @@ window.OFUX = (function () {
   const lastVal = {};
   function countUp(root) {
     if (reduce) return;
-    const fresh = performance.now() - navAt < 900;
+    const fresh = false; // 只在数值变化时滚动，进页面不做表演
     (root || doc).querySelectorAll('.kpi-value:not([data-cu])').forEach(el => {
       el.dataset.cu = '1';
       if (el.children.length) return;
@@ -222,24 +222,6 @@ window.OFUX = (function () {
       };
       requestAnimationFrame(step);
     });
-  }
-
-  /* ---------- 光标高光 ---------- */
-  if (!reduce) {
-    let raf = 0, last = null;
-    doc.addEventListener('pointermove', e => {
-      if (e.pointerType === 'touch') return;
-      last = e;
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const el = last.target.closest && last.target.closest('.card, .kpi-card, .prod-card, .hero, .agent-card');
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        el.style.setProperty('--mx', (last.clientX - r.left) + 'px');
-        el.style.setProperty('--my', (last.clientY - r.top) + 'px');
-      });
-    }, { passive: true });
   }
 
   /* ---------- 命令面板 ---------- */

@@ -13,7 +13,7 @@
       '<path id="heroRoutePath" class="route" d="M 440 72 Q 570 -18 700 40"/>' +
       '<circle class="node" cx="440" cy="72" r="3"/><text class="node-lbl" x="430" y="70" text-anchor="end">义乌</text>' +
       '<circle class="node" cx="700" cy="40" r="3"/><text class="node-lbl" x="712" y="44">莫斯科</text>' +
-      (reduce ? '' : '<circle class="comet" r="2.6"><animateMotion dur="5.5s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .55 1"><mpath href="#heroRoutePath"/></animateMotion></circle>') +
+      
       '</svg>';
     hero.insertBefore(wrap.firstChild, hero.firstChild);
   }
